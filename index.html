@@ -44,6 +44,7 @@
             margin: 0 auto;
         }
 
+        /* Шапка с городом */
         .city-header {
             background: linear-gradient(135deg, var(--tg-theme-button-color), #5f9cea);
             border-radius: 30px;
@@ -84,6 +85,7 @@
             opacity: 0.8;
         }
 
+        /* Модальное окно выбора города */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -305,6 +307,10 @@
             margin-bottom: 10px;
         }
 
+        .button:active {
+            opacity: 0.8;
+        }
+
         .button-primary {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
@@ -316,22 +322,27 @@
             border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
+        .button-success {
+            background: #4CAF50;
+            color: white;
+        }
+
         .confirmation-screen {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px 20px 30px;
         }
 
         .success-icon {
             font-size: 64px;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             animation: scaleIn 0.5s;
         }
 
         .order-details {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 20px;
-            padding: 24px;
-            margin: 24px 0;
+            padding: 20px;
+            margin: 20px 0;
             text-align: left;
         }
 
@@ -360,6 +371,49 @@
             font-weight: 800;
             color: var(--tg-theme-button-color);
             margin: 20px 0;
+        }
+
+        .contact-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed rgba(128, 128, 128, 0.3);
+        }
+
+        .contact-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--tg-theme-button-color);
+        }
+
+        .contact-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .contact-button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+
+        .contact-button:active {
+            transform: scale(0.95);
+        }
+
+        .contact-button.primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .contact-button.secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
         @keyframes scaleIn {
@@ -408,6 +462,22 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
+
+        .info-message {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .info-message a {
+            color: var(--tg-theme-button-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -435,6 +505,12 @@
                 <span class="save-indicator" id="save-indicator" style="display: none;"></span>
             </div>
         </div>
+
+        <!-- Кнопка связи с администратором на главном экране -->
+        <button class="button button-secondary" id="contact-admin-main" style="margin-bottom: 20px;">
+            📞 Связаться с администратором
+        </button>
+
         <div class="products-grid" id="products-grid"></div>
     </div>
 
@@ -460,18 +536,35 @@
         </div>
 
         <button class="button button-primary" id="order-btn">✅ Оформить заказ</button>
+        <button class="button button-secondary" id="contact-admin-from-product">📞 Связаться с администратором</button>
         <button class="button button-secondary" id="back-to-catalog-from-detail">⬅️ Продолжить покупки</button>
     </div>
 
-    <!-- Экран подтверждения -->
+    <!-- Экран подтверждения заказа -->
     <div id="confirmation-screen" class="hidden">
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
             <h2>Заказ оформлен!</h2>
+            
             <div class="order-details" id="order-details"></div>
             <div class="total-amount" id="confirmation-total">0 ₽</div>
-            <button class="button button-primary" id="continue-shopping">🛍️ Продолжить покупки</button>
-            <button class="button button-secondary" id="close-app">🔚 Закрыть</button>
+
+            <!-- Секция связи с администратором после заказа -->
+            <div class="contact-section">
+                <div class="contact-title">📞 Нужна помощь с заказом?</div>
+                <div class="contact-buttons">
+                    <div class="contact-button primary" id="contact-admin-after-order">
+                        Написать администратору
+                    </div>
+                    <div class="contact-button secondary" id="continue-shopping-after-order">
+                        Продолжить покупки
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-message">
+                💬 Вы также можете написать администратору в любое время через чат с ботом
+            </div>
         </div>
     </div>
 
@@ -556,12 +649,12 @@
             city: 'Москва',
             selectedProduct: null,
             selectedQuantity: 1,
-            tempSelectedCity: 'Москва'
+            tempSelectedCity: 'Москва',
+            lastOrder: null
         };
 
         // ===== ФУНКЦИИ РАБОТЫ С ГОРОДОМ =====
 
-        // Получение города из URL (от бота)
         function getCityFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const city = urlParams.get('city');
@@ -575,12 +668,10 @@
             return null;
         }
 
-        // Загрузка города из localStorage
         function loadCityFromStorage() {
             try {
                 const savedCity = localStorage.getItem(STORAGE_KEY);
                 if (savedCity && CITIES.includes(savedCity)) {
-                    console.log('📦 Загружен город из localStorage:', savedCity);
                     return savedCity;
                 }
             } catch (e) {
@@ -589,13 +680,9 @@
             return null;
         }
 
-        // Сохранение города в localStorage
         function saveCityToStorage(city) {
             try {
                 localStorage.setItem(STORAGE_KEY, city);
-                console.log('💾 Сохранен город в localStorage:', city);
-                
-                // Показываем индикатор сохранения
                 const indicator = document.getElementById('save-indicator');
                 if (indicator) {
                     indicator.style.display = 'inline-block';
@@ -608,35 +695,22 @@
             }
         }
 
-        // ИНИЦИАЛИЗАЦИЯ ГОРОДА (ВАЖНО: приоритет у localStorage!)
         function initializeCity() {
-            // 1. Сначала пробуем загрузить из localStorage
             const savedCity = loadCityFromStorage();
-            
-            // 2. Если есть сохраненный город - используем его
             if (savedCity) {
                 state.city = savedCity;
                 state.tempSelectedCity = savedCity;
-                console.log('🏙️ Используем город из localStorage:', savedCity);
             } else {
-                // 3. Если нет сохраненного, пробуем из URL
                 const urlCity = getCityFromUrl();
                 if (urlCity && CITIES.includes(urlCity)) {
                     state.city = urlCity;
                     state.tempSelectedCity = urlCity;
-                    // Сохраняем в localStorage для будущих разов
                     saveCityToStorage(urlCity);
-                    console.log('🏙️ Используем город из URL:', urlCity);
-                } else {
-                    console.log('🏙️ Используем город по умолчанию: Москва');
                 }
             }
-            
-            // Обновляем отображение
             updateCityDisplay();
         }
 
-        // Обновление отображения города
         function updateCityDisplay() {
             const cityNameElement = document.getElementById('city-name-text');
             if (cityNameElement) {
@@ -644,7 +718,6 @@
             }
         }
 
-        // Загрузка городов в модальное окно
         function loadCitiesModal() {
             const grid = document.getElementById('cities-grid');
             grid.innerHTML = CITIES.map(city => `
@@ -655,10 +728,8 @@
             `).join('');
         }
 
-        // Временный выбор города
         window.selectTempCity = function(city) {
             state.tempSelectedCity = city;
-            
             document.querySelectorAll('.city-item').forEach(el => {
                 if (el.textContent.trim() === city) {
                     el.classList.add('selected');
@@ -668,36 +739,47 @@
             });
         };
 
-        // Подтверждение выбора города
         function confirmCity() {
             if (state.tempSelectedCity !== state.city) {
-                // Меняем город
                 state.city = state.tempSelectedCity;
-                
-                // СОХРАНЯЕМ В localStorage (важно!)
                 saveCityToStorage(state.city);
-                
-                // Обновляем отображение
                 updateCityDisplay();
-                
-                // Обновляем модальное окно
                 loadCitiesModal();
-                
-                console.log('✅ Город изменен на:', state.city);
             }
             closeCityModal();
         }
 
-        // Открыть модальное окно
         function openCityModal() {
             state.tempSelectedCity = state.city;
             loadCitiesModal();
             document.getElementById('city-modal-overlay').classList.add('show');
         }
 
-        // Закрыть модальное окно
         function closeCityModal() {
             document.getElementById('city-modal-overlay').classList.remove('show');
+        }
+
+        // ===== ФУНКЦИИ СВЯЗИ С АДМИНИСТРАТОРОМ =====
+
+        function contactAdmin() {
+            // Отправляем запрос на связь с администратором
+            const contactData = {
+                action: 'contact_admin',
+                city: state.city,
+                message: 'Пользователь хочет связаться с администратором'
+            };
+            
+            console.log('📞 Запрос связи с администратором:', contactData);
+            
+            // Отправляем в бота
+            tg.sendData(JSON.stringify(contactData));
+            
+            // Показываем уведомление пользователю
+            tg.showPopup({
+                title: '📞 Запрос отправлен',
+                message: 'Администратор свяжется с вами в ближайшее время. Вы также можете написать ему в чат с ботом.',
+                buttons: [{ type: 'ok' }]
+            });
         }
 
         // ===== ТОВАРЫ И ЗАКАЗЫ =====
@@ -730,7 +812,7 @@
             for (let qty = 1; qty <= 5; qty++) {
                 const btn = document.createElement('button');
                 btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-                btn.textContent = `${qty} шт`;
+                btn.textContent = `${qty} гр`;
                 btn.onclick = () => selectQuantity(qty);
                 qtyContainer.appendChild(btn);
             }
@@ -762,20 +844,18 @@
             }
         }
 
-        // Оформление заказа (используем ТЕКУЩИЙ город из state)
         function placeOrder() {
             if (!state.selectedProduct) return;
             
             const total = state.selectedProduct.price * state.selectedQuantity;
             
-            // ПОЛУЧАЕМ ГОРОД ИЗ СОСТОЯНИЯ (уже сохранен в localStorage)
-            const currentCity = state.city;
-            
-            console.log('📦 Оформление заказа:');
-            console.log('   - Город:', currentCity);
-            console.log('   - Товар:', state.selectedProduct.name);
-            console.log('   - Количество:', state.selectedQuantity);
-            console.log('   - Сумма:', total);
+            // Сохраняем последний заказ
+            state.lastOrder = {
+                product: state.selectedProduct,
+                quantity: state.selectedQuantity,
+                total: total,
+                city: state.city
+            };
             
             const orderData = {
                 action: 'order',
@@ -783,15 +863,52 @@
                 productName: state.selectedProduct.name,
                 quantity: state.selectedQuantity,
                 totalPrice: total,
-                city: currentCity  // Используем город из состояния
+                city: state.city
             };
+            
+            console.log('📦 Оформление заказа:', orderData);
             
             // Отправляем в бота
             tg.sendData(JSON.stringify(orderData));
+            
+            // Показываем экран подтверждения
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.remove('hidden');
+            
+            // Заполняем детали заказа
+            document.getElementById('order-details').innerHTML = `
+                <div class="order-detail-item">
+                    <span class="detail-label">🏙️ Город:</span>
+                    <span class="detail-value">${state.city}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📦 Товар:</span>
+                    <span class="detail-value">${state.selectedProduct.name}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📊 Количество:</span>
+                    <span class="detail-value">${state.selectedQuantity} шт.</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">💰 Цена за шт:</span>
+                    <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
+                </div>
+            `;
+            
+            document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
+        }
+
+        // ===== НАВИГАЦИЯ =====
+
+        function goToMainScreen() {
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
         }
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
         
+        // Город
         document.getElementById('city-header').addEventListener('click', openCityModal);
         document.getElementById('close-modal-btn').addEventListener('click', closeCityModal);
         document.getElementById('confirm-city-btn').addEventListener('click', confirmCity);
@@ -802,34 +919,29 @@
             }
         });
 
-        document.getElementById('back-to-catalog').addEventListener('click', () => {
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        });
+        // Связь с администратором
+        document.getElementById('contact-admin-main').addEventListener('click', contactAdmin);
+        document.getElementById('contact-admin-from-product').addEventListener('click', contactAdmin);
+        document.getElementById('contact-admin-after-order').addEventListener('click', contactAdmin);
 
-        document.getElementById('back-to-catalog-from-detail').addEventListener('click', () => {
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        });
+        // Навигация
+        document.getElementById('back-to-catalog').addEventListener('click', goToMainScreen);
+        document.getElementById('back-to-catalog-from-detail').addEventListener('click', goToMainScreen);
+        document.getElementById('continue-shopping-after-order').addEventListener('click', goToMainScreen);
 
+        // Заказ
         document.getElementById('order-btn').addEventListener('click', placeOrder);
 
-        document.getElementById('continue-shopping').addEventListener('click', () => {
-            document.getElementById('confirmation-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        });
-
-        document.getElementById('close-app').addEventListener('click', () => {
-            tg.close();
-        });
+        // Продолжить покупки после заказа
+        document.getElementById('continue-shopping-after-order').addEventListener('click', goToMainScreen);
 
         // ИНИЦИАЛИЗАЦИЯ
-        initializeCity();  // Теперь город загружается правильно
+        initializeCity();
         loadProducts();
 
-        // Дополнительная проверка при загрузке страницы
-        window.addEventListener('load', () => {
-            console.log('Текущий город после загрузки:', state.city);
+        // Добавляем обработчик для закрытия приложения
+        document.getElementById('close-app').addEventListener('click', () => {
+            tg.close();
         });
     </script>
 </body>
