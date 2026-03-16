@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🛍️ Магазин Mini App</title>
-    <!-- Telegram Web App SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -46,79 +45,40 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Шапка с городом */
         .city-header {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px;
-            padding: 16px 20px;
+            background: var(--tg-theme-button-color);
+            border-radius: 30px;
+            padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(64, 167, 227, 0.3);
+            text-align: center;
         }
 
         .city-title {
             font-size: 14px;
-            opacity: 0.7;
+            opacity: 0.9;
             margin-bottom: 4px;
+            color: white;
         }
 
         .city-name {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--tg-theme-button-color);
+            font-size: 28px;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        /* Поиск (опционально) */
-        .search-box {
+        .debug-info {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 12px;
+            padding: 10px;
             margin-bottom: 20px;
+            font-size: 12px;
+            font-family: monospace;
+            display: none; /* Скрыто по умолчанию, включите для отладки */
         }
 
-        .search-input {
-            width: 100%;
-            padding: 14px 18px;
-            border: none;
-            border-radius: 30px;
-            background: var(--tg-theme-secondary-bg-color);
-            color: var(--tg-theme-text-color);
-            font-size: 16px;
-            outline: none;
-        }
-
-        .search-input::placeholder {
-            color: var(--tg-theme-hint-color);
-        }
-
-        /* Категории (опционально) */
-        .categories {
-            display: flex;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 4px 0 16px 0;
-            margin-bottom: 8px;
-            scrollbar-width: none;
-        }
-
-        .categories::-webkit-scrollbar {
-            display: none;
-        }
-
-        .category-chip {
-            padding: 8px 16px;
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 30px;
-            white-space: nowrap;
-            font-size: 14px;
-            font-weight: 500;
-            opacity: 0.7;
-            transition: all 0.2s;
-        }
-
-        .category-chip.active {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            opacity: 1;
-        }
-
-        /* Сетка товаров */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -131,7 +91,7 @@
             border-radius: 20px;
             overflow: hidden;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             border: 1px solid rgba(128, 128, 128, 0.1);
         }
 
@@ -152,7 +112,7 @@
 
         .product-title {
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14px;
             margin-bottom: 6px;
             line-height: 1.3;
         }
@@ -160,16 +120,9 @@
         .product-price {
             color: var(--tg-theme-button-color);
             font-weight: 700;
-            font-size: 18px;
+            font-size: 16px;
         }
 
-        .product-price small {
-            font-size: 12px;
-            font-weight: 400;
-            opacity: 0.7;
-        }
-
-        /* Детальная карточка товара */
         .product-detail {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 24px;
@@ -188,25 +141,18 @@
         }
 
         .detail-title {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             margin-bottom: 8px;
         }
 
         .detail-price {
-            font-size: 32px;
+            font-size: 28px;
             font-weight: 800;
             color: var(--tg-theme-button-color);
             margin-bottom: 24px;
         }
 
-        .detail-price small {
-            font-size: 16px;
-            font-weight: 400;
-            opacity: 0.7;
-        }
-
-        /* Селектор количества */
         .quantity-selector {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 24px;
@@ -258,7 +204,6 @@
             border-radius: 16px;
         }
 
-        /* Кнопки */
         .button {
             width: 100%;
             padding: 18px;
@@ -269,10 +214,6 @@
             cursor: pointer;
             transition: opacity 0.2s;
             margin-bottom: 10px;
-        }
-
-        .button:active {
-            opacity: 0.7;
         }
 
         .button-primary {
@@ -286,7 +227,6 @@
             border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
-        /* Экран подтверждения */
         .confirmation-screen {
             text-align: center;
             padding: 40px 20px;
@@ -316,8 +256,6 @@
 
         .order-detail-item:last-child {
             border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
         }
 
         .detail-label {
@@ -335,7 +273,6 @@
             margin: 20px 0;
         }
 
-        /* Анимации */
         @keyframes scaleIn {
             from {
                 transform: scale(0);
@@ -351,7 +288,6 @@
             display: none;
         }
 
-        /* Навигация */
         .nav-bar {
             display: flex;
             align-items: center;
@@ -367,22 +303,20 @@
             padding: 8px;
             margin-right: 8px;
         }
-
-        .nav-title {
-            font-size: 20px;
-            font-weight: 600;
-        }
     </style>
 </head>
 <body>
-    <!-- Главный экран с товарами -->
+    <!-- Главный экран -->
     <div id="main-screen">
-        <div class="city-header">
-            <div class="city-title">🏙️ Ваш город</div>
-            <div class="city-name" id="city-display">Москва</div>
+        <div class="city-header" id="city-header">
+            <div class="city-title">🏙️ ВАШ ГОРОД</div>
+            <div class="city-name" id="city-display">ЗАГРУЗКА...</div>
         </div>
+
+        <div class="debug-info" id="debug-info"></div>
+
         <div class="products-grid" id="products-grid">
-            <!-- Товары будут загружены через JavaScript -->
+            <!-- Товары загружаются через JS -->
         </div>
     </div>
 
@@ -403,9 +337,7 @@
 
         <div class="quantity-selector">
             <div class="quantity-label">📦 Количество</div>
-            <div class="quantity-buttons" id="quantity-buttons">
-                <!-- Кнопки количества будут сгенерированы -->
-            </div>
+            <div class="quantity-buttons" id="quantity-buttons"></div>
             <div class="total-price" id="total-price">0 ₽</div>
         </div>
 
@@ -419,10 +351,7 @@
             <div class="success-icon">🎉</div>
             <h2>Заказ оформлен!</h2>
             
-            <div class="order-details" id="order-details">
-                <!-- Детали заказа будут вставлены через JS -->
-            </div>
-
+            <div class="order-details" id="order-details"></div>
             <div class="total-amount" id="confirmation-total">0 ₽</div>
             
             <button class="button button-primary" id="continue-shopping">🛍️ Продолжить покупки</button>
@@ -431,17 +360,13 @@
     </div>
 
     <script>
-    // Инициализация Telegram Web App
-    const tg = window.Telegram.WebApp;
-    tg.ready();
-    tg.expand();
+        // Инициализация Telegram Web App
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
 
-    // Получаем данные инициализации
-    const initData = tg.initDataUnsafe || {};
-    console.log('Init data:', initData);
-
-    // Данные товаров с картинками
-    const PRODUCTS = [
+        // Данные товаров
+        const PRODUCTS = [
         { 
             id: 1, 
             name: "Шишки 🌰", 
@@ -500,184 +425,222 @@
         },
     ];
 
-    // Состояние приложения
-    let state = {
-        city: 'не выбран',
-        selectedProduct: null,
-        selectedQuantity: 1,
-        currentCategory: 'all',
-        searchQuery: '',
-        user: initData.user || null
-    };
-
-    // Получаем город из разных источников
-    function getCityFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('city');
-    }
-
-    function getCityFromStartParam() {
-        return initData.start_param || null;
-    }
-
-    // Инициализация города
-    function initializeCity() {
-        // Пробуем получить город из URL (бот передает через кнопку)
-        const urlCity = getCityFromUrl();
-        // Пробуем получить из start_param (если бот передал через ссылку)
-        const startCity = getCityFromStartParam();
-        
-        // Выбираем первый доступный город
-        const city = urlCity || startCity || 'Москва';
-        
-        state.city = decodeURIComponent(city);
-        document.getElementById('city-display').textContent = state.city;
-        
-        console.log('Город установлен:', state.city);
-        return state.city;
-    }
-
-    // Запускаем инициализацию города
-    const currentCity = initializeCity();
-
-    // ===== ВСЕ ФУНКЦИИ ОСТАЮТСЯ ТАКИМИ ЖЕ =====
-    // (loadProducts, selectProduct, selectQuantity, 
-    // updateTotalPrice, placeOrder и т.д. - без изменений)
-
-    function loadProducts() {
-        const grid = document.getElementById('products-grid');
-        grid.innerHTML = PRODUCTS.map(product => `
-            <div class="product-card" onclick="selectProduct(${product.id})">
-                <img class="product-image" src="${product.image}" alt="${product.name}" 
-                     onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <div class="product-info">
-                    <div class="product-title">${product.name}</div>
-                    <div class="product-price">${product.price.toLocaleString()} ₽</div>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    window.selectProduct = function(productId) {
-        state.selectedProduct = PRODUCTS.find(p => p.id === productId);
-        state.selectedQuantity = 1;
-        
-        document.getElementById('detail-image').src = state.selectedProduct.image;
-        document.getElementById('detail-title').textContent = state.selectedProduct.name;
-        document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-        
-        const qtyContainer = document.getElementById('quantity-buttons');
-        qtyContainer.innerHTML = '';
-        for (let qty = 1; qty <= 5; qty++) {
-            const btn = document.createElement('button');
-            btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-            btn.textContent = `${qty} гр`;
-            btn.onclick = () => selectQuantity(qty);
-            qtyContainer.appendChild(btn);
-        }
-        
-        updateTotalPrice();
-        
-        document.getElementById('main-screen').classList.add('hidden');
-        document.getElementById('product-screen').classList.remove('hidden');
-    };
-
-    function selectQuantity(qty) {
-        state.selectedQuantity = qty;
-        
-        document.querySelectorAll('.qty-btn').forEach((btn, index) => {
-            if (index + 1 === qty) {
-                btn.classList.add('selected');
-            } else {
-                btn.classList.remove('selected');
-            }
-        });
-        
-        updateTotalPrice();
-    }
-
-    function updateTotalPrice() {
-        if (state.selectedProduct) {
-            const total = state.selectedProduct.price * state.selectedQuantity;
-            document.getElementById('total-price').textContent = `${total.toLocaleString()} ₽`;
-        }
-    }
-
-    // ИСПРАВЛЕННАЯ ФУНКЦИЯ ОФОРМЛЕНИЯ ЗАКАЗА (с городом!)
-    function placeOrder() {
-        if (!state.selectedProduct) return;
-        
-        const total = state.selectedProduct.price * state.selectedQuantity;
-        
-        // Подготавливаем данные заказа, ОБЯЗАТЕЛЬНО включаем город
-        const orderData = {
-            action: 'order',
-            productId: state.selectedProduct.id,
-            productName: state.selectedProduct.name,
-            quantity: state.selectedQuantity,
-            totalPrice: total,
-            city: state.city,  // ВАЖНО: передаем город!
-            userId: state.user?.id || null,
-            username: state.user?.username || null
+        // Состояние приложения
+        let state = {
+            city: 'Москва', // По умолчанию
+            selectedProduct: null,
+            selectedQuantity: 1
         };
+
+        // Функция для отладки
+        function debug(message) {
+            console.log('🔍', message);
+            const debugEl = document.getElementById('debug-info');
+            if (debugEl) {
+                debugEl.innerHTML += message + '<br>';
+                debugEl.style.display = 'block';
+            }
+        }
+
+        debug('Mini App запущен');
+
+        // ПОЛУЧАЕМ ГОРОД ИЗ URL
+        function getCityFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const city = urlParams.get('city');
+            debug(`Город из URL: ${city}`);
+            return city;
+        }
+
+        // ПОЛУЧАЕМ ГОРОД ИЗ START PARAM (если есть)
+        function getCityFromStartParam() {
+            if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
+                debug(`Start param: ${tg.initDataUnsafe.start_param}`);
+                return tg.initDataUnsafe.start_param;
+            }
+            return null;
+        }
+
+        // ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ГОРОДА
+        function getCity() {
+            // Сначала проверяем URL (приоритет 1)
+            const urlCity = getCityFromUrl();
+            if (urlCity) {
+                try {
+                    const decodedCity = decodeURIComponent(urlCity);
+                    debug(`✅ Город из URL: ${decodedCity}`);
+                    return decodedCity;
+                } catch (e) {
+                    debug(`❌ Ошибка декодирования URL: ${e}`);
+                }
+            }
+
+            // Потом проверяем start_param (приоритет 2)
+            const startCity = getCityFromStartParam();
+            if (startCity) {
+                debug(`✅ Город из start_param: ${startCity}`);
+                return startCity;
+            }
+
+            // Если ничего не нашли - Москва по умолчанию
+            debug(`⚠️ Город не найден, используем Москва`);
+            return 'Москва';
+        }
+
+        // УСТАНАВЛИВАЕМ ГОРОД
+        const city = getCity();
+        state.city = city;
         
-        console.log('Отправка заказа:', orderData);
+        debug(`🏙️ ИТОГОВЫЙ ГОРОД: ${state.city}`);
         
-        // Отправляем данные в бота
-        tg.sendData(JSON.stringify(orderData));
-        
-        // Показываем экран подтверждения
-        document.getElementById('product-screen').classList.add('hidden');
-        document.getElementById('confirmation-screen').classList.remove('hidden');
-        
-        // Детали заказа с городом
-        const orderDetails = document.getElementById('order-details');
-        orderDetails.innerHTML = `
-            <div class="order-detail-item">
-                <span class="detail-label">🏙️ Город:</span>
-                <span class="detail-value">${state.city}</span>
-            </div>
-            <div class="order-detail-item">
-                <span class="detail-label">📦 Товар:</span>
-                <span class="detail-value">${state.selectedProduct.name}</span>
-            </div>
-            <div class="order-detail-item">
-                <span class="detail-label">📊 Количество:</span>
-                <span class="detail-value">${state.selectedQuantity} Гр.</span>
-            </div>
-            <div class="order-detail-item">
-                <span class="detail-label">💰 Цена за гр:</span>
-                <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
-            </div>
-        `;
-        
-        document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
-    }
+        // ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
+        const cityDisplay = document.getElementById('city-display');
+        if (cityDisplay) {
+            cityDisplay.textContent = state.city;
+        }
 
-    // Навигация
-    document.getElementById('back-to-catalog').addEventListener('click', () => {
-        document.getElementById('product-screen').classList.add('hidden');
-        document.getElementById('main-screen').classList.remove('hidden');
-    });
+        // Меняем цвет хедера в зависимости от города (просто для красоты)
+        const cityHeader = document.getElementById('city-header');
+        if (cityHeader) {
+            // Генерируем цвет на основе названия города
+            const hue = (state.city.length * 10) % 360;
+            cityHeader.style.background = `linear-gradient(135deg, var(--tg-theme-button-color), hsl(${hue}, 70%, 50%))`;
+        }
 
-    document.getElementById('back-to-catalog-from-detail').addEventListener('click', () => {
-        document.getElementById('product-screen').classList.add('hidden');
-        document.getElementById('main-screen').classList.remove('hidden');
-    });
+        // Загрузка товаров
+        function loadProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = PRODUCTS.map(product => `
+                <div class="product-card" onclick="selectProduct(${product.id})">
+                    <img class="product-image" src="${product.image}" alt="${product.name}" 
+                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                    <div class="product-info">
+                        <div class="product-title">${product.name}</div>
+                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
+                    </div>
+                </div>
+            `).join('');
+        }
 
-    document.getElementById('order-btn').addEventListener('click', placeOrder);
+        // Выбор товара
+        window.selectProduct = function(productId) {
+            state.selectedProduct = PRODUCTS.find(p => p.id === productId);
+            state.selectedQuantity = 1;
+            
+            document.getElementById('detail-image').src = state.selectedProduct.image;
+            document.getElementById('detail-title').textContent = state.selectedProduct.name;
+            document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+            
+            const qtyContainer = document.getElementById('quantity-buttons');
+            qtyContainer.innerHTML = '';
+            for (let qty = 1; qty <= 5; qty++) {
+                const btn = document.createElement('button');
+                btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
+                btn.textContent = `${qty} гр`;
+                btn.onclick = () => selectQuantity(qty);
+                qtyContainer.appendChild(btn);
+            }
+            
+            updateTotalPrice();
+            
+            document.getElementById('main-screen').classList.add('hidden');
+            document.getElementById('product-screen').classList.remove('hidden');
+        };
 
-    document.getElementById('continue-shopping').addEventListener('click', () => {
-        document.getElementById('confirmation-screen').classList.add('hidden');
-        document.getElementById('main-screen').classList.remove('hidden');
-    });
+        function selectQuantity(qty) {
+            state.selectedQuantity = qty;
+            
+            document.querySelectorAll('.qty-btn').forEach((btn, index) => {
+                if (index + 1 === qty) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+            
+            updateTotalPrice();
+        }
 
-    document.getElementById('close-app').addEventListener('click', () => {
-        tg.close();
-    });
+        function updateTotalPrice() {
+            if (state.selectedProduct) {
+                const total = state.selectedProduct.price * state.selectedQuantity;
+                document.getElementById('total-price').textContent = `${total.toLocaleString()} ₽`;
+            }
+        }
 
-    // Инициализация
-    loadProducts();
-</script>
+        // ОФОРМЛЕНИЕ ЗАКАЗА (с городом)
+        function placeOrder() {
+            if (!state.selectedProduct) return;
+            
+            const total = state.selectedProduct.price * state.selectedQuantity;
+            
+            // ФОРМИРУЕМ ДАННЫЕ ЗАКАЗА С ГОРОДОМ
+            const orderData = {
+                action: 'order',
+                productId: state.selectedProduct.id,
+                productName: state.selectedProduct.name,
+                quantity: state.selectedQuantity,
+                totalPrice: total,
+                city: state.city  // ВАЖНО: передаем город!
+            };
+            
+            debug(`📦 Отправка заказа: ${JSON.stringify(orderData)}`);
+            
+            // Отправляем в бота
+            tg.sendData(JSON.stringify(orderData));
+            
+            // Показываем подтверждение
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.remove('hidden');
+            
+            // Детали заказа
+            document.getElementById('order-details').innerHTML = `
+                <div class="order-detail-item">
+                    <span class="detail-label">🏙️ ГОРОД:</span>
+                    <span class="detail-value" style="color: var(--tg-theme-button-color); font-weight: 800;">${state.city}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📦 Товар:</span>
+                    <span class="detail-value">${state.selectedProduct.name}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📊 Количество:</span>
+                    <span class="detail-value">${state.selectedQuantity} шт.</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">💰 Сумма:</span>
+                    <span class="detail-value">${total.toLocaleString()} ₽</span>
+                </div>
+            `;
+            
+            document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
+        }
+
+        // Навигация
+        document.getElementById('back-to-catalog').addEventListener('click', () => {
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+        });
+
+        document.getElementById('back-to-catalog-from-detail').addEventListener('click', () => {
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+        });
+
+        document.getElementById('order-btn').addEventListener('click', placeOrder);
+
+        document.getElementById('continue-shopping').addEventListener('click', () => {
+            document.getElementById('confirmation-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+        });
+
+        document.getElementById('close-app').addEventListener('click', () => {
+            tg.close();
+        });
+
+        // Инициализация
+        loadProducts();
+        debug(`🚀 Mini App готов. Город: ${state.city}`);
+    </script>
 </body>
 </html>
