@@ -42,10 +42,8 @@
             padding: 12px;
             max-width: 500px;
             margin: 0 auto;
-            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* Шапка с городом */
         .city-header {
             background: linear-gradient(135deg, var(--tg-theme-button-color), #5f9cea);
             border-radius: 30px;
@@ -86,7 +84,6 @@
             opacity: 0.8;
         }
 
-        /* Модальное окно выбора города */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -396,7 +393,6 @@
             margin-right: 8px;
         }
 
-        /* Индикатор сохранения */
         .save-indicator {
             display: inline-block;
             width: 8px;
@@ -408,15 +404,9 @@
         }
 
         @keyframes pulse {
-            0% {
-                opacity: 1;
-            }
-            50% {
-                opacity: 0.5;
-            }
-            100% {
-                opacity: 1;
-            }
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
     </style>
 </head>
@@ -428,9 +418,7 @@
                 <div class="modal-title">🏙️ Выберите город</div>
                 <button class="close-modal" id="close-modal-btn">&times;</button>
             </div>
-            <div class="cities-grid" id="cities-grid">
-                <!-- Города будут загружены через JS -->
-            </div>
+            <div class="cities-grid" id="cities-grid"></div>
             <button class="button button-primary" id="confirm-city-btn">Подтвердить</button>
         </div>
     </div>
@@ -447,10 +435,7 @@
                 <span class="save-indicator" id="save-indicator" style="display: none;"></span>
             </div>
         </div>
-
-        <div class="products-grid" id="products-grid">
-            <!-- Товары загружаются через JS -->
-        </div>
+        <div class="products-grid" id="products-grid"></div>
     </div>
 
     <!-- Экран товара -->
@@ -483,10 +468,8 @@
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
             <h2>Заказ оформлен!</h2>
-            
             <div class="order-details" id="order-details"></div>
             <div class="total-amount" id="confirmation-total">0 ₽</div>
-            
             <button class="button button-primary" id="continue-shopping">🛍️ Продолжить покупки</button>
             <button class="button button-secondary" id="close-app">🔚 Закрыть</button>
         </div>
@@ -565,44 +548,52 @@
         },
     ];
 
-        // КЛЮЧ ДЛЯ ХРАНЕНИЯ В LOCALSTORAGE
-        const STORAGE_KEY = 'shop_city';
+        // Ключ для localStorage
+        const STORAGE_KEY = 'shop_selected_city';
 
         // Состояние приложения
         let state = {
-            city: 'Москва', // По умолчанию
+            city: 'Москва',
             selectedProduct: null,
             selectedQuantity: 1,
             tempSelectedCity: 'Москва'
         };
 
-        // ЗАГРУЗКА ГОРОДА ИЗ LOCALSTORAGE
+        // ===== ФУНКЦИИ РАБОТЫ С ГОРОДОМ =====
+
+        // Получение города из URL (от бота)
+        function getCityFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const city = urlParams.get('city');
+            if (city) {
+                try {
+                    return decodeURIComponent(city);
+                } catch (e) {
+                    return city;
+                }
+            }
+            return null;
+        }
+
+        // Загрузка города из localStorage
         function loadCityFromStorage() {
             try {
                 const savedCity = localStorage.getItem(STORAGE_KEY);
                 if (savedCity && CITIES.includes(savedCity)) {
-                    state.city = savedCity;
-                    state.tempSelectedCity = savedCity;
-                    console.log('🏙️ Город загружен из хранилища:', savedCity);
-                } else {
-                    // Если нет сохраненного города, пробуем из URL
-                    const urlCity = getCityFromUrl();
-                    if (urlCity && CITIES.includes(urlCity)) {
-                        state.city = urlCity;
-                        state.tempSelectedCity = urlCity;
-                        saveCityToStorage(urlCity);
-                    }
+                    console.log('📦 Загружен город из localStorage:', savedCity);
+                    return savedCity;
                 }
             } catch (e) {
                 console.error('Ошибка загрузки из localStorage:', e);
             }
+            return null;
         }
 
-        // СОХРАНЕНИЕ ГОРОДА В LOCALSTORAGE
+        // Сохранение города в localStorage
         function saveCityToStorage(city) {
             try {
                 localStorage.setItem(STORAGE_KEY, city);
-                console.log('💾 Город сохранен в хранилище:', city);
+                console.log('💾 Сохранен город в localStorage:', city);
                 
                 // Показываем индикатор сохранения
                 const indicator = document.getElementById('save-indicator');
@@ -617,18 +608,32 @@
             }
         }
 
-        // Получение города из URL
-        function getCityFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const city = urlParams.get('city');
-            if (city) {
-                try {
-                    return decodeURIComponent(city);
-                } catch (e) {
-                    return city;
+        // ИНИЦИАЛИЗАЦИЯ ГОРОДА (ВАЖНО: приоритет у localStorage!)
+        function initializeCity() {
+            // 1. Сначала пробуем загрузить из localStorage
+            const savedCity = loadCityFromStorage();
+            
+            // 2. Если есть сохраненный город - используем его
+            if (savedCity) {
+                state.city = savedCity;
+                state.tempSelectedCity = savedCity;
+                console.log('🏙️ Используем город из localStorage:', savedCity);
+            } else {
+                // 3. Если нет сохраненного, пробуем из URL
+                const urlCity = getCityFromUrl();
+                if (urlCity && CITIES.includes(urlCity)) {
+                    state.city = urlCity;
+                    state.tempSelectedCity = urlCity;
+                    // Сохраняем в localStorage для будущих разов
+                    saveCityToStorage(urlCity);
+                    console.log('🏙️ Используем город из URL:', urlCity);
+                } else {
+                    console.log('🏙️ Используем город по умолчанию: Москва');
                 }
             }
-            return null;
+            
+            // Обновляем отображение
+            updateCityDisplay();
         }
 
         // Обновление отображения города
@@ -650,7 +655,7 @@
             `).join('');
         }
 
-        // Временный выбор города в модалке
+        // Временный выбор города
         window.selectTempCity = function(city) {
             state.tempSelectedCity = city;
             
@@ -663,13 +668,22 @@
             });
         };
 
-        // Подтверждение выбора города (СОХРАНЯЕМ ЛОКАЛЬНО, НЕ ОТПРАВЛЯЕМ В БОТА)
+        // Подтверждение выбора города
         function confirmCity() {
             if (state.tempSelectedCity !== state.city) {
+                // Меняем город
                 state.city = state.tempSelectedCity;
+                
+                // СОХРАНЯЕМ В localStorage (важно!)
+                saveCityToStorage(state.city);
+                
+                // Обновляем отображение
                 updateCityDisplay();
-                saveCityToStorage(state.city); // Сохраняем в localStorage
-                loadCitiesModal(); // Обновляем выделение в модалке
+                
+                // Обновляем модальное окно
+                loadCitiesModal();
+                
+                console.log('✅ Город изменен на:', state.city);
             }
             closeCityModal();
         }
@@ -686,7 +700,8 @@
             document.getElementById('city-modal-overlay').classList.remove('show');
         }
 
-        // Загрузка товаров
+        // ===== ТОВАРЫ И ЗАКАЗЫ =====
+
         function loadProducts() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = PRODUCTS.map(product => `
@@ -701,7 +716,6 @@
             `).join('');
         }
 
-        // Выбор товара
         window.selectProduct = function(productId) {
             state.selectedProduct = PRODUCTS.find(p => p.id === productId);
             state.selectedQuantity = 1;
@@ -716,7 +730,7 @@
             for (let qty = 1; qty <= 5; qty++) {
                 const btn = document.createElement('button');
                 btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-                btn.textContent = `${qty} гр`;
+                btn.textContent = `${qty} шт`;
                 btn.onclick = () => selectQuantity(qty);
                 qtyContainer.appendChild(btn);
             }
@@ -748,11 +762,20 @@
             }
         }
 
-        // Оформление заказа (с актуальным городом из состояния)
+        // Оформление заказа (используем ТЕКУЩИЙ город из state)
         function placeOrder() {
             if (!state.selectedProduct) return;
             
             const total = state.selectedProduct.price * state.selectedQuantity;
+            
+            // ПОЛУЧАЕМ ГОРОД ИЗ СОСТОЯНИЯ (уже сохранен в localStorage)
+            const currentCity = state.city;
+            
+            console.log('📦 Оформление заказа:');
+            console.log('   - Город:', currentCity);
+            console.log('   - Товар:', state.selectedProduct.name);
+            console.log('   - Количество:', state.selectedQuantity);
+            console.log('   - Сумма:', total);
             
             const orderData = {
                 action: 'order',
@@ -760,12 +783,10 @@
                 productName: state.selectedProduct.name,
                 quantity: state.selectedQuantity,
                 totalPrice: total,
-                city: state.city  // Берем город из состояния (уже сохранен в localStorage)
+                city: currentCity  // Используем город из состояния
             };
             
-            console.log('📦 Отправка заказа:', orderData);
-            
-            // Отправляем в бота (приложение закроется)
+            // Отправляем в бота
             tg.sendData(JSON.stringify(orderData));
         }
 
@@ -803,14 +824,12 @@
         });
 
         // ИНИЦИАЛИЗАЦИЯ
-        loadCityFromStorage(); // Загружаем город из localStorage
-        updateCityDisplay();
+        initializeCity();  // Теперь город загружается правильно
         loadProducts();
-        loadCitiesModal();
 
-        // Сохраняем город при закрытии (на всякий случай)
-        window.addEventListener('beforeunload', () => {
-            saveCityToStorage(state.city);
+        // Дополнительная проверка при загрузке страницы
+        window.addEventListener('load', () => {
+            console.log('Текущий город после загрузки:', state.city);
         });
     </script>
 </body>
