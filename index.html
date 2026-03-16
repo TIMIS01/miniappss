@@ -45,13 +45,19 @@
             transition: background-color 0.3s, color 0.3s;
         }
 
+        /* Шапка с городом */
         .city-header {
-            background: var(--tg-theme-button-color);
+            background: linear-gradient(135deg, var(--tg-theme-button-color), #5f9cea);
             border-radius: 30px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(64, 167, 227, 0.3);
-            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .city-header:active {
+            transform: scale(0.98);
         }
 
         .city-title {
@@ -59,6 +65,9 @@
             opacity: 0.9;
             margin-bottom: 4px;
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .city-name {
@@ -67,16 +76,99 @@
             color: white;
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .debug-info {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 12px;
-            padding: 10px;
+        .change-city-icon {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        /* Модальное окно выбора города */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .city-modal {
+            background: var(--tg-theme-bg-color);
+            border-radius: 30px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.show .city-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            font-size: 12px;
-            font-family: monospace;
-            display: none; /* Скрыто по умолчанию, включите для отладки */
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .city-item {
+            padding: 14px 8px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .city-item.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .city-item:active {
+            transform: scale(0.95);
         }
 
         .products-grid {
@@ -306,14 +398,29 @@
     </style>
 </head>
 <body>
+    <!-- Модальное окно выбора города -->
+    <div class="modal-overlay" id="city-modal-overlay">
+        <div class="city-modal">
+            <div class="modal-header">
+                <div class="modal-title">🏙️ Выберите город</div>
+                <button class="close-modal" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="cities-grid" id="cities-grid">
+                <!-- Города будут загружены через JS -->
+            </div>
+            <button class="button button-secondary" id="confirm-city-btn">Подтвердить</button>
+        </div>
+    </div>
+
     <!-- Главный экран -->
     <div id="main-screen">
         <div class="city-header" id="city-header">
-            <div class="city-title">🏙️ ВАШ ГОРОД</div>
+            <div class="city-title">
+                <span>🏙️ ВАШ ГОРОД</span>
+                <span class="change-city-icon">▼</span>
+            </div>
             <div class="city-name" id="city-display">ЗАГРУЗКА...</div>
         </div>
-
-        <div class="debug-info" id="debug-info"></div>
 
         <div class="products-grid" id="products-grid">
             <!-- Товары загружаются через JS -->
@@ -364,6 +471,13 @@
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+
+        // Список городов (такой же как в боте)
+        const CITIES = [
+            "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
+            "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
+            "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
+        ];
 
         // Данные товаров
         const PRODUCTS = [
@@ -429,82 +543,93 @@
         let state = {
             city: 'Москва', // По умолчанию
             selectedProduct: null,
-            selectedQuantity: 1
+            selectedQuantity: 1,
+            tempSelectedCity: 'Москва' // Для временного выбора в модалке
         };
-
-        // Функция для отладки
-        function debug(message) {
-            console.log('🔍', message);
-            const debugEl = document.getElementById('debug-info');
-            if (debugEl) {
-                debugEl.innerHTML += message + '<br>';
-                debugEl.style.display = 'block';
-            }
-        }
-
-        debug('Mini App запущен');
 
         // ПОЛУЧАЕМ ГОРОД ИЗ URL
         function getCityFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
-            const city = urlParams.get('city');
-            debug(`Город из URL: ${city}`);
-            return city;
+            return urlParams.get('city');
         }
 
-        // ПОЛУЧАЕМ ГОРОД ИЗ START PARAM (если есть)
-        function getCityFromStartParam() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-                debug(`Start param: ${tg.initDataUnsafe.start_param}`);
-                return tg.initDataUnsafe.start_param;
-            }
-            return null;
-        }
-
-        // ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ГОРОДА
-        function getCity() {
-            // Сначала проверяем URL (приоритет 1)
+        // ИНИЦИАЛИЗАЦИЯ ГОРОДА
+        function initializeCity() {
+            // Сначала проверяем URL
             const urlCity = getCityFromUrl();
             if (urlCity) {
                 try {
-                    const decodedCity = decodeURIComponent(urlCity);
-                    debug(`✅ Город из URL: ${decodedCity}`);
-                    return decodedCity;
+                    state.city = decodeURIComponent(urlCity);
+                    state.tempSelectedCity = state.city;
                 } catch (e) {
-                    debug(`❌ Ошибка декодирования URL: ${e}`);
+                    console.error('Ошибка декодирования города:', e);
                 }
             }
+            
+            // Обновляем отображение
+            updateCityDisplay();
+            
+            // Загружаем города в модалку
+            loadCitiesModal();
+        }
 
-            // Потом проверяем start_param (приоритет 2)
-            const startCity = getCityFromStartParam();
-            if (startCity) {
-                debug(`✅ Город из start_param: ${startCity}`);
-                return startCity;
+        // Обновление отображения города
+        function updateCityDisplay() {
+            const cityDisplay = document.getElementById('city-display');
+            if (cityDisplay) {
+                cityDisplay.textContent = state.city;
             }
-
-            // Если ничего не нашли - Москва по умолчанию
-            debug(`⚠️ Город не найден, используем Москва`);
-            return 'Москва';
         }
 
-        // УСТАНАВЛИВАЕМ ГОРОД
-        const city = getCity();
-        state.city = city;
-        
-        debug(`🏙️ ИТОГОВЫЙ ГОРОД: ${state.city}`);
-        
-        // ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
-        const cityDisplay = document.getElementById('city-display');
-        if (cityDisplay) {
-            cityDisplay.textContent = state.city;
+        // Загрузка городов в модальное окно
+        function loadCitiesModal() {
+            const grid = document.getElementById('cities-grid');
+            grid.innerHTML = CITIES.map(city => `
+                <div class="city-item ${city === state.city ? 'selected' : ''}" 
+                     onclick="selectTempCity('${city}')">
+                    ${city}
+                </div>
+            `).join('');
         }
 
-        // Меняем цвет хедера в зависимости от города (просто для красоты)
-        const cityHeader = document.getElementById('city-header');
-        if (cityHeader) {
-            // Генерируем цвет на основе названия города
-            const hue = (state.city.length * 10) % 360;
-            cityHeader.style.background = `linear-gradient(135deg, var(--tg-theme-button-color), hsl(${hue}, 70%, 50%))`;
+        // Временный выбор города в модалке
+        window.selectTempCity = function(city) {
+            state.tempSelectedCity = city;
+            
+            // Подсвечиваем выбранный город
+            document.querySelectorAll('.city-item').forEach(el => {
+                if (el.textContent.trim() === city) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+        };
+
+        // Подтверждение выбора города
+        function confirmCity() {
+            state.city = state.tempSelectedCity;
+            updateCityDisplay();
+            closeCityModal();
+            
+            // Отправляем новый город в бота (опционально)
+            const cityData = {
+                action: 'update_city',
+                city: state.city
+            };
+            tg.sendData(JSON.stringify(cityData));
+        }
+
+        // Открыть модальное окно
+        function openCityModal() {
+            state.tempSelectedCity = state.city;
+            loadCitiesModal(); // Перезагружаем с актуальным выделением
+            document.getElementById('city-modal-overlay').classList.add('show');
+        }
+
+        // Закрыть модальное окно
+        function closeCityModal() {
+            document.getElementById('city-modal-overlay').classList.remove('show');
         }
 
         // Загрузка товаров
@@ -530,6 +655,7 @@
             document.getElementById('detail-image').src = state.selectedProduct.image;
             document.getElementById('detail-title').textContent = state.selectedProduct.name;
             document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+            document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
             
             const qtyContainer = document.getElementById('quantity-buttons');
             qtyContainer.innerHTML = '';
@@ -568,32 +694,27 @@
             }
         }
 
-        // ОФОРМЛЕНИЕ ЗАКАЗА (с городом)
+        // Оформление заказа (с актуальным городом)
         function placeOrder() {
             if (!state.selectedProduct) return;
             
             const total = state.selectedProduct.price * state.selectedQuantity;
             
-            // ФОРМИРУЕМ ДАННЫЕ ЗАКАЗА С ГОРОДОМ
             const orderData = {
                 action: 'order',
                 productId: state.selectedProduct.id,
                 productName: state.selectedProduct.name,
                 quantity: state.selectedQuantity,
                 totalPrice: total,
-                city: state.city  // ВАЖНО: передаем город!
+                city: state.city  // Передаем актуальный город
             };
             
-            debug(`📦 Отправка заказа: ${JSON.stringify(orderData)}`);
-            
-            // Отправляем в бота
             tg.sendData(JSON.stringify(orderData));
             
             // Показываем подтверждение
             document.getElementById('product-screen').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
             
-            // Детали заказа
             document.getElementById('order-details').innerHTML = `
                 <div class="order-detail-item">
                     <span class="detail-label">🏙️ ГОРОД:</span>
@@ -615,6 +736,22 @@
             
             document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
         }
+
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+        
+        // Открытие модалки при клике на заголовок
+        document.getElementById('city-header').addEventListener('click', openCityModal);
+        
+        // Закрытие модалки
+        document.getElementById('close-modal-btn').addEventListener('click', closeCityModal);
+        document.getElementById('confirm-city-btn').addEventListener('click', confirmCity);
+        
+        // Закрытие по клику на оверлей
+        document.getElementById('city-modal-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('city-modal-overlay')) {
+                closeCityModal();
+            }
+        });
 
         // Навигация
         document.getElementById('back-to-catalog').addEventListener('click', () => {
@@ -639,8 +776,8 @@
         });
 
         // Инициализация
+        initializeCity();
         loadProducts();
-        debug(`🚀 Mini App готов. Город: ${state.city}`);
     </script>
 </body>
 </html>
