@@ -667,8 +667,8 @@
         });
     }
 
-    // Обработка ответов от бота через WebApp
-    tg.onEvent('web_app_data', function(event) {
+    // Обработка ответов от бота
+    window.addEventListener('message', function(event) {
         try {
             const data = JSON.parse(event.data);
             console.log('📩 Получены данные от бота:', data);
