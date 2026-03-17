@@ -683,16 +683,16 @@
             "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
         ];
 
-        // Данные товаров
+        // Данные товаров (с заглушками для изображений)
         const PRODUCTS = [
-            { id: 1, name: "Шишки 🌰", price: 3000, image: "images/Shishka.png" },
-            { id: 2, name: "Гашиш 🪴", price: 3600, image: "images/Gash.png" },
-            { id: 3, name: "Амфетамин 💊", price: 2200, image: "images/amf.png" },
-            { id: 4, name: "Экстази 🍃", price: 1200, image: "images/Eks.png" },
-            { id: 5, name: "Меф 🧂", price: 1700, image: "images/Mef.png" },
-            { id: 6, name: "А-кристалл 💎", price: 5500, image: "images/Cry.png" },
-            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "images/Mush.png" },
-            { id: 8, name: "Лирика 💧", price: 8000, image: "images/Lyr.png" },
+            { id: 1, name: "Шишки 🌰", price: 3000, image: "https://via.placeholder.com/300x200?text=🌰+Шишки" },
+            { id: 2, name: "Гашиш 🪴", price: 3600, image: "https://via.placeholder.com/300x200?text=🪴+Гашиш" },
+            { id: 3, name: "Амфетамин 💊", price: 2200, image: "https://via.placeholder.com/300x200?text=💊+Амфетамин" },
+            { id: 4, name: "Экстази 🍃", price: 1200, image: "https://via.placeholder.com/300x200?text=🍃+Экстази" },
+            { id: 5, name: "Меф 🧂", price: 1700, image: "https://via.placeholder.com/300x200?text=🧂+Меф" },
+            { id: 6, name: "А-кристалл 💎", price: 5500, image: "https://via.placeholder.com/300x200?text=💎+Кристалл" },
+            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "https://via.placeholder.com/300x200?text=🍄+Грибы" },
+            { id: 8, name: "Лирика 💧", price: 8000, image: "https://via.placeholder.com/300x200?text=💧+Лирика" },
         ];
 
         // Ключ для localStorage
@@ -857,7 +857,11 @@
                 totalPrice: totalPrice
             };
 
-            const responseHandler = (event) => {
+            // Создаем уникальный ID для этого запроса
+            const requestId = Date.now();
+            
+            // Обработчик ответа от бота
+            function messageHandler(event) {
                 try {
                     const response = JSON.parse(event.data);
                     if (response.valid !== undefined) {
@@ -876,22 +880,24 @@
                             showPromoMessage(response.message, 'error');
                             resetPromo();
                         }
+                        
+                        applyBtn.disabled = false;
+                        applyBtn.textContent = 'Применить';
+                        window.removeEventListener('message', messageHandler);
                     }
                 } catch (e) {
                     console.error('Ошибка парсинга ответа:', e);
-                } finally {
-                    applyBtn.disabled = false;
-                    applyBtn.textContent = 'Применить';
-                    window.removeEventListener('message', responseHandler);
                 }
-            };
+            }
 
-            window.addEventListener('message', responseHandler);
+            window.addEventListener('message', messageHandler);
             
+            // Отправляем запрос
             tg.sendData(JSON.stringify(checkData));
 
+            // Таймаут на случай если ответ не пришел
             setTimeout(() => {
-                window.removeEventListener('message', responseHandler);
+                window.removeEventListener('message', messageHandler);
                 applyBtn.disabled = false;
                 applyBtn.textContent = 'Применить';
                 showPromoMessage('Ошибка проверки промокода', 'error');
@@ -925,7 +931,7 @@
             const discountedPriceEl = document.getElementById('discounted-price');
             
             if (state.discount > 0) {
-                const finalPrice = originalTotal * (100 - state.discount) / 100;
+                const finalPrice = Math.round(originalTotal * (100 - state.discount) / 100);
                 originalPriceEl.textContent = `${originalTotal.toLocaleString()} ₽`;
                 originalPriceEl.classList.remove('hidden');
                 discountedPriceEl.textContent = `${finalPrice.toLocaleString()} ₽`;
@@ -990,6 +996,7 @@
                 }
             });
             
+            // Сбрасываем промокод при смене количества
             resetPromo();
             document.getElementById('promo-input').value = '';
         }
@@ -1024,11 +1031,14 @@
             
             console.log('📦 Оформление заказа:', orderData);
             
+            // Отправляем в бота
             tg.sendData(JSON.stringify(orderData));
             
+            // Показываем экран подтверждения
             document.getElementById('product-screen').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
             
+            // Заполняем детали заказа
             let orderDetails = `
                 <div class="order-detail-item">
                     <span class="detail-label">🏙️ Город:</span>
@@ -1086,6 +1096,7 @@
 
         // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
         
+        // Город
         document.getElementById('city-header').addEventListener('click', openCityModal);
         document.getElementById('close-modal-btn').addEventListener('click', closeCityModal);
         document.getElementById('confirm-city-btn').addEventListener('click', confirmCity);
@@ -1096,10 +1107,12 @@
             }
         });
 
+        // Связь с администратором
         document.getElementById('contact-admin-main').addEventListener('click', contactAdmin);
         document.getElementById('contact-admin-from-product').addEventListener('click', contactAdmin);
         document.getElementById('contact-admin-after-order').addEventListener('click', contactAdmin);
 
+        // Промокод
         document.getElementById('apply-promo-btn').addEventListener('click', applyPromoCode);
         document.getElementById('promo-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
@@ -1107,12 +1120,15 @@
             }
         });
 
+        // Навигация
         document.getElementById('back-to-catalog').addEventListener('click', goToMainScreen);
         document.getElementById('back-to-catalog-from-detail').addEventListener('click', goToMainScreen);
         document.getElementById('continue-shopping-after-order').addEventListener('click', goToMainScreen);
 
+        // Заказ
         document.getElementById('order-btn').addEventListener('click', placeOrder);
 
+        // Закрытие приложения
         document.getElementById('close-app').addEventListener('click', () => {
             tg.close();
         });
@@ -1120,6 +1136,8 @@
         // ИНИЦИАЛИЗАЦИЯ
         initializeCity();
         loadProducts();
+        
+        console.log('Mini App инициализирован, товаров загружено:', PRODUCTS.length);
     </script>
 </body>
 </html>
