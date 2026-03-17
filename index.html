@@ -6,6 +6,7 @@
     <title>SHOP • мини магазин</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Все стили остаются такими же как в предыдущей версии */
         * {
             margin: 0;
             padding: 0;
@@ -70,7 +71,6 @@
             pointer-events: none;
         }
 
-        /* Шапка с городом */
         .city-header {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -152,7 +152,6 @@
             transform: rotate(180deg);
         }
 
-        /* Модальное окно выбора города */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -263,7 +262,6 @@
             transform: scale(0.95);
         }
 
-        /* Кнопка администратора */
         .admin-button {
             width: 100%;
             padding: 16px;
@@ -293,7 +291,6 @@
             font-size: 20px;
         }
 
-        /* Сетка товаров */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -356,7 +353,6 @@
             opacity: 0.7;
         }
 
-        /* Детальная страница товара */
         .product-detail {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -400,7 +396,6 @@
             opacity: 0.7;
         }
 
-        /* Навигация */
         .nav-bar {
             display: flex;
             align-items: center;
@@ -435,7 +430,6 @@
             flex: 1;
         }
 
-        /* Выбор количества */
         .quantity-selector {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -493,7 +487,6 @@
             box-shadow: 0 10px 20px -5px var(--tg-theme-button-color);
         }
 
-        /* Промокод секция */
         .promo-section {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -594,7 +587,6 @@
             display: block;
         }
 
-        /* Общая сумма */
         .total-price {
             font-size: 32px;
             font-weight: 900;
@@ -632,7 +624,6 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Кнопки */
         .button {
             width: 100%;
             padding: 20px;
@@ -682,7 +673,6 @@
             box-shadow: var(--card-shadow);
         }
 
-        /* Экран подтверждения */
         .confirmation-screen {
             text-align: center;
             padding: 20px 20px 30px;
@@ -839,7 +829,6 @@
             50% { opacity: 0.5; }
         }
 
-        /* Loader */
         .loader {
             border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
@@ -1071,8 +1060,7 @@
             tempSelectedCity: 'Москва',
             lastOrder: null,
             appliedPromo: null,
-            isCheckingPromo: false,
-            pendingRequests: {}
+            isCheckingPromo: false
         };
 
         // ===== ФУНКЦИИ РАБОТЫ С ГОРОДОМ =====
@@ -1175,12 +1163,9 @@
 
         // ===== ФУНКЦИИ СВЯЗИ С АДМИНИСТРАТОРОМ =====
         function contactAdmin() {
-            const message = "Пользователь хочет связаться с администратором";
-            
             const data = {
                 action: 'contact_admin',
-                city: state.city,
-                message: message
+                city: state.city
             };
             
             tg.sendData(JSON.stringify(data));
@@ -1220,8 +1205,9 @@
             // Создаем уникальный ID для запроса
             const requestId = Date.now() + '_' + Math.random().toString(36);
             
-            // Сохраняем callback
-            state.pendingRequests[requestId] = {
+            // Сохраняем callback во временную переменную
+            window.currentPromoRequest = {
+                requestId: requestId,
                 resolve: function(response) {
                     if (response.success) {
                         state.appliedPromo = {
@@ -1244,15 +1230,7 @@
                     
                     state.isCheckingPromo = false;
                     applyBtn.disabled = false;
-                    delete state.pendingRequests[requestId];
-                },
-                reject: function(error) {
-                    console.error('Ошибка проверки промокода:', error);
-                    showPromoStatus('❌ Ошибка проверки промокода', 'error');
-                    state.appliedPromo = null;
-                    state.isCheckingPromo = false;
-                    applyBtn.disabled = false;
-                    delete state.pendingRequests[requestId];
+                    window.currentPromoRequest = null;
                 }
             };
 
@@ -1261,18 +1239,20 @@
                 action: 'check_promo',
                 requestId: requestId,
                 code: code,
-                productId: state.selectedProduct.id,
-                userId: initData?.user?.id
+                productId: state.selectedProduct.id
             };
             
             tg.sendData(JSON.stringify(data));
 
             // Таймаут на случай отсутствия ответа
             setTimeout(() => {
-                if (state.pendingRequests[requestId]) {
-                    state.pendingRequests[requestId].reject(new Error('Таймаут'));
+                if (window.currentPromoRequest && window.currentPromoRequest.requestId === requestId) {
+                    showPromoStatus('❌ Таймаут проверки промокода', 'error');
+                    state.isCheckingPromo = false;
+                    applyBtn.disabled = false;
+                    window.currentPromoRequest = null;
                 }
-            }, 10000);
+            }, 8000);
         }
 
         function showPromoStatus(message, type) {
@@ -1465,34 +1445,36 @@
         }
 
         // ===== ОБРАБОТКА СООБЩЕНИЙ ОТ БОТА =====
-        function handleMessageFromBot(event) {
-            console.log('Получено сообщение от бота:', event);
-            
-            try {
-                const data = JSON.parse(event.data);
+        // ВАЖНО: Правильная обработка ответов от бота
+        if (tg.onEvent) {
+            tg.onEvent('message', function(event) {
+                console.log('Получено сообщение от бота:', event);
                 
-                // Обработка ответа на промокод
-                if (data.action === 'promo_response' && data.requestId) {
-                    if (state.pendingRequests[data.requestId]) {
-                        state.pendingRequests[data.requestId].resolve(data);
+                try {
+                    // Пытаемся распарсить как JSON
+                    const data = JSON.parse(event.data);
+                    console.log('Распарсенные данные:', data);
+                    
+                    // Обработка ответа на промокод
+                    if (data.action === 'promo_response' && window.currentPromoRequest) {
+                        if (data.requestId === window.currentPromoRequest.requestId) {
+                            window.currentPromoRequest.resolve(data);
+                        }
                     }
+                    
+                    // Игнорируем другие сообщения от бота
+                    // Не показываем их пользователю
+                    
+                } catch (e) {
+                    console.log('Не удалось распарсить сообщение:', e);
+                    // Игнорируем обычные текстовые сообщения
                 }
-            } catch (e) {
-                console.log('Не удалось распарсить сообщение:', e);
-            }
+            });
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
         function init() {
-            // Устанавливаем обработчик сообщений от бота
-            if (tg.onEvent) {
-                tg.onEvent('message', handleMessageFromBot);
-            }
-            
-            // Инициализируем город
             initializeCity();
-            
-            // Загружаем товары
             loadProducts();
             
             // Устанавливаем обработчики событий
