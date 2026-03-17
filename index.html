@@ -442,239 +442,286 @@
             },
         ];
 
-        // Состояние приложения
-        let state = {
-            city: 'Москва',
-            selectedProduct: null,
-            selectedQuantity: 1,
-            tempSelectedCity: 'Москва',
-            promoCode: '',
-            discount: 0,
-            finalPrice: 0
-        };
+       // Состояние приложения
+    let state = {
+        city: 'Москва',
+        selectedProduct: null,
+        selectedQuantity: 1,
+        tempSelectedCity: 'Москва',
+        promoCode: '',
+        discount: 0,
+        finalPrice: 0
+    };
 
-        // Получаем город из URL
-        function getCityFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('city');
+    // Функция для показа сообщений
+    function showPromoMessage(text, type) {
+        const msg = document.getElementById('promo-message');
+        msg.textContent = text;
+        msg.className = `promo-message ${type}`;
+        msg.classList.remove('hidden');
+        
+        setTimeout(() => {
+            msg.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Функция применения промокода
+    function applyPromoCode() {
+        const input = document.getElementById('promo-input');
+        const code = input.value.trim().toUpperCase();
+        
+        if (!code) {
+            showPromoMessage('Введите промокод', 'error');
+            return;
         }
 
-        // Загружаем город из localStorage
-        function loadCity() {
-            const saved = localStorage.getItem('city');
-            if (saved && CITIES.includes(saved)) {
-                state.city = saved;
-            } else {
-                const urlCity = getCityFromUrl();
-                if (urlCity && CITIES.includes(urlCity)) {
-                    state.city = urlCity;
-                    localStorage.setItem('city', urlCity);
-                }
-            }
-            document.getElementById('city-display').textContent = state.city;
+        if (!state.selectedProduct) return;
+
+        const total = state.selectedProduct.price * state.selectedQuantity;
+        
+        showPromoMessage('Проверка...', '');
+        
+        // Отправляем запрос на проверку промокода
+        tg.sendData(JSON.stringify({
+            action: 'check_promo',
+            promoCode: code,
+            totalPrice: total
+        }));
+        
+        console.log('📤 Отправлен запрос на проверку промокода:', code);
+    }
+
+    // Функция обновления цены
+    function updatePrice() {
+        if (!state.selectedProduct) return;
+        const total = state.selectedProduct.price * state.selectedQuantity;
+        document.getElementById('total-price').textContent = total.toLocaleString() + ' ₽';
+    }
+
+    // Загрузка товаров
+    function loadProducts() {
+        const grid = document.getElementById('products-grid');
+        grid.innerHTML = PRODUCTS.map(p => 
+            `<div class="product-card" onclick="selectProduct(${p.id})">
+                <img class="product-image" src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=${p.name}'">
+                <div class="product-info">
+                    <div class="product-title">${p.name}</div>
+                    <div class="product-price">${p.price.toLocaleString()} ₽</div>
+                </div>
+            </div>`
+        ).join('');
+    }
+
+    // Выбор товара
+    window.selectProduct = function(id) {
+        state.selectedProduct = PRODUCTS.find(p => p.id === id);
+        state.selectedQuantity = 1;
+        state.discount = 0;
+        state.finalPrice = 0;
+        state.promoCode = '';
+        
+        document.getElementById('detail-image').src = state.selectedProduct.image;
+        document.getElementById('detail-title').textContent = state.selectedProduct.name;
+        document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+        document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
+        document.getElementById('promo-input').value = '';
+        
+        const qtyContainer = document.getElementById('quantity-buttons');
+        qtyContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            qtyContainer.innerHTML += `<button class="qty-btn ${i === 1 ? 'selected' : ''}" onclick="selectQuantity(${i})">${i} гр</button>`;
         }
+        
+        updatePrice();
+        
+        document.getElementById('main-screen').classList.add('hidden');
+        document.getElementById('product-screen').classList.remove('hidden');
+    };
 
-        // Сохраняем город
-        function saveCity(city) {
-            state.city = city;
-            localStorage.setItem('city', city);
-            document.getElementById('city-display').textContent = city;
-            closeCityModal();
-        }
-
-        // Открыть модалку городов
-        function openCityModal() {
-            const grid = document.getElementById('cities-grid');
-            grid.innerHTML = CITIES.map(city => 
-                `<div class="city-item ${city === state.city ? 'selected' : ''}" onclick="selectTempCity('${city}')">${city}</div>`
-            ).join('');
-            document.getElementById('city-modal-overlay').style.display = 'block';
-        }
-
-        function selectTempCity(city) {
-            state.tempSelectedCity = city;
-            document.querySelectorAll('.city-item').forEach(el => {
-                el.classList.remove('selected');
-                if (el.textContent === city) el.classList.add('selected');
-            });
-        }
-
-        function closeCityModal() {
-            document.getElementById('city-modal-overlay').style.display = 'none';
-        }
-
-        function confirmCity() {
-            if (state.tempSelectedCity && state.tempSelectedCity !== state.city) {
-                saveCity(state.tempSelectedCity);
-            }
-            closeCityModal();
-        }
-
-        // Связь с администратором
-        function contactAdmin() {
-            tg.sendData(JSON.stringify({
-                action: 'contact_admin',
-                city: state.city
-            }));
-            tg.showPopup({
-                title: '📞 Запрос отправлен',
-                message: 'Администратор свяжется с вами',
-                buttons: [{ type: 'ok' }]
-            });
-        }
-
-        // Применить промокод
-        function applyPromoCode() {
-            const input = document.getElementById('promo-input');
-            const code = input.value.trim().toUpperCase();
-            
-            if (!code) {
-                showPromoMessage('Введите промокод', 'error');
-                return;
-            }
-
-            if (!state.selectedProduct) return;
-
-            const total = state.selectedProduct.price * state.selectedQuantity;
-            
-            tg.sendData(JSON.stringify({
-                action: 'check_promo',
-                promoCode: code,
-                totalPrice: total
-            }));
-
-            showPromoMessage('Проверка...', '');
-        }
-
-        function showPromoMessage(text, type) {
-            const msg = document.getElementById('promo-message');
-            msg.textContent = text;
-            msg.className = `promo-message ${type}`;
-            msg.classList.remove('hidden');
-            
-            if (type === 'success' || type === 'error') {
-                setTimeout(() => {
-                    msg.classList.add('hidden');
-                }, 3000);
-            }
-        }
-
-        function updatePrice() {
-            if (!state.selectedProduct) return;
-            const total = state.selectedProduct.price * state.selectedQuantity;
-            document.getElementById('total-price').textContent = total.toLocaleString() + ' ₽';
-        }
-
-        // Загрузить товары
-        function loadProducts() {
-            const grid = document.getElementById('products-grid');
-            grid.innerHTML = PRODUCTS.map(p => 
-                `<div class="product-card" onclick="selectProduct(${p.id})">
-                    <img class="product-image" src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=${p.name}'">
-                    <div class="product-info">
-                        <div class="product-title">${p.name}</div>
-                        <div class="product-price">${p.price.toLocaleString()} ₽</div>
-                    </div>
-                </div>`
-            ).join('');
-        }
-
-        // Выбрать товар
-        window.selectProduct = function(id) {
-            state.selectedProduct = PRODUCTS.find(p => p.id === id);
-            state.selectedQuantity = 1;
-            
-            document.getElementById('detail-image').src = state.selectedProduct.image;
-            document.getElementById('detail-title').textContent = state.selectedProduct.name;
-            document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-            document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
-            
-            const qtyContainer = document.getElementById('quantity-buttons');
-            qtyContainer.innerHTML = '';
-            for (let i = 1; i <= 5; i++) {
-                qtyContainer.innerHTML += `<button class="qty-btn ${i === 1 ? 'selected' : ''}" onclick="selectQuantity(${i})">${i} гр</button>`;
-            }
-            
-            updatePrice();
-            
-            document.getElementById('main-screen').classList.add('hidden');
-            document.getElementById('product-screen').classList.remove('hidden');
-        };
-
-        function selectQuantity(qty) {
-            state.selectedQuantity = qty;
-            document.querySelectorAll('.qty-btn').forEach((btn, i) => {
-                if (i + 1 === qty) btn.classList.add('selected');
-                else btn.classList.remove('selected');
-            });
-            updatePrice();
-        }
-
-        // Оформить заказ
-        function placeOrder() {
-            if (!state.selectedProduct) return;
-            
-            const total = state.selectedProduct.price * state.selectedQuantity;
-            
-            tg.sendData(JSON.stringify({
-                action: 'order',
-                productId: state.selectedProduct.id,
-                productName: state.selectedProduct.name,
-                quantity: state.selectedQuantity,
-                totalPrice: total,
-                finalPrice: total,
-                promoCode: '',
-                discount: 0,
-                city: state.city
-            }));
-            
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('confirmation-screen').classList.remove('hidden');
-            
-            document.getElementById('order-details').innerHTML = `
-                <div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
-                <div class="order-detail-item"><span>📦 Товар</span><span>${state.selectedProduct.name}</span></div>
-                <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>
-                <div class="order-detail-item"><span>💰 Цена за грамм</span><span>${state.selectedProduct.price.toLocaleString()} ₽</span></div>
-                <div class="order-detail-item"><span>💵 Итого</span><span>${total.toLocaleString()} ₽</span></div>
-            `;
-            document.getElementById('confirmation-total').textContent = total.toLocaleString() + ' ₽';
-        }
-
-        // Навигация
-        function goToMainScreen() {
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('confirmation-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        }
-
-        // Обработка данных от бота
-        tg.onEvent('message', function(event) {
-            try {
-                const data = JSON.parse(event.data);
-                if (data.valid !== undefined) {
-                    if (data.valid) {
-                        state.discount = data.discount;
-                        state.finalPrice = data.finalPrice;
-                        state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
-                        
-                        const total = state.selectedProduct.price * state.selectedQuantity;
-                        const newTotal = data.finalPrice;
-                        
-                        document.getElementById('total-price').innerHTML = 
-                            `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
-                        
-                        showPromoMessage(data.message, 'success');
-                    } else {
-                        showPromoMessage(data.message, 'error');
-                    }
-                }
-            } catch (e) {}
+    function selectQuantity(qty) {
+        state.selectedQuantity = qty;
+        document.querySelectorAll('.qty-btn').forEach((btn, i) => {
+            if (i + 1 === qty) btn.classList.add('selected');
+            else btn.classList.remove('selected');
         });
+        
+        // Сбрасываем промокод при смене количества
+        state.discount = 0;
+        state.finalPrice = 0;
+        state.promoCode = '';
+        document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+    }
 
-        // Инициализация
-        loadCity();
-        loadProducts();
-    </script>
+    // Оформление заказа
+    function placeOrder() {
+        if (!state.selectedProduct) return;
+        
+        const total = state.selectedProduct.price * state.selectedQuantity;
+        const finalTotal = state.discount > 0 ? state.finalPrice : total;
+        
+        tg.sendData(JSON.stringify({
+            action: 'order',
+            productId: state.selectedProduct.id,
+            productName: state.selectedProduct.name,
+            quantity: state.selectedQuantity,
+            totalPrice: total,
+            finalPrice: finalTotal,
+            promoCode: state.promoCode,
+            discount: state.discount,
+            city: state.city
+        }));
+        
+        document.getElementById('product-screen').classList.add('hidden');
+        document.getElementById('confirmation-screen').classList.remove('hidden');
+        
+        let orderDetails = `
+            <div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
+            <div class="order-detail-item"><span>📦 Товар</span><span>${state.selectedProduct.name}</span></div>
+            <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>
+            <div class="order-detail-item"><span>💰 Цена за грамм</span><span>${state.selectedProduct.price.toLocaleString()} ₽</span></div>
+        `;
+        
+        if (state.promoCode) {
+            orderDetails += `
+                <div class="order-detail-item"><span>🎫 Промокод</span><span>${state.promoCode} (-${state.discount}%)</span></div>
+                <div class="order-detail-item"><span>💵 Итого со скидкой</span><span>${finalTotal.toLocaleString()} ₽</span></div>
+            `;
+        } else {
+            orderDetails += `<div class="order-detail-item"><span>💵 Итого</span><span>${total.toLocaleString()} ₽</span></div>`;
+        }
+        
+        document.getElementById('order-details').innerHTML = orderDetails;
+        document.getElementById('confirmation-total').textContent = finalTotal.toLocaleString() + ' ₽';
+    }
+
+    // Навигация
+    function goToMainScreen() {
+        document.getElementById('product-screen').classList.add('hidden');
+        document.getElementById('confirmation-screen').classList.add('hidden');
+        document.getElementById('main-screen').classList.remove('hidden');
+    }
+
+    // Функции для работы с городом
+    function getCityFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('city');
+    }
+
+    function loadCity() {
+        const saved = localStorage.getItem('city');
+        if (saved && CITIES.includes(saved)) {
+            state.city = saved;
+        } else {
+            const urlCity = getCityFromUrl();
+            if (urlCity && CITIES.includes(urlCity)) {
+                state.city = urlCity;
+                localStorage.setItem('city', urlCity);
+            }
+        }
+        document.getElementById('city-display').textContent = state.city;
+    }
+
+    function saveCity(city) {
+        state.city = city;
+        localStorage.setItem('city', city);
+        document.getElementById('city-display').textContent = city;
+        closeCityModal();
+    }
+
+    function openCityModal() {
+        const grid = document.getElementById('cities-grid');
+        grid.innerHTML = CITIES.map(city => 
+            `<div class="city-item ${city === state.city ? 'selected' : ''}" onclick="selectTempCity('${city}')">${city}</div>`
+        ).join('');
+        document.getElementById('city-modal-overlay').style.display = 'block';
+    }
+
+    function selectTempCity(city) {
+        state.tempSelectedCity = city;
+        document.querySelectorAll('.city-item').forEach(el => {
+            el.classList.remove('selected');
+            if (el.textContent === city) el.classList.add('selected');
+        });
+    }
+
+    function closeCityModal() {
+        document.getElementById('city-modal-overlay').style.display = 'none';
+    }
+
+    function confirmCity() {
+        if (state.tempSelectedCity && state.tempSelectedCity !== state.city) {
+            saveCity(state.tempSelectedCity);
+        }
+        closeCityModal();
+    }
+
+    function contactAdmin() {
+        tg.sendData(JSON.stringify({
+            action: 'contact_admin',
+            city: state.city
+        }));
+        tg.showPopup({
+            title: '📞 Запрос отправлен',
+            message: 'Администратор свяжется с вами',
+            buttons: [{ type: 'ok' }]
+        });
+    }
+
+    // Обработка ответов от бота через WebApp
+    tg.onEvent('web_app_data', function(event) {
+        try {
+            const data = JSON.parse(event.data);
+            console.log('📩 Получены данные от бота:', data);
+            
+            if (data.valid !== undefined) {
+                if (data.valid) {
+                    state.discount = data.discount;
+                    state.finalPrice = data.finalPrice;
+                    state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
+                    
+                    const total = state.selectedProduct.price * state.selectedQuantity;
+                    const newTotal = data.finalPrice;
+                    
+                    document.getElementById('total-price').innerHTML = 
+                        `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
+                    
+                    showPromoMessage(data.message, 'success');
+                } else {
+                    showPromoMessage(data.message, 'error');
+                }
+            }
+        } catch (e) {
+            console.error('Ошибка парсинга ответа:', e);
+        }
+    });
+
+    // Инициализация
+    loadCity();
+    loadProducts();
+
+    // Привязка обработчиков к кнопкам
+    document.getElementById('city-header').onclick = openCityModal;
+    document.getElementById('close-modal-btn').onclick = closeCityModal;
+    document.getElementById('confirm-city-btn').onclick = confirmCity;
+    document.getElementById('contact-admin-main').onclick = contactAdmin;
+    document.getElementById('contact-admin-from-product').onclick = contactAdmin;
+    document.getElementById('contact-admin-after-order').onclick = contactAdmin;
+    document.getElementById('apply-promo-btn').onclick = applyPromoCode;
+    document.getElementById('back-to-catalog').onclick = goToMainScreen;
+    document.getElementById('back-to-catalog-from-detail').onclick = goToMainScreen;
+    document.getElementById('continue-shopping-after-order').onclick = goToMainScreen;
+    document.getElementById('order-btn').onclick = placeOrder;
+    document.getElementById('close-app').onclick = () => tg.close();
+    
+    document.getElementById('promo-input').onkeypress = (e) => {
+        if (e.key === 'Enter') applyPromoCode();
+    };
+
+    document.getElementById('city-modal-overlay').onclick = (e) => {
+        if (e.target === document.getElementById('city-modal-overlay')) {
+            closeCityModal();
+        }
+    };
+</script>
 </body>
 </html>
