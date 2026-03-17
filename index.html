@@ -442,7 +442,7 @@
             },
         ];
 
-       // Состояние приложения
+      // Состояние приложения
     let state = {
         city: 'Москва',
         selectedProduct: null,
@@ -450,7 +450,8 @@
         tempSelectedCity: 'Москва',
         promoCode: '',
         discount: 0,
-        finalPrice: 0
+        finalPrice: 0,
+        lastMessageId: 0
     };
 
     // Функция для показа сообщений
@@ -464,6 +465,44 @@
             msg.classList.add('hidden');
         }, 3000);
     }
+
+    // Функция для получения последних сообщений из чата
+    async function checkForPromoResponse() {
+        // Этот метод требует доступа к API Telegram, что невозможно из Mini App
+        // Вместо этого мы будем использовать глобальный обработчик
+    }
+
+    // Глобальный обработчик сообщений от бота
+    window.addEventListener('message', function(event) {
+        try {
+            console.log('Получено сообщение:', event.data);
+            
+            // Проверяем, есть ли в сообщении наш специальный префикс
+            if (typeof event.data === 'string' && event.data.startsWith('🔹ПРОМО🔹')) {
+                const jsonStr = event.data.replace('🔹ПРОМО🔹', '');
+                const data = JSON.parse(jsonStr);
+                console.log('Промо-ответ:', data);
+                
+                if (data.valid) {
+                    state.discount = data.discount;
+                    state.finalPrice = data.finalPrice;
+                    state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
+                    
+                    const total = state.selectedProduct.price * state.selectedQuantity;
+                    const newTotal = data.finalPrice;
+                    
+                    document.getElementById('total-price').innerHTML = 
+                        `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
+                    
+                    showPromoMessage(data.message, 'success');
+                } else {
+                    showPromoMessage(data.message, 'error');
+                }
+            }
+        } catch (e) {
+            console.error('Ошибка обработки сообщения:', e);
+        }
+    });
 
     // Функция применения промокода
     function applyPromoCode() {
@@ -479,7 +518,7 @@
 
         const total = state.selectedProduct.price * state.selectedQuantity;
         
-        showPromoMessage('Проверка...', '');
+        showPromoMessage('Отправка...', '');
         
         // Отправляем запрос на проверку промокода
         tg.sendData(JSON.stringify({
@@ -489,13 +528,20 @@
         }));
         
         console.log('📤 Отправлен запрос на проверку промокода:', code);
+        
+        // Показываем подсказку
+        tg.showPopup({
+            title: '🎫 Промокод отправлен',
+            message: 'Подождите несколько секунд, ответ появится здесь',
+            buttons: [{ type: 'ok' }]
+        });
     }
 
     // Функция обновления цены
     function updatePrice() {
         if (!state.selectedProduct) return;
         const total = state.selectedProduct.price * state.selectedQuantity;
-        document.getElementById('total-price').textContent = total.toLocaleString() + ' ₽';
+        document.getElementById('total-price').innerHTML = total.toLocaleString() + ' ₽';
     }
 
     // Загрузка товаров
@@ -549,7 +595,7 @@
         state.discount = 0;
         state.finalPrice = 0;
         state.promoCode = '';
-        document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+        updatePrice();
     }
 
     // Оформление заказа
@@ -667,34 +713,6 @@
         });
     }
 
-    // Обработка ответов от бота
-    window.addEventListener('message', function(event) {
-        try {
-            const data = JSON.parse(event.data);
-            console.log('📩 Получены данные от бота:', data);
-            
-            if (data.valid !== undefined) {
-                if (data.valid) {
-                    state.discount = data.discount;
-                    state.finalPrice = data.finalPrice;
-                    state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
-                    
-                    const total = state.selectedProduct.price * state.selectedQuantity;
-                    const newTotal = data.finalPrice;
-                    
-                    document.getElementById('total-price').innerHTML = 
-                        `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
-                    
-                    showPromoMessage(data.message, 'success');
-                } else {
-                    showPromoMessage(data.message, 'error');
-                }
-            }
-        } catch (e) {
-            console.error('Ошибка парсинга ответа:', e);
-        }
-    });
-
     // Инициализация
     loadCity();
     loadProducts();
@@ -722,6 +740,8 @@
             closeCityModal();
         }
     };
+
+    console.log('Mini App инициализирован, ждем сообщения от бота...');
 </script>
 </body>
 </html>
