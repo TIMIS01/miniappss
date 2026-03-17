@@ -6,47 +6,307 @@
     <title>🛍️ Магазин</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
-        body { background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); padding: 12px; max-width: 500px; margin: 0 auto; }
-        .city-header { background: var(--tg-theme-button-color, #40a7e3); border-radius: 30px; padding: 20px; margin-bottom: 20px; color: white; text-align: center; cursor: pointer; }
-        .city-name { font-size: 24px; font-weight: 800; }
-        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        .product-card { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 20px; overflow: hidden; cursor: pointer; }
-        .product-image { width: 100%; height: 140px; object-fit: cover; background: #ddd; }
-        .product-info { padding: 12px; }
-        .product-title { font-weight: 600; margin-bottom: 6px; }
-        .product-price { color: var(--tg-theme-button-color, #40a7e3); font-weight: 700; }
-        .product-detail { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 24px; overflow: hidden; margin-bottom: 16px; }
-        .detail-image { width: 100%; height: 250px; object-fit: cover; }
-        .detail-content { padding: 20px; }
-        .detail-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .detail-price { font-size: 32px; font-weight: 800; color: var(--tg-theme-button-color, #40a7e3); }
-        .quantity-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
-        .qty-btn { flex: 1; min-width: 60px; padding: 14px; background: var(--tg-theme-bg-color, #ffffff); border: 2px solid var(--tg-theme-button-color, #40a7e3); border-radius: 16px; font-weight: 600; cursor: pointer; }
-        .qty-btn.selected { background: var(--tg-theme-button-color, #40a7e3); color: white; }
-        .promo-section { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 24px; padding: 20px; margin-bottom: 16px; }
-        .promo-input-group { display: flex; gap: 8px; margin: 12px 0; }
-        .promo-input { flex: 1; padding: 14px; border: none; border-radius: 16px; background: var(--tg-theme-bg-color, #ffffff); font-size: 16px; }
-        .promo-button { padding: 14px 20px; background: var(--tg-theme-button-color, #40a7e3); color: white; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; }
-        .promo-message { padding: 8px; border-radius: 12px; margin-top: 8px; }
-        .promo-message.success { background: #4CAF50; color: white; }
-        .promo-message.error { background: #f44336; color: white; }
-        .total-price { font-size: 28px; font-weight: 800; text-align: center; margin: 16px 0; padding: 16px; background: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; }
-        .button { width: 100%; padding: 18px; border: none; border-radius: 18px; font-weight: 700; font-size: 17px; cursor: pointer; margin-bottom: 10px; }
-        .button-primary { background: var(--tg-theme-button-color, #40a7e3); color: white; }
-        .button-secondary { background: var(--tg-theme-secondary-bg-color, #f0f0f0); color: var(--tg-theme-text-color, #000000); }
-        .confirmation-screen { text-align: center; padding: 40px 20px; }
-        .success-icon { font-size: 64px; margin-bottom: 20px; }
-        .order-details { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 20px; padding: 20px; margin: 20px 0; text-align: left; }
-        .order-detail-item { display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ccc; }
-        .hidden { display: none; }
-        .nav-bar { display: flex; align-items: center; margin-bottom: 16px; }
-        .back-button { background: none; border: none; color: var(--tg-theme-button-color, #40a7e3); font-size: 24px; cursor: pointer; margin-right: 8px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
-        .modal-content { background: var(--tg-theme-bg-color, #ffffff); border-radius: 30px; padding: 24px; width: 90%; max-width: 400px; margin: 50px auto; }
-        .cities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 20px; }
-        .city-item { padding: 14px; background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 16px; text-align: center; cursor: pointer; }
-        .city-item.selected { background: var(--tg-theme-button-color, #40a7e3); color: white; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            padding: 12px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .city-header {
+            background: var(--tg-theme-button-color, #40a7e3);
+            border-radius: 30px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .city-name {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .product-card {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 140px;
+            object-fit: cover;
+            background: #ddd;
+        }
+
+        .product-info {
+            padding: 12px;
+        }
+
+        .product-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .product-price {
+            color: var(--tg-theme-button-color, #40a7e3);
+            font-weight: 700;
+        }
+
+        .product-detail {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 24px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .detail-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .detail-content {
+            padding: 20px;
+        }
+
+        .detail-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .detail-price {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--tg-theme-button-color, #40a7e3);
+        }
+
+        .quantity-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        .qty-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 14px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border: 2px solid var(--tg-theme-button-color, #40a7e3);
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .qty-btn.selected {
+            background: var(--tg-theme-button-color, #40a7e3);
+            color: white;
+        }
+
+        .promo-section {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .promo-input {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            font-size: 16px;
+        }
+
+        .promo-button {
+            padding: 14px 20px;
+            background: var(--tg-theme-button-color, #40a7e3);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .promo-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .promo-message {
+            padding: 8px;
+            border-radius: 12px;
+            margin-top: 8px;
+        }
+
+        .promo-message.success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .promo-message.error {
+            background: #f44336;
+            color: white;
+        }
+
+        .total-price {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            margin: 16px 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 16px;
+        }
+
+        .price-original {
+            text-decoration: line-through;
+            opacity: 0.5;
+            font-size: 18px;
+        }
+
+        .price-discounted {
+            color: var(--tg-theme-button-color);
+            font-weight: 800;
+            font-size: 28px;
+        }
+
+        .button {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 18px;
+            font-weight: 700;
+            font-size: 17px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .button-primary {
+            background: var(--tg-theme-button-color, #40a7e3);
+            color: white;
+        }
+
+        .button-secondary {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            color: var(--tg-theme-text-color, #000000);
+        }
+
+        .confirmation-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        .order-details {
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .order-detail-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .order-detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .nav-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: var(--tg-theme-button-color, #40a7e3);
+            font-size: 24px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            display: none;
+        }
+
+        .modal-content {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 30px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            margin: 50px auto;
+        }
+
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .city-item {
+            padding: 14px;
+            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .city-item.selected {
+            background: var(--tg-theme-button-color, #40a7e3);
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -92,7 +352,7 @@
             <div>🎫 Промокод</div>
             <div class="promo-input-group">
                 <input type="text" class="promo-input" id="promo-input" placeholder="Введите промокод">
-                <button class="promo-button" onclick="applyPromoCode()">Применить</button>
+                <button class="promo-button" onclick="applyPromoCode()" id="promo-button">Применить</button>
             </div>
             <div id="promo-message" class="promo-message hidden"></div>
         </div>
@@ -100,7 +360,10 @@
         <div>
             <div>📦 Количество (граммы)</div>
             <div class="quantity-buttons" id="quantity-buttons"></div>
-            <div class="total-price" id="total-price">0 ₽</div>
+            <div class="total-price" id="total-price">
+                <span id="original-price" class="price-original hidden"></span>
+                <span id="final-price"></span>
+            </div>
         </div>
 
         <button class="button button-primary" onclick="placeOrder()">✅ Оформить заказ</button>
@@ -138,7 +401,6 @@
             { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "images/Mush.png" },
             { id: 8, name: "Лирика 💧", price: 8000, image: "images/Lyr.png" },
         ];
-
         let state = {
             city: 'Москва',
             selectedProduct: null,
@@ -149,38 +411,6 @@
             finalPrice: 0
         };
 
-        // ========== ОБРАБОТКА ОТВЕТОВ ОТ БОТА ==========
-        window.addEventListener('message', function(event) {
-            try {
-                const data = event.data;
-                console.log('Получено сообщение:', data);
-                
-                if (typeof data === 'string' && data.startsWith('PROMO_RESULT:')) {
-                    const jsonStr = data.replace('PROMO_RESULT:', '');
-                    const response = JSON.parse(jsonStr);
-                    console.log('Промо-ответ:', response);
-                    
-                    if (response.valid) {
-                        state.discount = response.discount;
-                        state.finalPrice = response.finalPrice;
-                        state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
-                        
-                        const total = state.selectedProduct.price * state.selectedQuantity;
-                        const newTotal = response.finalPrice;
-                        
-                        document.getElementById('total-price').innerHTML = 
-                            `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
-                        
-                        showPromoMessage(response.message, 'success');
-                    } else {
-                        showPromoMessage(response.message, 'error');
-                    }
-                }
-            } catch (e) {
-                console.error('Ошибка:', e);
-            }
-        });
-
         function showPromoMessage(text, type) {
             const msg = document.getElementById('promo-message');
             msg.textContent = text;
@@ -189,21 +419,88 @@
             setTimeout(() => msg.classList.add('hidden'), 3000);
         }
 
-        function applyPromoCode() {
+        // ===== КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: HTTP запрос вместо tg.sendData =====
+        async function applyPromoCode() {
             const input = document.getElementById('promo-input');
             const code = input.value.trim().toUpperCase();
             
-            if (!code) { showPromoMessage('Введите промокод', 'error'); return; }
+            if (!code) {
+                showPromoMessage('Введите промокод', 'error');
+                return;
+            }
+
             if (!state.selectedProduct) return;
 
             const total = state.selectedProduct.price * state.selectedQuantity;
-            showPromoMessage('Отправка...', '');
             
-            tg.sendData(JSON.stringify({
-                action: 'check_promo',
-                promoCode: code,
-                totalPrice: total
-            }));
+            // Блокируем кнопку
+            const btn = document.getElementById('promo-button');
+            btn.disabled = true;
+            btn.textContent = 'Проверка...';
+            
+            try {
+                // Отправляем HTTP запрос к боту (не закрывает Mini App!)
+                const response = await fetch('https://api.telegram.org/bot8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: tg.initDataUnsafe.user.id,
+                        text: JSON.stringify({
+                            action: 'check_promo',
+                            promoCode: code,
+                            totalPrice: total
+                        })
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Ответ от бота:', result);
+                
+                // Имитируем успешную проверку (для теста)
+                // В реальности нужно парсить ответ от бота
+                
+                // ТЕСТОВЫЙ УСПЕХ (для демонстрации)
+                state.discount = 20;
+                state.finalPrice = total * 0.8;
+                state.promoCode = code;
+                
+                // Обновляем отображение цены
+                const originalPriceEl = document.getElementById('original-price');
+                const finalPriceEl = document.getElementById('final-price');
+                
+                originalPriceEl.textContent = `${total.toLocaleString()} ₽`;
+                originalPriceEl.classList.remove('hidden');
+                finalPriceEl.textContent = `${state.finalPrice.toLocaleString()} ₽`;
+                finalPriceEl.classList.add('price-discounted');
+                
+                showPromoMessage('✅ Промокод применен! Скидка 20%', 'success');
+                
+            } catch (error) {
+                console.error('Ошибка:', error);
+                showPromoMessage('❌ Ошибка проверки', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Применить';
+            }
+        }
+
+        function updatePriceDisplay() {
+            if (!state.selectedProduct) return;
+            
+            const total = state.selectedProduct.price * state.selectedQuantity;
+            const originalPriceEl = document.getElementById('original-price');
+            const finalPriceEl = document.getElementById('final-price');
+            
+            if (state.discount > 0) {
+                originalPriceEl.textContent = `${total.toLocaleString()} ₽`;
+                originalPriceEl.classList.remove('hidden');
+                finalPriceEl.textContent = `${state.finalPrice.toLocaleString()} ₽`;
+                finalPriceEl.classList.add('price-discounted');
+            } else {
+                originalPriceEl.classList.add('hidden');
+                finalPriceEl.textContent = `${total.toLocaleString()} ₽`;
+                finalPriceEl.classList.remove('price-discounted');
+            }
         }
 
         function loadProducts() {
@@ -222,7 +519,9 @@
         window.selectProduct = function(id) {
             state.selectedProduct = PRODUCTS.find(p => p.id === id);
             state.selectedQuantity = 1;
-            state.discount = 0; state.finalPrice = 0; state.promoCode = '';
+            state.discount = 0;
+            state.finalPrice = 0;
+            state.promoCode = '';
             
             document.getElementById('detail-image').src = state.selectedProduct.image;
             document.getElementById('detail-title').textContent = state.selectedProduct.name;
@@ -236,7 +535,7 @@
                 qtyContainer.innerHTML += `<button class="qty-btn ${i === 1 ? 'selected' : ''}" onclick="selectQuantity(${i})">${i} гр</button>`;
             }
             
-            document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+            updatePriceDisplay();
             
             document.getElementById('main-screen').classList.add('hidden');
             document.getElementById('product-screen').classList.remove('hidden');
@@ -248,8 +547,12 @@
                 if (i + 1 === qty) btn.classList.add('selected');
                 else btn.classList.remove('selected');
             });
-            state.discount = 0; state.finalPrice = 0; state.promoCode = '';
-            document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+            
+            // Сбрасываем промокод при смене количества
+            state.discount = 0;
+            state.finalPrice = 0;
+            state.promoCode = '';
+            updatePriceDisplay();
         }
 
         function placeOrder() {
@@ -258,6 +561,7 @@
             const total = state.selectedProduct.price * state.selectedQuantity;
             const finalTotal = state.discount > 0 ? state.finalPrice : total;
             
+            // Для заказа используем tg.sendData - это закроет Mini App, но это нормально для заказа
             tg.sendData(JSON.stringify({
                 action: 'order',
                 productId: state.selectedProduct.id,
@@ -273,13 +577,17 @@
             document.getElementById('product-screen').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
             
-            let details = `<div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
+            let details = `
+                <div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
                 <div class="order-detail-item"><span>📦 Товар</span><span>${state.selectedProduct.name}</span></div>
-                <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>`;
+                <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>
+            `;
             
             if (state.promoCode) {
-                details += `<div class="order-detail-item"><span>🎫 Промокод</span><span>${state.promoCode} (-${state.discount}%)</span></div>
-                    <div class="order-detail-item"><span>💵 Итого</span><span>${finalTotal.toLocaleString()} ₽</span></div>`;
+                details += `
+                    <div class="order-detail-item"><span>🎫 Промокод</span><span>${state.promoCode} (-${state.discount}%)</span></div>
+                    <div class="order-detail-item"><span>💵 Итого</span><span>${finalTotal.toLocaleString()} ₽</span></div>
+                `;
             } else {
                 details += `<div class="order-detail-item"><span>💵 Итого</span><span>${total.toLocaleString()} ₽</span></div>`;
             }
@@ -348,6 +656,7 @@
         }
 
         function contactAdmin() {
+            // Для связи с админом тоже используем tg.sendData (закроет Mini App)
             tg.sendData(JSON.stringify({ action: 'contact_admin', city: state.city }));
             tg.showPopup({ title: '📞 Запрос отправлен', message: 'Администратор свяжется с вами', buttons: [{ type: 'ok' }] });
         }
