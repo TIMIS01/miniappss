@@ -6,303 +6,53 @@
     <title>🛍️ Магазин</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        body {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 12px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        .city-header {
-            background: var(--tg-theme-button-color, #40a7e3);
-            border-radius: 30px;
-            padding: 20px;
-            margin-bottom: 20px;
-            color: white;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .city-name {
-            font-size: 24px;
-            font-weight: 800;
-        }
-
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .product-card {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 20px;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .product-image {
-            width: 100%;
-            height: 140px;
-            object-fit: cover;
-            background: #ddd;
-        }
-
-        .product-info {
-            padding: 12px;
-        }
-
-        .product-title {
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .product-price {
-            color: var(--tg-theme-button-color, #40a7e3);
-            font-weight: 700;
-        }
-
-        .product-detail {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 24px;
-            overflow: hidden;
-            margin-bottom: 16px;
-        }
-
-        .detail-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-        }
-
-        .detail-content {
-            padding: 20px;
-        }
-
-        .detail-title {
-            font-size: 24px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .detail-price {
-            font-size: 32px;
-            font-weight: 800;
-            color: var(--tg-theme-button-color, #40a7e3);
-        }
-
-        .quantity-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 16px 0;
-        }
-
-        .qty-btn {
-            flex: 1;
-            min-width: 60px;
-            padding: 14px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            border: 2px solid var(--tg-theme-button-color, #40a7e3);
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .qty-btn.selected {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: white;
-        }
-
-        .promo-section {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-
-        .promo-input-group {
-            display: flex;
-            gap: 8px;
-            margin: 12px 0;
-        }
-
-        .promo-input {
-            flex: 1;
-            padding: 14px;
-            border: none;
-            border-radius: 16px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            font-size: 16px;
-        }
-
-        .promo-button {
-            padding: 14px 20px;
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .promo-message {
-            padding: 8px;
-            border-radius: 12px;
-            margin-top: 8px;
-        }
-
-        .promo-message.success {
-            background: #4CAF50;
-            color: white;
-        }
-
-        .promo-message.error {
-            background: #f44336;
-            color: white;
-        }
-
-        .total-price {
-            font-size: 28px;
-            font-weight: 800;
-            text-align: center;
-            margin: 16px 0;
-            padding: 16px;
-            background: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 16px;
-        }
-
-        .button {
-            width: 100%;
-            padding: 18px;
-            border: none;
-            border-radius: 18px;
-            font-weight: 700;
-            font-size: 17px;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-
-        .button-primary {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: white;
-        }
-
-        .button-secondary {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000000);
-        }
-
-        .confirmation-screen {
-            text-align: center;
-            padding: 40px 20px;
-        }
-
-        .success-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-        }
-
-        .order-details {
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 20px;
-            padding: 20px;
-            margin: 20px 0;
-            text-align: left;
-        }
-
-        .order-detail-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .order-detail-item:last-child {
-            border-bottom: none;
-        }
-
-        .hidden {
-            display: none;
-        }
-
-        .nav-bar {
-            display: flex;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .back-button {
-            background: none;
-            border: none;
-            color: var(--tg-theme-button-color, #40a7e3);
-            font-size: 24px;
-            cursor: pointer;
-            margin-right: 8px;
-        }
-
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: 1000;
-            display: none;
-        }
-
-        .modal-content {
-            background: var(--tg-theme-bg-color, #ffffff);
-            border-radius: 30px;
-            padding: 24px;
-            width: 90%;
-            max-width: 400px;
-            margin: 50px auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .cities-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .city-item {
-            padding: 14px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 16px;
-            text-align: center;
-            cursor: pointer;
-        }
-
-        .city-item.selected {
-            background: var(--tg-theme-button-color, #40a7e3);
-            color: white;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        body { background-color: var(--tg-theme-bg-color, #ffffff); color: var(--tg-theme-text-color, #000000); padding: 12px; max-width: 500px; margin: 0 auto; }
+        .city-header { background: var(--tg-theme-button-color, #40a7e3); border-radius: 30px; padding: 20px; margin-bottom: 20px; color: white; text-align: center; cursor: pointer; }
+        .city-name { font-size: 24px; font-weight: 800; }
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
+        .product-card { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 20px; overflow: hidden; cursor: pointer; }
+        .product-image { width: 100%; height: 140px; object-fit: cover; background: #ddd; }
+        .product-info { padding: 12px; }
+        .product-title { font-weight: 600; margin-bottom: 6px; }
+        .product-price { color: var(--tg-theme-button-color, #40a7e3); font-weight: 700; }
+        .product-detail { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 24px; overflow: hidden; margin-bottom: 16px; }
+        .detail-image { width: 100%; height: 250px; object-fit: cover; }
+        .detail-content { padding: 20px; }
+        .detail-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .detail-price { font-size: 32px; font-weight: 800; color: var(--tg-theme-button-color, #40a7e3); }
+        .quantity-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin: 16px 0; }
+        .qty-btn { flex: 1; min-width: 60px; padding: 14px; background: var(--tg-theme-bg-color, #ffffff); border: 2px solid var(--tg-theme-button-color, #40a7e3); border-radius: 16px; font-weight: 600; cursor: pointer; }
+        .qty-btn.selected { background: var(--tg-theme-button-color, #40a7e3); color: white; }
+        .promo-section { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 24px; padding: 20px; margin-bottom: 16px; }
+        .promo-input-group { display: flex; gap: 8px; margin: 12px 0; }
+        .promo-input { flex: 1; padding: 14px; border: none; border-radius: 16px; background: var(--tg-theme-bg-color, #ffffff); font-size: 16px; }
+        .promo-button { padding: 14px 20px; background: var(--tg-theme-button-color, #40a7e3); color: white; border: none; border-radius: 16px; font-weight: 600; cursor: pointer; }
+        .promo-message { padding: 8px; border-radius: 12px; margin-top: 8px; }
+        .promo-message.success { background: #4CAF50; color: white; }
+        .promo-message.error { background: #f44336; color: white; }
+        .total-price { font-size: 28px; font-weight: 800; text-align: center; margin: 16px 0; padding: 16px; background: var(--tg-theme-bg-color, #ffffff); border-radius: 16px; }
+        .button { width: 100%; padding: 18px; border: none; border-radius: 18px; font-weight: 700; font-size: 17px; cursor: pointer; margin-bottom: 10px; }
+        .button-primary { background: var(--tg-theme-button-color, #40a7e3); color: white; }
+        .button-secondary { background: var(--tg-theme-secondary-bg-color, #f0f0f0); color: var(--tg-theme-text-color, #000000); }
+        .confirmation-screen { text-align: center; padding: 40px 20px; }
+        .success-icon { font-size: 64px; margin-bottom: 20px; }
+        .order-details { background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 20px; padding: 20px; margin: 20px 0; text-align: left; }
+        .order-detail-item { display: flex; justify-content: space-between; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ccc; }
+        .hidden { display: none; }
+        .nav-bar { display: flex; align-items: center; margin-bottom: 16px; }
+        .back-button { background: none; border: none; color: var(--tg-theme-button-color, #40a7e3); font-size: 24px; cursor: pointer; margin-right: 8px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
+        .modal-content { background: var(--tg-theme-bg-color, #ffffff); border-radius: 30px; padding: 24px; width: 90%; max-width: 400px; margin: 50px auto; }
+        .cities-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 20px; }
+        .city-item { padding: 14px; background: var(--tg-theme-secondary-bg-color, #f0f0f0); border-radius: 16px; text-align: center; cursor: pointer; }
+        .city-item.selected { background: var(--tg-theme-button-color, #40a7e3); color: white; }
     </style>
 </head>
 <body>
-    <!-- Модальное окно выбора города -->
     <div class="modal-overlay" id="city-modal-overlay">
         <div class="modal-content">
-            <div class="modal-header">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                 <h3>🏙️ Выберите город</h3>
                 <button onclick="closeCityModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">×</button>
             </div>
@@ -311,7 +61,6 @@
         </div>
     </div>
 
-    <!-- Главный экран -->
     <div id="main-screen">
         <div class="city-header" onclick="openCityModal()">
             <div>🏙️ ВАШ ГОРОД</div>
@@ -325,7 +74,6 @@
         <div class="products-grid" id="products-grid"></div>
     </div>
 
-    <!-- Экран товара -->
     <div id="product-screen" class="hidden">
         <div class="nav-bar">
             <button class="back-button" onclick="goToMainScreen()">←</button>
@@ -340,7 +88,6 @@
             </div>
         </div>
 
-        <!-- Секция промокода -->
         <div class="promo-section">
             <div>🎫 Промокод</div>
             <div class="promo-input-group">
@@ -361,15 +108,12 @@
         <button class="button button-secondary" onclick="goToMainScreen()">⬅️ Продолжить покупки</button>
     </div>
 
-    <!-- Экран подтверждения заказа -->
     <div id="confirmation-screen" class="hidden">
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
             <h2>Заказ оформлен!</h2>
-            
             <div class="order-details" id="order-details"></div>
             <div class="total-price" id="confirmation-total">0 ₽</div>
-
             <div style="margin-top: 20px;">
                 <button class="button button-primary" onclick="contactAdmin()">📞 Написать администратору</button>
                 <button class="button button-secondary" onclick="goToMainScreen()">🛍️ Продолжить покупки</button>
@@ -378,370 +122,255 @@
     </div>
 
     <script>
-        // Инициализация Telegram Web App
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Список городов
-        const CITIES = [
-            "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
-            "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
-            "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
-        ];
+        const CITIES = ["Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань", "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону", "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"];
 
-        // Данные товаров С КАРТИНКАМИ
         const PRODUCTS = [
-            { 
-                id: 1, 
-                name: "Шишки 🌰", 
-                price: 3000, 
-                image: "images/Shishka.png"
-            },
-            { 
-                id: 2, 
-                name: "Гашиш 🪴", 
-                price: 3600, 
-                image: "images/Gash.png"
-            },
-            { 
-                id: 3, 
-                name: "Амфетамин 💊", 
-                price: 2200, 
-                image: "images/amf.png"
-            },
-            { 
-                id: 4, 
-                name: "Экстази 🍃", 
-                price: 1200, 
-                image: "images/Eks.png"
-            },
-            { 
-                id: 5, 
-                name: "Меф 🧂", 
-                price: 1700, 
-                image: "images/Mef.png"
-            },
-            { 
-                id: 6, 
-                name: "А-кристалл 💎", 
-                price: 5500, 
-                image: "images/Cry.png"
-            },
-            { 
-                id: 7, 
-                name: "Психотропные грибы 🍄", 
-                price: 500, 
-                image: "images/Mush.png"
-            },
-            { 
-                id: 8, 
-                name: "Лирика 💧", 
-                price: 8000, 
-                image: "images/Lyr.png"
-            },
+            { id: 1, name: "Шишки 🌰", price: 3000, image: "images/Shishka.png" },
+            { id: 2, name: "Гашиш 🪴", price: 3600, image: "images/Gash.png" },
+            { id: 3, name: "Амфетамин 💊", price: 2200, image: "images/amf.png" },
+            { id: 4, name: "Экстази 🍃", price: 1200, image: "images/Eks.png" },
+            { id: 5, name: "Меф 🧂", price: 1700, image: "images/Mef.png" },
+            { id: 6, name: "А-кристалл 💎", price: 5500, image: "images/Cry.png" },
+            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "images/Mush.png" },
+            { id: 8, name: "Лирика 💧", price: 8000, image: "images/Lyr.png" },
         ];
 
-      // Состояние приложения
-    let state = {
-        city: 'Москва',
-        selectedProduct: null,
-        selectedQuantity: 1,
-        tempSelectedCity: 'Москва',
-        promoCode: '',
-        discount: 0,
-        finalPrice: 0,
-        lastMessageId: 0
-    };
+        let state = {
+            city: 'Москва',
+            selectedProduct: null,
+            selectedQuantity: 1,
+            tempSelectedCity: 'Москва',
+            promoCode: '',
+            discount: 0,
+            finalPrice: 0
+        };
 
-    // Функция для показа сообщений
-    function showPromoMessage(text, type) {
-        const msg = document.getElementById('promo-message');
-        msg.textContent = text;
-        msg.className = `promo-message ${type}`;
-        msg.classList.remove('hidden');
-        
-        setTimeout(() => {
-            msg.classList.add('hidden');
-        }, 3000);
-    }
-
-    // Функция для получения последних сообщений из чата
-    async function checkForPromoResponse() {
-        // Этот метод требует доступа к API Telegram, что невозможно из Mini App
-        // Вместо этого мы будем использовать глобальный обработчик
-    }
-
-    // Глобальный обработчик сообщений от бота
-    window.addEventListener('message', function(event) {
-        try {
-            console.log('Получено сообщение:', event.data);
-            
-            // Проверяем, есть ли в сообщении наш специальный префикс
-            if (typeof event.data === 'string' && event.data.startsWith('🔹ПРОМО🔹')) {
-                const jsonStr = event.data.replace('🔹ПРОМО🔹', '');
-                const data = JSON.parse(jsonStr);
-                console.log('Промо-ответ:', data);
+        // ========== ОБРАБОТКА ОТВЕТОВ ОТ БОТА ==========
+        window.addEventListener('message', function(event) {
+            try {
+                const data = event.data;
+                console.log('Получено сообщение:', data);
                 
-                if (data.valid) {
-                    state.discount = data.discount;
-                    state.finalPrice = data.finalPrice;
-                    state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
+                if (typeof data === 'string' && data.startsWith('PROMO_RESULT:')) {
+                    const jsonStr = data.replace('PROMO_RESULT:', '');
+                    const response = JSON.parse(jsonStr);
+                    console.log('Промо-ответ:', response);
                     
-                    const total = state.selectedProduct.price * state.selectedQuantity;
-                    const newTotal = data.finalPrice;
-                    
-                    document.getElementById('total-price').innerHTML = 
-                        `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
-                    
-                    showPromoMessage(data.message, 'success');
-                } else {
-                    showPromoMessage(data.message, 'error');
+                    if (response.valid) {
+                        state.discount = response.discount;
+                        state.finalPrice = response.finalPrice;
+                        state.promoCode = document.getElementById('promo-input').value.trim().toUpperCase();
+                        
+                        const total = state.selectedProduct.price * state.selectedQuantity;
+                        const newTotal = response.finalPrice;
+                        
+                        document.getElementById('total-price').innerHTML = 
+                            `<span style="text-decoration: line-through; opacity: 0.5;">${total.toLocaleString()} ₽</span> ${newTotal.toLocaleString()} ₽`;
+                        
+                        showPromoMessage(response.message, 'success');
+                    } else {
+                        showPromoMessage(response.message, 'error');
+                    }
+                }
+            } catch (e) {
+                console.error('Ошибка:', e);
+            }
+        });
+
+        function showPromoMessage(text, type) {
+            const msg = document.getElementById('promo-message');
+            msg.textContent = text;
+            msg.className = `promo-message ${type}`;
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+
+        function applyPromoCode() {
+            const input = document.getElementById('promo-input');
+            const code = input.value.trim().toUpperCase();
+            
+            if (!code) { showPromoMessage('Введите промокод', 'error'); return; }
+            if (!state.selectedProduct) return;
+
+            const total = state.selectedProduct.price * state.selectedQuantity;
+            showPromoMessage('Отправка...', '');
+            
+            tg.sendData(JSON.stringify({
+                action: 'check_promo',
+                promoCode: code,
+                totalPrice: total
+            }));
+        }
+
+        function loadProducts() {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = PRODUCTS.map(p => 
+                `<div class="product-card" onclick="selectProduct(${p.id})">
+                    <img class="product-image" src="${p.image}" onerror="this.src='https://via.placeholder.com/300x200'">
+                    <div class="product-info">
+                        <div class="product-title">${p.name}</div>
+                        <div class="product-price">${p.price.toLocaleString()} ₽</div>
+                    </div>
+                </div>`
+            ).join('');
+        }
+
+        window.selectProduct = function(id) {
+            state.selectedProduct = PRODUCTS.find(p => p.id === id);
+            state.selectedQuantity = 1;
+            state.discount = 0; state.finalPrice = 0; state.promoCode = '';
+            
+            document.getElementById('detail-image').src = state.selectedProduct.image;
+            document.getElementById('detail-title').textContent = state.selectedProduct.name;
+            document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+            document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
+            document.getElementById('promo-input').value = '';
+            
+            const qtyContainer = document.getElementById('quantity-buttons');
+            qtyContainer.innerHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                qtyContainer.innerHTML += `<button class="qty-btn ${i === 1 ? 'selected' : ''}" onclick="selectQuantity(${i})">${i} гр</button>`;
+            }
+            
+            document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+            
+            document.getElementById('main-screen').classList.add('hidden');
+            document.getElementById('product-screen').classList.remove('hidden');
+        };
+
+        function selectQuantity(qty) {
+            state.selectedQuantity = qty;
+            document.querySelectorAll('.qty-btn').forEach((btn, i) => {
+                if (i + 1 === qty) btn.classList.add('selected');
+                else btn.classList.remove('selected');
+            });
+            state.discount = 0; state.finalPrice = 0; state.promoCode = '';
+            document.getElementById('total-price').innerHTML = (state.selectedProduct.price * state.selectedQuantity).toLocaleString() + ' ₽';
+        }
+
+        function placeOrder() {
+            if (!state.selectedProduct) return;
+            
+            const total = state.selectedProduct.price * state.selectedQuantity;
+            const finalTotal = state.discount > 0 ? state.finalPrice : total;
+            
+            tg.sendData(JSON.stringify({
+                action: 'order',
+                productId: state.selectedProduct.id,
+                productName: state.selectedProduct.name,
+                quantity: state.selectedQuantity,
+                totalPrice: total,
+                finalPrice: finalTotal,
+                promoCode: state.promoCode,
+                discount: state.discount,
+                city: state.city
+            }));
+            
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.remove('hidden');
+            
+            let details = `<div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
+                <div class="order-detail-item"><span>📦 Товар</span><span>${state.selectedProduct.name}</span></div>
+                <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>`;
+            
+            if (state.promoCode) {
+                details += `<div class="order-detail-item"><span>🎫 Промокод</span><span>${state.promoCode} (-${state.discount}%)</span></div>
+                    <div class="order-detail-item"><span>💵 Итого</span><span>${finalTotal.toLocaleString()} ₽</span></div>`;
+            } else {
+                details += `<div class="order-detail-item"><span>💵 Итого</span><span>${total.toLocaleString()} ₽</span></div>`;
+            }
+            
+            document.getElementById('order-details').innerHTML = details;
+            document.getElementById('confirmation-total').textContent = finalTotal.toLocaleString() + ' ₽';
+        }
+
+        function goToMainScreen() {
+            document.getElementById('product-screen').classList.add('hidden');
+            document.getElementById('confirmation-screen').classList.add('hidden');
+            document.getElementById('main-screen').classList.remove('hidden');
+        }
+
+        function getCityFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('city');
+        }
+
+        function loadCity() {
+            const saved = localStorage.getItem('city');
+            if (saved && CITIES.includes(saved)) {
+                state.city = saved;
+            } else {
+                const urlCity = getCityFromUrl();
+                if (urlCity && CITIES.includes(urlCity)) {
+                    state.city = urlCity;
+                    localStorage.setItem('city', urlCity);
                 }
             }
-        } catch (e) {
-            console.error('Ошибка обработки сообщения:', e);
-        }
-    });
-
-    // Функция применения промокода
-    function applyPromoCode() {
-        const input = document.getElementById('promo-input');
-        const code = input.value.trim().toUpperCase();
-        
-        if (!code) {
-            showPromoMessage('Введите промокод', 'error');
-            return;
+            document.getElementById('city-display').textContent = state.city;
         }
 
-        if (!state.selectedProduct) return;
-
-        const total = state.selectedProduct.price * state.selectedQuantity;
-        
-        showPromoMessage('Отправка...', '');
-        
-        // Отправляем запрос на проверку промокода
-        tg.sendData(JSON.stringify({
-            action: 'check_promo',
-            promoCode: code,
-            totalPrice: total
-        }));
-        
-        console.log('📤 Отправлен запрос на проверку промокода:', code);
-        
-        // Показываем подсказку
-        tg.showPopup({
-            title: '🎫 Промокод отправлен',
-            message: 'Подождите несколько секунд, ответ появится здесь',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-
-    // Функция обновления цены
-    function updatePrice() {
-        if (!state.selectedProduct) return;
-        const total = state.selectedProduct.price * state.selectedQuantity;
-        document.getElementById('total-price').innerHTML = total.toLocaleString() + ' ₽';
-    }
-
-    // Загрузка товаров
-    function loadProducts() {
-        const grid = document.getElementById('products-grid');
-        grid.innerHTML = PRODUCTS.map(p => 
-            `<div class="product-card" onclick="selectProduct(${p.id})">
-                <img class="product-image" src="${p.image}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/300x200?text=${p.name}'">
-                <div class="product-info">
-                    <div class="product-title">${p.name}</div>
-                    <div class="product-price">${p.price.toLocaleString()} ₽</div>
-                </div>
-            </div>`
-        ).join('');
-    }
-
-    // Выбор товара
-    window.selectProduct = function(id) {
-        state.selectedProduct = PRODUCTS.find(p => p.id === id);
-        state.selectedQuantity = 1;
-        state.discount = 0;
-        state.finalPrice = 0;
-        state.promoCode = '';
-        
-        document.getElementById('detail-image').src = state.selectedProduct.image;
-        document.getElementById('detail-title').textContent = state.selectedProduct.name;
-        document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-        document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
-        document.getElementById('promo-input').value = '';
-        
-        const qtyContainer = document.getElementById('quantity-buttons');
-        qtyContainer.innerHTML = '';
-        for (let i = 1; i <= 5; i++) {
-            qtyContainer.innerHTML += `<button class="qty-btn ${i === 1 ? 'selected' : ''}" onclick="selectQuantity(${i})">${i} гр</button>`;
-        }
-        
-        updatePrice();
-        
-        document.getElementById('main-screen').classList.add('hidden');
-        document.getElementById('product-screen').classList.remove('hidden');
-    };
-
-    function selectQuantity(qty) {
-        state.selectedQuantity = qty;
-        document.querySelectorAll('.qty-btn').forEach((btn, i) => {
-            if (i + 1 === qty) btn.classList.add('selected');
-            else btn.classList.remove('selected');
-        });
-        
-        // Сбрасываем промокод при смене количества
-        state.discount = 0;
-        state.finalPrice = 0;
-        state.promoCode = '';
-        updatePrice();
-    }
-
-    // Оформление заказа
-    function placeOrder() {
-        if (!state.selectedProduct) return;
-        
-        const total = state.selectedProduct.price * state.selectedQuantity;
-        const finalTotal = state.discount > 0 ? state.finalPrice : total;
-        
-        tg.sendData(JSON.stringify({
-            action: 'order',
-            productId: state.selectedProduct.id,
-            productName: state.selectedProduct.name,
-            quantity: state.selectedQuantity,
-            totalPrice: total,
-            finalPrice: finalTotal,
-            promoCode: state.promoCode,
-            discount: state.discount,
-            city: state.city
-        }));
-        
-        document.getElementById('product-screen').classList.add('hidden');
-        document.getElementById('confirmation-screen').classList.remove('hidden');
-        
-        let orderDetails = `
-            <div class="order-detail-item"><span>🏙️ Город</span><span>${state.city}</span></div>
-            <div class="order-detail-item"><span>📦 Товар</span><span>${state.selectedProduct.name}</span></div>
-            <div class="order-detail-item"><span>📊 Количество</span><span>${state.selectedQuantity} гр</span></div>
-            <div class="order-detail-item"><span>💰 Цена за грамм</span><span>${state.selectedProduct.price.toLocaleString()} ₽</span></div>
-        `;
-        
-        if (state.promoCode) {
-            orderDetails += `
-                <div class="order-detail-item"><span>🎫 Промокод</span><span>${state.promoCode} (-${state.discount}%)</span></div>
-                <div class="order-detail-item"><span>💵 Итого со скидкой</span><span>${finalTotal.toLocaleString()} ₽</span></div>
-            `;
-        } else {
-            orderDetails += `<div class="order-detail-item"><span>💵 Итого</span><span>${total.toLocaleString()} ₽</span></div>`;
-        }
-        
-        document.getElementById('order-details').innerHTML = orderDetails;
-        document.getElementById('confirmation-total').textContent = finalTotal.toLocaleString() + ' ₽';
-    }
-
-    // Навигация
-    function goToMainScreen() {
-        document.getElementById('product-screen').classList.add('hidden');
-        document.getElementById('confirmation-screen').classList.add('hidden');
-        document.getElementById('main-screen').classList.remove('hidden');
-    }
-
-    // Функции для работы с городом
-    function getCityFromUrl() {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get('city');
-    }
-
-    function loadCity() {
-        const saved = localStorage.getItem('city');
-        if (saved && CITIES.includes(saved)) {
-            state.city = saved;
-        } else {
-            const urlCity = getCityFromUrl();
-            if (urlCity && CITIES.includes(urlCity)) {
-                state.city = urlCity;
-                localStorage.setItem('city', urlCity);
-            }
-        }
-        document.getElementById('city-display').textContent = state.city;
-    }
-
-    function saveCity(city) {
-        state.city = city;
-        localStorage.setItem('city', city);
-        document.getElementById('city-display').textContent = city;
-        closeCityModal();
-    }
-
-    function openCityModal() {
-        const grid = document.getElementById('cities-grid');
-        grid.innerHTML = CITIES.map(city => 
-            `<div class="city-item ${city === state.city ? 'selected' : ''}" onclick="selectTempCity('${city}')">${city}</div>`
-        ).join('');
-        document.getElementById('city-modal-overlay').style.display = 'block';
-    }
-
-    function selectTempCity(city) {
-        state.tempSelectedCity = city;
-        document.querySelectorAll('.city-item').forEach(el => {
-            el.classList.remove('selected');
-            if (el.textContent === city) el.classList.add('selected');
-        });
-    }
-
-    function closeCityModal() {
-        document.getElementById('city-modal-overlay').style.display = 'none';
-    }
-
-    function confirmCity() {
-        if (state.tempSelectedCity && state.tempSelectedCity !== state.city) {
-            saveCity(state.tempSelectedCity);
-        }
-        closeCityModal();
-    }
-
-    function contactAdmin() {
-        tg.sendData(JSON.stringify({
-            action: 'contact_admin',
-            city: state.city
-        }));
-        tg.showPopup({
-            title: '📞 Запрос отправлен',
-            message: 'Администратор свяжется с вами',
-            buttons: [{ type: 'ok' }]
-        });
-    }
-
-    // Инициализация
-    loadCity();
-    loadProducts();
-
-    // Привязка обработчиков к кнопкам
-    document.getElementById('city-header').onclick = openCityModal;
-    document.getElementById('close-modal-btn').onclick = closeCityModal;
-    document.getElementById('confirm-city-btn').onclick = confirmCity;
-    document.getElementById('contact-admin-main').onclick = contactAdmin;
-    document.getElementById('contact-admin-from-product').onclick = contactAdmin;
-    document.getElementById('contact-admin-after-order').onclick = contactAdmin;
-    document.getElementById('apply-promo-btn').onclick = applyPromoCode;
-    document.getElementById('back-to-catalog').onclick = goToMainScreen;
-    document.getElementById('back-to-catalog-from-detail').onclick = goToMainScreen;
-    document.getElementById('continue-shopping-after-order').onclick = goToMainScreen;
-    document.getElementById('order-btn').onclick = placeOrder;
-    document.getElementById('close-app').onclick = () => tg.close();
-    
-    document.getElementById('promo-input').onkeypress = (e) => {
-        if (e.key === 'Enter') applyPromoCode();
-    };
-
-    document.getElementById('city-modal-overlay').onclick = (e) => {
-        if (e.target === document.getElementById('city-modal-overlay')) {
+        function saveCity(city) {
+            state.city = city;
+            localStorage.setItem('city', city);
+            document.getElementById('city-display').textContent = city;
             closeCityModal();
         }
-    };
 
-    console.log('Mini App инициализирован, ждем сообщения от бота...');
-</script>
+        function openCityModal() {
+            const grid = document.getElementById('cities-grid');
+            grid.innerHTML = CITIES.map(c => 
+                `<div class="city-item ${c === state.city ? 'selected' : ''}" onclick="selectTempCity('${c}')">${c}</div>`
+            ).join('');
+            document.getElementById('city-modal-overlay').style.display = 'block';
+        }
+
+        function selectTempCity(city) {
+            state.tempSelectedCity = city;
+            document.querySelectorAll('.city-item').forEach(el => {
+                el.classList.remove('selected');
+                if (el.textContent === city) el.classList.add('selected');
+            });
+        }
+
+        function closeCityModal() {
+            document.getElementById('city-modal-overlay').style.display = 'none';
+        }
+
+        function confirmCity() {
+            if (state.tempSelectedCity && state.tempSelectedCity !== state.city) {
+                saveCity(state.tempSelectedCity);
+            }
+            closeCityModal();
+        }
+
+        function contactAdmin() {
+            tg.sendData(JSON.stringify({ action: 'contact_admin', city: state.city }));
+            tg.showPopup({ title: '📞 Запрос отправлен', message: 'Администратор свяжется с вами', buttons: [{ type: 'ok' }] });
+        }
+
+        // Инициализация
+        loadCity();
+        loadProducts();
+
+        // Привязка обработчиков
+        document.getElementById('city-header').onclick = openCityModal;
+        document.getElementById('close-modal-btn').onclick = closeCityModal;
+        document.getElementById('confirm-city-btn').onclick = confirmCity;
+        document.getElementById('contact-admin-main').onclick = contactAdmin;
+        document.getElementById('contact-admin-from-product').onclick = contactAdmin;
+        document.getElementById('contact-admin-after-order').onclick = contactAdmin;
+        document.getElementById('apply-promo-btn').onclick = applyPromoCode;
+        document.getElementById('back-to-catalog').onclick = goToMainScreen;
+        document.getElementById('back-to-catalog-from-detail').onclick = goToMainScreen;
+        document.getElementById('continue-shopping-after-order').onclick = goToMainScreen;
+        document.getElementById('order-btn').onclick = placeOrder;
+        document.getElementById('close-app').onclick = () => tg.close();
+        document.getElementById('promo-input').onkeypress = (e) => { if (e.key === 'Enter') applyPromoCode(); };
+        document.getElementById('city-modal-overlay').onclick = (e) => { if (e.target === document.getElementById('city-modal-overlay')) closeCityModal(); };
+    </script>
 </body>
 </html>
