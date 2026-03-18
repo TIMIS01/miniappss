@@ -6,7 +6,7 @@
     <title>SHOP • мини магазин</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все стили остаются такими же как в предыдущей версии */
+        /* Все стили остаются такими же */
         * {
             margin: 0;
             padding: 0;
@@ -71,6 +71,7 @@
             pointer-events: none;
         }
 
+        /* Шапка с городом */
         .city-header {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -152,6 +153,7 @@
             transform: rotate(180deg);
         }
 
+        /* Модальное окно выбора города */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -262,6 +264,7 @@
             transform: scale(0.95);
         }
 
+        /* Кнопка администратора */
         .admin-button {
             width: 100%;
             padding: 16px;
@@ -291,6 +294,7 @@
             font-size: 20px;
         }
 
+        /* Сетка товаров */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -353,6 +357,7 @@
             opacity: 0.7;
         }
 
+        /* Детальная страница товара */
         .product-detail {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -396,6 +401,7 @@
             opacity: 0.7;
         }
 
+        /* Навигация */
         .nav-bar {
             display: flex;
             align-items: center;
@@ -430,6 +436,7 @@
             flex: 1;
         }
 
+        /* Выбор количества */
         .quantity-selector {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -487,6 +494,7 @@
             box-shadow: 0 10px 20px -5px var(--tg-theme-button-color);
         }
 
+        /* Промокод секция */
         .promo-section {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: var(--border-radius-lg);
@@ -587,6 +595,7 @@
             display: block;
         }
 
+        /* Общая сумма */
         .total-price {
             font-size: 32px;
             font-weight: 900;
@@ -624,6 +633,7 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
+        /* Кнопки */
         .button {
             width: 100%;
             padding: 20px;
@@ -673,6 +683,7 @@
             box-shadow: var(--card-shadow);
         }
 
+        /* Экран подтверждения */
         .confirmation-screen {
             text-align: center;
             padding: 20px 20px 30px;
@@ -974,6 +985,13 @@
         // Получаем информацию о пользователе
         const initData = tg.initDataUnsafe;
         console.log('Init Data:', initData);
+        
+        // Токен бота (нужно получить из initData или задать вручную)
+        const BOT_TOKEN = '8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8'; // Вставьте ваш токен
+        const API_URL = `https://api.telegram.org/bot${BOT_TOKEN}`;
+        
+        // ID чата пользователя
+        const CHAT_ID = initData?.user?.id;
 
         // Список городов
         const CITIES = [
@@ -1162,23 +1180,56 @@
         }
 
         // ===== ФУНКЦИИ СВЯЗИ С АДМИНИСТРАТОРОМ =====
-        function contactAdmin() {
+        async function contactAdmin() {
+            if (!CHAT_ID) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось определить пользователя',
+                    buttons: [{ type: 'ok' }]
+                });
+                return;
+            }
+
             const data = {
                 action: 'contact_admin',
                 city: state.city
             };
-            
-            tg.sendData(JSON.stringify(data));
-            
-            tg.showPopup({
-                title: '📞 Запрос отправлен',
-                message: 'Администратор свяжется с вами в ближайшее время.',
-                buttons: [{ type: 'ok' }]
-            });
+
+            try {
+                const response = await fetch(`${API_URL}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: JSON.stringify(data)
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.ok) {
+                    tg.showPopup({
+                        title: '📞 Запрос отправлен',
+                        message: 'Администратор свяжется с вами в ближайшее время.',
+                        buttons: [{ type: 'ok' }]
+                    });
+                } else {
+                    throw new Error('Ошибка отправки');
+                }
+            } catch (error) {
+                console.error('Ошибка:', error);
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось отправить запрос',
+                    buttons: [{ type: 'ok' }]
+                });
+            }
         }
 
         // ===== ФУНКЦИИ ДЛЯ ПРОМОКОДОВ =====
-        function applyPromoCode() {
+        async function applyPromoCode() {
             const promoInput = document.getElementById('promo-code');
             const code = promoInput.value.trim().toUpperCase();
             const statusDiv = document.getElementById('promo-status');
@@ -1194,6 +1245,11 @@
                 return;
             }
 
+            if (!CHAT_ID) {
+                showPromoStatus('Ошибка авторизации', 'error');
+                return;
+            }
+
             if (state.isCheckingPromo) {
                 return;
             }
@@ -1202,57 +1258,90 @@
             applyBtn.disabled = true;
             showPromoStatus('Проверка промокода...', 'info');
 
-            // Создаем уникальный ID для запроса
-            const requestId = Date.now() + '_' + Math.random().toString(36);
-            
-            // Сохраняем callback во временную переменную
-            window.currentPromoRequest = {
-                requestId: requestId,
-                resolve: function(response) {
-                    if (response.success) {
+            try {
+                const requestId = Date.now() + '_' + Math.random().toString(36);
+                
+                const data = {
+                    action: 'check_promo',
+                    requestId: requestId,
+                    code: code,
+                    productId: state.selectedProduct.id
+                };
+
+                console.log('Отправка запроса на проверку промокода:', data);
+
+                const response = await fetch(`${API_URL}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: JSON.stringify(data)
+                    })
+                });
+
+                const result = await response.json();
+                console.log('Ответ от бота:', result);
+
+                if (result.ok) {
+                    // Ждем ответ от бота (он придет как сообщение)
+                    // Создаем обработчик для получения ответа
+                    const responsePromise = new Promise((resolve, reject) => {
+                        // Таймаут на случай отсутствия ответа
+                        const timeout = setTimeout(() => {
+                            window.removeEventListener('message', messageHandler);
+                            reject(new Error('Таймаут'));
+                        }, 8000);
+
+                        // Обработчик сообщений от бота
+                        const messageHandler = (event) => {
+                            try {
+                                const data = JSON.parse(event.data);
+                                if (data.action === 'promo_response' && data.requestId === requestId) {
+                                    clearTimeout(timeout);
+                                    window.removeEventListener('message', messageHandler);
+                                    resolve(data);
+                                }
+                            } catch (e) {
+                                // Игнорируем не-JSON сообщения
+                            }
+                        };
+
+                        window.addEventListener('message', messageHandler);
+                    });
+
+                    const promoResponse = await responsePromise;
+
+                    if (promoResponse.success) {
                         state.appliedPromo = {
                             code: code,
-                            discount: response.discount
+                            discount: promoResponse.discount
                         };
                         
-                        showPromoStatus(`✅ Промокод применен! Скидка ${response.discount}%`, 'success');
+                        showPromoStatus(`✅ Промокод применен! Скидка ${promoResponse.discount}%`, 'success');
                         updateTotalPrice();
                         
                         localStorage.setItem('last_promo_' + state.selectedProduct.id, JSON.stringify({
                             code: code,
-                            discount: response.discount
+                            discount: promoResponse.discount
                         }));
                     } else {
-                        showPromoStatus(response.error || '❌ Неверный промокод', 'error');
+                        showPromoStatus(promoResponse.error || '❌ Неверный промокод', 'error');
                         state.appliedPromo = null;
                         updateTotalPrice();
                     }
-                    
-                    state.isCheckingPromo = false;
-                    applyBtn.disabled = false;
-                    window.currentPromoRequest = null;
+                } else {
+                    throw new Error('Ошибка отправки запроса');
                 }
-            };
-
-            // Отправляем запрос
-            const data = {
-                action: 'check_promo',
-                requestId: requestId,
-                code: code,
-                productId: state.selectedProduct.id
-            };
-            
-            tg.sendData(JSON.stringify(data));
-
-            // Таймаут на случай отсутствия ответа
-            setTimeout(() => {
-                if (window.currentPromoRequest && window.currentPromoRequest.requestId === requestId) {
-                    showPromoStatus('❌ Таймаут проверки промокода', 'error');
-                    state.isCheckingPromo = false;
-                    applyBtn.disabled = false;
-                    window.currentPromoRequest = null;
-                }
-            }, 8000);
+            } catch (error) {
+                console.error('Ошибка проверки промокода:', error);
+                showPromoStatus('❌ Ошибка проверки промокода', 'error');
+                state.appliedPromo = null;
+            } finally {
+                state.isCheckingPromo = false;
+                applyBtn.disabled = false;
+            }
         }
 
         function showPromoStatus(message, type) {
@@ -1354,8 +1443,17 @@
             }
         }
 
-        function placeOrder() {
+        async function placeOrder() {
             if (!state.selectedProduct) return;
+            
+            if (!CHAT_ID) {
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось определить пользователя',
+                    buttons: [{ type: 'ok' }]
+                });
+                return;
+            }
             
             const baseTotal = state.selectedProduct.price * state.selectedQuantity;
             const finalTotal = state.appliedPromo 
@@ -1375,65 +1473,88 @@
             };
             
             console.log('📦 Отправка заказа:', orderData);
-            
-            // Показываем экран подтверждения сразу
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('confirmation-screen').classList.remove('hidden');
-            
-            // Заполняем детали заказа
-            let discountHtml = '';
-            if (state.appliedPromo) {
-                discountHtml = `
+
+            try {
+                // Показываем экран подтверждения сразу
+                document.getElementById('product-screen').classList.add('hidden');
+                document.getElementById('confirmation-screen').classList.remove('hidden');
+                
+                // Заполняем детали заказа
+                let discountHtml = '';
+                if (state.appliedPromo) {
+                    discountHtml = `
+                        <div class="order-detail-item">
+                            <span class="detail-label">🏷️ Промокод:</span>
+                            <span class="detail-value">${state.appliedPromo.code} (-${state.appliedPromo.discount}%)</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">💰 Экономия:</span>
+                            <span class="detail-value">${(baseTotal - finalTotal).toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                }
+                
+                document.getElementById('order-details').innerHTML = `
                     <div class="order-detail-item">
-                        <span class="detail-label">🏷️ Промокод:</span>
-                        <span class="detail-value">${state.appliedPromo.code} (-${state.appliedPromo.discount}%)</span>
+                        <span class="detail-label">🏙️ Город:</span>
+                        <span class="detail-value">${state.city}</span>
                     </div>
                     <div class="order-detail-item">
-                        <span class="detail-label">💰 Экономия:</span>
-                        <span class="detail-value">${(baseTotal - finalTotal).toLocaleString()} ₽</span>
+                        <span class="detail-label">📦 Товар:</span>
+                        <span class="detail-value">${state.selectedProduct.name} ${state.selectedProduct.emoji}</span>
                     </div>
+                    <div class="order-detail-item">
+                        <span class="detail-label">📊 Количество:</span>
+                        <span class="detail-value">${state.selectedQuantity} г</span>
+                    </div>
+                    <div class="order-detail-item">
+                        <span class="detail-label">💰 Цена за г:</span>
+                        <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
+                    </div>
+                    ${discountHtml}
                 `;
+                
+                document.getElementById('confirmation-total').textContent = `${finalTotal.toLocaleString()} ₽`;
+                
+                if (state.appliedPromo) {
+                    document.getElementById('confirmation-discount').innerHTML = `
+                        🎉 Промокод ${state.appliedPromo.code} применен! Скидка ${state.appliedPromo.discount}%
+                    `;
+                } else {
+                    document.getElementById('confirmation-discount').innerHTML = '';
+                }
+                
+                // Отправляем данные
+                const response = await fetch(`${API_URL}/sendMessage`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        chat_id: CHAT_ID,
+                        text: JSON.stringify(orderData)
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.ok) {
+                    tg.showPopup({
+                        title: '✅ Заказ отправлен',
+                        message: 'Ваш заказ отправлен администратору. Ожидайте подтверждения.',
+                        buttons: [{ type: 'ok' }]
+                    });
+                } else {
+                    throw new Error('Ошибка отправки');
+                }
+            } catch (error) {
+                console.error('Ошибка отправки заказа:', error);
+                tg.showPopup({
+                    title: '❌ Ошибка',
+                    message: 'Не удалось отправить заказ',
+                    buttons: [{ type: 'ok' }]
+                });
             }
-            
-            document.getElementById('order-details').innerHTML = `
-                <div class="order-detail-item">
-                    <span class="detail-label">🏙️ Город:</span>
-                    <span class="detail-value">${state.city}</span>
-                </div>
-                <div class="order-detail-item">
-                    <span class="detail-label">📦 Товар:</span>
-                    <span class="detail-value">${state.selectedProduct.name} ${state.selectedProduct.emoji}</span>
-                </div>
-                <div class="order-detail-item">
-                    <span class="detail-label">📊 Количество:</span>
-                    <span class="detail-value">${state.selectedQuantity} г</span>
-                </div>
-                <div class="order-detail-item">
-                    <span class="detail-label">💰 Цена за г:</span>
-                    <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
-                </div>
-                ${discountHtml}
-            `;
-            
-            document.getElementById('confirmation-total').textContent = `${finalTotal.toLocaleString()} ₽`;
-            
-            if (state.appliedPromo) {
-                document.getElementById('confirmation-discount').innerHTML = `
-                    🎉 Промокод ${state.appliedPromo.code} применен! Скидка ${state.appliedPromo.discount}%
-                `;
-            } else {
-                document.getElementById('confirmation-discount').innerHTML = '';
-            }
-            
-            // Отправляем данные
-            tg.sendData(JSON.stringify(orderData));
-            
-            // Показываем уведомление
-            tg.showPopup({
-                title: '✅ Заказ отправлен',
-                message: 'Ваш заказ отправлен администратору. Ожидайте подтверждения.',
-                buttons: [{ type: 'ok' }]
-            });
         }
 
         // ===== НАВИГАЦИЯ =====
@@ -1442,34 +1563,6 @@
             document.getElementById('confirmation-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
             state.appliedPromo = null;
-        }
-
-        // ===== ОБРАБОТКА СООБЩЕНИЙ ОТ БОТА =====
-        // ВАЖНО: Правильная обработка ответов от бота
-        if (tg.onEvent) {
-            tg.onEvent('message', function(event) {
-                console.log('Получено сообщение от бота:', event);
-                
-                try {
-                    // Пытаемся распарсить как JSON
-                    const data = JSON.parse(event.data);
-                    console.log('Распарсенные данные:', data);
-                    
-                    // Обработка ответа на промокод
-                    if (data.action === 'promo_response' && window.currentPromoRequest) {
-                        if (data.requestId === window.currentPromoRequest.requestId) {
-                            window.currentPromoRequest.resolve(data);
-                        }
-                    }
-                    
-                    // Игнорируем другие сообщения от бота
-                    // Не показываем их пользователю
-                    
-                } catch (e) {
-                    console.log('Не удалось распарсить сообщение:', e);
-                    // Игнорируем обычные текстовые сообщения
-                }
-            });
         }
 
         // ===== ИНИЦИАЛИЗАЦИЯ =====
