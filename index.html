@@ -6,7 +6,7 @@
     <title>🛍️ PREMIUM SHOP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все стили из предыдущего красивого варианта */
+        /* Все стили из предыдущего варианта (красивый дизайн) */
         * {
             margin: 0;
             padding: 0;
@@ -694,17 +694,16 @@
         }
 
         // ===== ПОЛУЧАЕМ ID ПОЛЬЗОВАТЕЛЯ =====
-        // В Telegram WebApp это поле всегда есть, если приложение открыто через бота
         const userId = tg.initDataUnsafe?.user?.id;
-        console.log('✅ ID пользователя:', userId);
+        console.log('User ID:', userId);
 
-        // Если userId нет (например, тест вне Telegram), используем заглушку
+        // Если userId нет – показываем предупреждение, но продолжаем работу (будем использовать sendData для промокодов)
         if (!userId) {
-            console.warn('⚠️ Работа в тестовом режиме (нет пользователя Telegram)');
+            console.warn('⚠️ Нет ID пользователя – некоторые функции могут работать через sendData (с закрытием)');
         }
 
-        // ===== ТОКЕН БОТА (ВСТАВЬТЕ СВОЙ!) =====
-        const BOT_TOKEN = '8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8'; // ЗАМЕНИТЕ НА СВОЙ
+        // ===== ТОКЕН БОТА (обязательно замените на свой!) =====
+        const BOT_TOKEN = '8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8';
         const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
         // ===== ДАННЫЕ =====
@@ -769,7 +768,6 @@
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = PRODUCTS.map(product => {
-                // Пытаемся загрузить изображение, если не получится - показываем цветной фон с эмодзи
                 return `
                 <div class="product-card" onclick="selectProduct(${product.id})">
                     <div class="product-image" style="background: ${product.bgColor}; display: flex; align-items: center; justify-content: center;">
@@ -797,7 +795,6 @@
             document.getElementById('productDetailPrice').textContent = product.price.toLocaleString();
             document.getElementById('productNavTitle').textContent = product.name;
             
-            // Кнопки количества
             const qtyContainer = document.getElementById('quantityButtons');
             qtyContainer.innerHTML = '';
             for (let i = 1; i <= 5; i++) {
@@ -857,8 +854,8 @@
             }
         }
 
-        // ===== ПРОМОКОДЫ (ЧЕРЕЗ HTTP, БЕЗ ЗАКРЫТИЯ) =====
-        async function applyPromo() {
+        // ===== ПРОМОКОДЫ (УНИВЕРСАЛЬНЫЙ МЕТОД) =====
+        function applyPromo() {
             const input = document.getElementById('promoInput');
             const code = input.value.trim().toUpperCase();
             const statusDiv = document.getElementById('promoStatus');
@@ -874,16 +871,11 @@
                 return;
             }
 
-            if (!userId) {
-                showPromoStatus('Ошибка авторизации (нет ID)', 'error');
-                return;
-            }
-
             applyBtn.disabled = true;
             showPromoStatus('Проверка промокода...', 'info');
 
             const requestId = Date.now() + '_' + Math.random().toString(36);
-            
+
             // Сохраняем обработчик ответа
             state.pendingRequests[requestId] = (response) => {
                 delete state.pendingRequests[requestId];
@@ -903,46 +895,64 @@
                 }
             };
 
-            // Формируем данные для отправки боту
-            const messageData = {
-                action: 'check_promo',
-                requestId: requestId,
-                userId: userId,
-                code: code,
-                productId: state.selectedProduct.id
-            };
+            // Если есть userId – используем HTTP (без закрытия)
+            if (userId) {
+                const messageData = {
+                    action: 'check_promo',
+                    requestId: requestId,
+                    userId: userId,
+                    code: code,
+                    productId: state.selectedProduct.id
+                };
 
-            try {
-                // Отправляем HTTP-запрос к Telegram Bot API
-                const response = await fetch(TELEGRAM_API_URL, {
+                fetch(TELEGRAM_API_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         chat_id: userId,
                         text: JSON.stringify(messageData)
                     })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (!result.ok) throw new Error(result.description);
+                    console.log('Запрос на проверку промокода отправлен');
+                })
+                .catch(error => {
+                    console.error('Ошибка HTTP:', error);
+                    showPromoStatus('❌ Ошибка соединения', 'error');
+                    applyBtn.disabled = false;
+                    delete state.pendingRequests[requestId];
                 });
 
-                const result = await response.json();
-                if (!result.ok) {
-                    throw new Error(result.description || 'Ошибка отправки');
-                }
-                console.log('Запрос на проверку промокода отправлен');
-            } catch (error) {
-                console.error('Ошибка при отправке запроса:', error);
-                showPromoStatus('❌ Ошибка соединения', 'error');
-                applyBtn.disabled = false;
-                delete state.pendingRequests[requestId];
-            }
+                // Таймаут
+                setTimeout(() => {
+                    if (state.pendingRequests[requestId]) {
+                        delete state.pendingRequests[requestId];
+                        applyBtn.disabled = false;
+                        showPromoStatus('❌ Таймаут ответа от бота', 'error');
+                    }
+                }, 10000);
+            } 
+            // Если userId нет – используем sendData (с закрытием, но это запасной вариант)
+            else {
+                const data = {
+                    action: 'check_promo',
+                    requestId: requestId,
+                    code: code,
+                    productId: state.selectedProduct.id
+                };
+                tg.sendData(JSON.stringify(data));
 
-            // Таймаут на случай, если бот не ответит
-            setTimeout(() => {
-                if (state.pendingRequests[requestId]) {
-                    delete state.pendingRequests[requestId];
-                    applyBtn.disabled = false;
-                    showPromoStatus('❌ Таймаут ответа от бота', 'error');
-                }
-            }, 10000);
+                // Таймаут – если не получим ответ, разблокируем кнопку
+                setTimeout(() => {
+                    if (state.pendingRequests[requestId]) {
+                        delete state.pendingRequests[requestId];
+                        applyBtn.disabled = false;
+                        showPromoStatus('❌ Таймаут ответа от бота', 'error');
+                    }
+                }, 8000);
+            }
         }
 
         function showPromoStatus(msg, type) {
@@ -958,7 +968,7 @@
             }
         }
 
-        // ===== ЗАКАЗ (через sendData – приложение закроется, но это нормально) =====
+        // ===== ЗАКАЗ =====
         function placeOrder() {
             if (!state.selectedProduct) return;
             
@@ -969,7 +979,7 @@
             
             const orderData = {
                 action: 'order',
-                userId: userId,
+                userId: userId || 0, // если нет userId, бот получит 0, но лучше чтобы был
                 productId: state.selectedProduct.id,
                 productName: state.selectedProduct.name,
                 quantity: state.quantity,
@@ -1031,24 +1041,18 @@
                 document.getElementById('orderDiscount').innerHTML = '';
             }
             
-            // Отправляем заказ через sendData (приложение закроется)
+            // Отправляем заказ
             tg.sendData(JSON.stringify(orderData));
         }
 
         // ===== СВЯЗЬ С АДМИНОМ =====
         function contactAdmin() {
-            if (!userId) {
-                tg.showPopup({ title: '❌ Ошибка', message: 'Нет ID пользователя', buttons: [{ type: 'ok' }] });
-                return;
-            }
-
             const data = {
                 action: 'contact_admin',
-                userId: userId,
+                userId: userId || 0,
                 city: state.city
             };
             
-            // Используем sendData – приложение закроется, но это ок для запроса админу
             tg.sendData(JSON.stringify(data));
             
             tg.showPopup({
@@ -1070,7 +1074,6 @@
         function handleBotMessage(event) {
             console.log('📩 Получен ответ от бота:', event);
             try {
-                // Данные приходят в event.data
                 const data = JSON.parse(event.data);
                 if (data.action === 'promo_response' && data.requestId) {
                     if (state.pendingRequests[data.requestId]) {
@@ -1086,7 +1089,6 @@
         function init() {
             console.log('🚀 Запуск приложения');
             
-            // Город
             document.getElementById('selectedCity').textContent = state.city;
             document.getElementById('citySelector').addEventListener('click', openCityModal);
             document.getElementById('closeCityModal').addEventListener('click', closeCityModal);
@@ -1102,29 +1104,23 @@
                 }
             });
             
-            // Товары
             renderProducts();
             
-            // Кнопки
             document.getElementById('contactAdminMain').addEventListener('click', contactAdmin);
             document.getElementById('contactAdminProduct').addEventListener('click', contactAdmin);
             document.getElementById('contactAfterOrder').addEventListener('click', contactAdmin);
             
-            // Навигация
             document.getElementById('backToCatalog').addEventListener('click', goToMain);
             document.getElementById('continueShoppingBtn').addEventListener('click', goToMain);
             document.getElementById('continueAfterOrder').addEventListener('click', goToMain);
             
-            // Промокод
             document.getElementById('applyPromo').addEventListener('click', applyPromo);
             document.getElementById('promoInput').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') applyPromo();
             });
             
-            // Заказ
             document.getElementById('orderBtn').addEventListener('click', placeOrder);
             
-            // Обработчик сообщений от бота
             tg.onEvent('message', handleBotMessage);
             
             console.log('✅ Приложение готово');
