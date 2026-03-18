@@ -6,7 +6,7 @@
     <title>🛍️ PREMIUM SHOP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Все стили из предыдущего варианта (без изменений) */
+        /* Все стили из предыдущего варианта (без изменений, они уже были красивыми) */
         * {
             margin: 0;
             padding: 0;
@@ -684,42 +684,29 @@
     </div>
 
     <script>
-        // ===== ИНИЦИАЛИЗАЦИЯ TELEGRAM =====
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-        
-        if (tg.disableClosingConfirmation) {
-            tg.disableClosingConfirmation();
-        }
+        if (tg.disableClosingConfirmation) tg.disableClosingConfirmation();
 
-        // ===== ПОЛУЧАЕМ ID ПОЛЬЗОВАТЕЛЯ =====
         const userId = tg.initDataUnsafe?.user?.id;
         console.log('User ID:', userId);
 
-        // ===== ТОКЕН БОТА (замените на свой) =====
         const BOT_TOKEN = '8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8';
         const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-        // ===== ДАННЫЕ =====
-        const CITIES = [
-            "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
-            "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
-            "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
-        ];
-
+        const CITIES = ["Москва","Санкт-Петербург","Новосибирск","Екатеринбург","Казань","Нижний Новгород","Челябинск","Самара","Омск","Ростов-на-Дону","Уфа","Красноярск","Воронеж","Пермь","Волгоград"];
         const PRODUCTS = [
-            { id: 1, name: "Шишки", emoji: "🌰", price: 3000, image: "images/Shishka.png", bgColor: "#43A047" },
-            { id: 2, name: "Гашиш", emoji: "🪴", price: 3600, image: "images/Gash.png", bgColor: "#7B5E3B" },
-            { id: 3, name: "Амфетамин", emoji: "💊", price: 2200, image: "images/amf.png", bgColor: "#E53935" },
-            { id: 4, name: "Экстази", emoji: "🍃", price: 1200, image: "images/Eks.png", bgColor: "#8E24AA" },
-            { id: 5, name: "Меф", emoji: "🧂", price: 1700, image: "images/Mef.png", bgColor: "#FB8C00" },
-            { id: 6, name: "А-кристалл", emoji: "💎", price: 5500, image: "images/Cry.png", bgColor: "#1E88E5" },
-            { id: 7, name: "Психотропные грибы", emoji: "🍄", price: 500, image: "images/Mush.png", bgColor: "#6D4C41" },
-            { id: 8, name: "Лирика", emoji: "💧", price: 8000, image: "images/Lyr.png", bgColor: "#039BE5" }
+            {id:1,name:"Шишки",emoji:"🌰",price:3000,bgColor:"#43A047"},
+            {id:2,name:"Гашиш",emoji:"🪴",price:3600,bgColor:"#7B5E3B"},
+            {id:3,name:"Амфетамин",emoji:"💊",price:2200,bgColor:"#E53935"},
+            {id:4,name:"Экстази",emoji:"🍃",price:1200,bgColor:"#8E24AA"},
+            {id:5,name:"Меф",emoji:"🧂",price:1700,bgColor:"#FB8C00"},
+            {id:6,name:"А-кристалл",emoji:"💎",price:5500,bgColor:"#1E88E5"},
+            {id:7,name:"Психотропные грибы",emoji:"🍄",price:500,bgColor:"#6D4C41"},
+            {id:8,name:"Лирика",emoji:"💧",price:8000,bgColor:"#039BE5"}
         ];
 
-        // ===== СОСТОЯНИЕ =====
         let state = {
             city: localStorage.getItem('selectedCity') || 'Москва',
             selectedProduct: null,
@@ -728,291 +715,165 @@
             pendingRequests: {}
         };
 
-        // ===== ВОССТАНОВЛЕНИЕ СКИДКИ ИЗ LOCALSTORAGE =====
         function loadStoredPromo() {
             const stored = localStorage.getItem('activePromo');
             if (stored) {
                 try {
                     const promo = JSON.parse(stored);
-                    // Проверяем, не устарел ли промокод (например, 1 час)
-                    const age = Date.now() - promo.timestamp;
-                    const maxAge = 60 * 60 * 1000; // 1 час
-                    if (age < maxAge) {
-                        state.appliedPromo = {
-                            code: promo.code,
-                            discount: promo.discount
-                        };
-                        console.log('✅ Восстановлен промокод из localStorage:', promo.code);
+                    if (Date.now() - promo.timestamp < 3600000) {
+                        state.appliedPromo = {code: promo.code, discount: promo.discount};
                     } else {
                         localStorage.removeItem('activePromo');
                     }
-                } catch (e) {
-                    localStorage.removeItem('activePromo');
-                }
+                } catch { localStorage.removeItem('activePromo'); }
             }
         }
-
-        // ===== СОХРАНЕНИЕ ПРОМОКОДА В LOCALSTORAGE =====
         function savePromoToStorage(code, discount) {
-            const promo = {
-                code: code,
-                discount: discount,
-                timestamp: Date.now()
-            };
-            localStorage.setItem('activePromo', JSON.stringify(promo));
+            localStorage.setItem('activePromo', JSON.stringify({code, discount, timestamp: Date.now()}));
         }
+        function clearStoredPromo() { localStorage.removeItem('activePromo'); }
 
-        // ===== УДАЛЕНИЕ ПРОМОКОДА ИЗ STORAGE =====
-        function clearStoredPromo() {
-            localStorage.removeItem('activePromo');
-        }
-
-        // ===== ГОРОДА =====
+        // Города
         function renderCities() {
             const grid = document.getElementById('citiesGrid');
-            grid.innerHTML = CITIES.map(city => `
-                <div class="city-item ${city === state.city ? 'selected' : ''}" 
-                     onclick="selectCity('${city}')">
-                    ${city}
-                </div>
-            `).join('');
+            grid.innerHTML = CITIES.map(c => `<div class="city-item ${c===state.city?'selected':''}" onclick="selectCity('${c}')">${c}</div>`).join('');
         }
-
         window.selectCity = function(city) {
             state.city = city;
             document.querySelectorAll('.city-item').forEach(el => {
-                if (el.textContent.trim() === city) {
-                    el.classList.add('selected');
-                } else {
-                    el.classList.remove('selected');
-                }
+                el.classList.toggle('selected', el.textContent.trim()===city);
             });
         };
+        function openCityModal() { renderCities(); document.getElementById('cityModal').classList.add('show'); }
+        function closeCityModal() { document.getElementById('cityModal').classList.remove('show'); }
 
-        function openCityModal() {
-            renderCities();
-            document.getElementById('cityModal').classList.add('show');
-        }
-
-        function closeCityModal() {
-            document.getElementById('cityModal').classList.remove('show');
-        }
-
-        // ===== ТОВАРЫ =====
+        // Товары
         function renderProducts() {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = PRODUCTS.map(product => {
-                return `
-                <div class="product-card" onclick="selectProduct(${product.id})">
-                    <div class="product-image" style="background: ${product.bgColor}; display: flex; align-items: center; justify-content: center;">
-                        <span style="font-size: 48px;">${product.emoji}</span>
+            grid.innerHTML = PRODUCTS.map(p => `
+                <div class="product-card" onclick="selectProduct(${p.id})">
+                    <div class="product-image" style="background:${p.bgColor};display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:48px;">${p.emoji}</span>
                     </div>
                     <div class="product-info">
-                        <div class="product-name">${product.name}</div>
-                        <div class="product-price">${product.price.toLocaleString()}</div>
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-price">${p.price.toLocaleString()}</div>
                     </div>
                 </div>
-            `}).join('');
+            `).join('');
         }
-
         window.selectProduct = function(id) {
-            state.selectedProduct = PRODUCTS.find(p => p.id === id);
+            state.selectedProduct = PRODUCTS.find(p=>p.id===id);
             state.quantity = 1;
-            
-            // Не сбрасываем appliedPromo при смене товара, чтобы скидка оставалась
-            // Но если нужно сбрасывать, раскомментируйте:
-            // state.appliedPromo = null;
-            
-            const product = state.selectedProduct;
-            
-            document.getElementById('productDetailImage').innerHTML = `<span>${product.emoji}</span>`;
-            document.getElementById('productDetailImage').style.background = product.bgColor;
-            
-            document.getElementById('productDetailName').textContent = product.name;
-            document.getElementById('productDetailPrice').textContent = product.price.toLocaleString();
-            document.getElementById('productNavTitle').textContent = product.name;
-            
-            const qtyContainer = document.getElementById('quantityButtons');
-            qtyContainer.innerHTML = '';
-            for (let i = 1; i <= 5; i++) {
+            const p = state.selectedProduct;
+            document.getElementById('productDetailImage').innerHTML = `<span>${p.emoji}</span>`;
+            document.getElementById('productDetailImage').style.background = p.bgColor;
+            document.getElementById('productDetailName').textContent = p.name;
+            document.getElementById('productDetailPrice').textContent = p.price.toLocaleString();
+            document.getElementById('productNavTitle').textContent = p.name;
+            const qtyDiv = document.getElementById('quantityButtons');
+            qtyDiv.innerHTML = '';
+            for (let i=1;i<=5;i++) {
                 const btn = document.createElement('button');
-                btn.className = `qty-btn ${i === 1 ? 'selected' : ''}`;
-                btn.textContent = i + 'г';
-                btn.onclick = () => setQuantity(i);
-                qtyContainer.appendChild(btn);
+                btn.className = `qty-btn ${i===1?'selected':''}`;
+                btn.textContent = i+'г';
+                btn.onclick = ()=>setQuantity(i);
+                qtyDiv.appendChild(btn);
             }
-            
             document.getElementById('promoInput').value = '';
             document.getElementById('promoStatus').style.display = 'none';
-            
             updatePrice();
-            
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('productScreen').classList.remove('hidden');
         };
-
         function setQuantity(qty) {
             state.quantity = qty;
-            document.querySelectorAll('.qty-btn').forEach((btn, i) => {
-                if (i + 1 === qty) {
-                    btn.classList.add('selected');
-                } else {
-                    btn.classList.remove('selected');
-                }
-            });
+            document.querySelectorAll('.qty-btn').forEach((b,i)=>b.classList.toggle('selected', i+1===qty));
             updatePrice();
         }
-
         function updatePrice() {
             if (!state.selectedProduct) return;
-            
-            const baseTotal = state.selectedProduct.price * state.quantity;
-            let finalTotal = baseTotal;
-            
+            const base = state.selectedProduct.price * state.quantity;
+            let final = base;
             const priceDiv = document.getElementById('totalPrice');
-            
             if (state.appliedPromo) {
-                const discountAmount = Math.round(baseTotal * state.appliedPromo.discount / 100);
-                finalTotal = baseTotal - discountAmount;
-                
-                priceDiv.innerHTML = `
-                    <div class="price-container">
-                        <span class="old-price">${baseTotal.toLocaleString()} ₽</span>
-                        <span>${finalTotal.toLocaleString()} ₽</span>
-                        <span class="discount-badge">-${state.appliedPromo.discount}%</span>
-                    </div>
-                `;
+                const disc = Math.round(base * state.appliedPromo.discount/100);
+                final = base - disc;
+                priceDiv.innerHTML = `<div class="price-container"><span class="old-price">${base.toLocaleString()} ₽</span><span>${final.toLocaleString()} ₽</span><span class="discount-badge">-${state.appliedPromo.discount}%</span></div>`;
             } else {
-                priceDiv.innerHTML = `
-                    <div class="price-container">
-                        <span>${baseTotal.toLocaleString()} ₽</span>
-                    </div>
-                `;
+                priceDiv.innerHTML = `<div class="price-container"><span>${base.toLocaleString()} ₽</span></div>`;
             }
         }
 
-        // ===== ПРОМОКОДЫ =====
+        // Промокоды
         async function applyPromo() {
-    const input = document.getElementById('promoInput');
-    const code = input.value.trim().toUpperCase();
-    const statusDiv = document.getElementById('promoStatus');
-    const applyBtn = document.getElementById('applyPromo');
+            const input = document.getElementById('promoInput');
+            const code = input.value.trim().toUpperCase();
+            if (!code) return showPromoStatus('Введите промокод','error');
+            if (!state.selectedProduct) return showPromoStatus('Сначала выберите товар','error');
+            const applyBtn = document.getElementById('applyPromo');
+            applyBtn.disabled = true;
+            showPromoStatus('Проверка промокода...','info');
 
-    if (!code) {
-        showPromoStatus('Введите промокод', 'error');
-        return;
-    }
-
-    if (!state.selectedProduct) {
-        showPromoStatus('Сначала выберите товар', 'error');
-        return;
-    }
-
-    applyBtn.disabled = true;
-    showPromoStatus('Проверка промокода...', 'info');
-
-    const requestId = Date.now() + '_' + Math.random().toString(36);
-
-    state.pendingRequests[requestId] = (response) => {
-        delete state.pendingRequests[requestId];
-        applyBtn.disabled = false;
-        if (response.success) {
-            state.appliedPromo = {
-                code: code,
-                discount: response.discount
-            };
-            savePromoToStorage(code, response.discount);
-            showPromoStatus(`✅ Промокод применен! Скидка ${response.discount}%`, 'success');
-            updatePrice();
-        } else {
-            showPromoStatus(response.error || '❌ Неверный промокод', 'error');
-            state.appliedPromo = null;
-            clearStoredPromo();
-            updatePrice();
-        }
-    };
-
-    if (userId) {
-        // Есть ID – используем HTTP (без закрытия)
-        const messageData = {
-            action: 'check_promo',
-            requestId: requestId,
-            userId: userId,
-            code: code,
-            productId: state.selectedProduct.id
-        };
-
-        fetch(TELEGRAM_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: userId,
-                text: JSON.stringify(messageData)
-            })
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (!result.ok) throw new Error(result.description);
-            console.log('✅ Запрос на проверку промокода отправлен');
-        })
-        .catch(error => {
-            console.error('❌ Ошибка HTTP:', error);
-            showPromoStatus('❌ Ошибка соединения', 'error');
-            applyBtn.disabled = false;
-            delete state.pendingRequests[requestId];
-        });
-
-        setTimeout(() => {
-            if (state.pendingRequests[requestId]) {
+            const requestId = Date.now() + '_' + Math.random().toString(36);
+            state.pendingRequests[requestId] = (response) => {
                 delete state.pendingRequests[requestId];
                 applyBtn.disabled = false;
-                showPromoStatus('❌ Таймаут ответа от бота', 'error');
-            }
-        }, 10000);
-    } else {
-        // Нет ID – используем sendData (с закрытием, но для теста)
-        const data = {
-            action: 'check_promo',
-            requestId: requestId,
-            code: code,
-            productId: state.selectedProduct.id
-        };
-        tg.sendData(JSON.stringify(data));
-        // При использовании sendData приложение закроется, поэтому не ждём ответа.
-        // Однако мы не можем показать результат здесь. В реальности, если userId нет,
-        // то это тестовый режим, и мы просто надеемся, что бот ответит.
-        showPromoStatus('⏳ Запрос отправлен, приложение закроется...', 'info');
-        // Через некоторое время снимем блокировку, но пользователь уже уйдёт.
-        setTimeout(() => {
-            applyBtn.disabled = false;
-            if (state.pendingRequests[requestId]) {
-                delete state.pendingRequests[requestId];
-            }
-        }, 5000);
-    }
-}
-        function showPromoStatus(msg, type) {
-            const status = document.getElementById('promoStatus');
-            status.className = `promo-status ${type}`;
-            status.textContent = msg;
-            status.style.display = 'block';
-            
-            if (type === 'success') {
+                if (response.success) {
+                    state.appliedPromo = {code, discount: response.discount};
+                    savePromoToStorage(code, response.discount);
+                    showPromoStatus(`✅ Промокод применен! Скидка ${response.discount}%`,'success');
+                    updatePrice();
+                } else {
+                    showPromoStatus(response.error || '❌ Неверный промокод','error');
+                    state.appliedPromo = null;
+                    clearStoredPromo();
+                    updatePrice();
+                }
+            };
+
+            if (userId) {
+                const msgData = {action:'check_promo', requestId, userId, code, productId: state.selectedProduct.id};
+                try {
+                    const res = await fetch(TELEGRAM_API_URL, {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({chat_id: userId, text: JSON.stringify(msgData)})
+                    });
+                    const result = await res.json();
+                    if (!result.ok) throw new Error(result.description);
+                } catch (e) {
+                    console.error(e);
+                    showPromoStatus('❌ Ошибка соединения','error');
+                    applyBtn.disabled = false;
+                    delete state.pendingRequests[requestId];
+                }
                 setTimeout(() => {
-                    status.style.display = 'none';
-                }, 3000);
+                    if (state.pendingRequests[requestId]) {
+                        delete state.pendingRequests[requestId];
+                        applyBtn.disabled = false;
+                        showPromoStatus('❌ Таймаут ответа от бота','error');
+                    }
+                }, 15000);
+            } else {
+                // fallback (тест вне Telegram) – закроется
+                tg.sendData(JSON.stringify({action:'check_promo', requestId, code, productId: state.selectedProduct.id}));
+                showPromoStatus('⏳ Запрос отправлен, приложение закроется...','info');
+                setTimeout(()=>{ applyBtn.disabled=false; }, 5000);
             }
         }
+        function showPromoStatus(msg, type) {
+            const s = document.getElementById('promoStatus');
+            s.className = `promo-status ${type}`;
+            s.textContent = msg;
+            s.style.display = 'block';
+            if (type==='success') setTimeout(()=>s.style.display='none',3000);
+        }
 
-        // ===== ЗАКАЗ =====
+        // Заказ
         function placeOrder() {
             if (!state.selectedProduct) return;
-            
-            const baseTotal = state.selectedProduct.price * state.quantity;
-            const finalTotal = state.appliedPromo 
-                ? baseTotal - Math.round(baseTotal * state.appliedPromo.discount / 100)
-                : baseTotal;
-            
+            const base = state.selectedProduct.price * state.quantity;
+            const final = state.appliedPromo ? base - Math.round(base * state.appliedPromo.discount/100) : base;
             const orderData = {
                 action: 'order',
                 userId: userId || 0,
@@ -1020,151 +881,78 @@
                 productName: state.selectedProduct.name,
                 quantity: state.quantity,
                 basePrice: state.selectedProduct.price,
-                baseTotal: baseTotal,
-                finalTotal: finalTotal,
+                baseTotal: base,
+                finalTotal: final,
                 city: state.city,
                 promoCode: state.appliedPromo?.code || null,
                 discount: state.appliedPromo?.discount || 0
             };
-            
-            console.log('📦 Отправка заказа:', orderData);
-            
-            // Показываем подтверждение
             document.getElementById('productScreen').classList.add('hidden');
             document.getElementById('confirmationScreen').classList.remove('hidden');
-            
-            // Заполняем детали
             let discountHtml = '';
             if (state.appliedPromo) {
                 discountHtml = `
-                    <div class="order-row">
-                        <span class="order-label">🏷️ Промокод:</span>
-                        <span class="order-value">${state.appliedPromo.code} (-${state.appliedPromo.discount}%)</span>
-                    </div>
-                    <div class="order-row">
-                        <span class="order-label">💰 Экономия:</span>
-                        <span class="order-value">${(baseTotal - finalTotal).toLocaleString()} ₽</span>
-                    </div>
+                    <div class="order-row"><span class="order-label">🏷️ Промокод:</span><span class="order-value">${state.appliedPromo.code} (-${state.appliedPromo.discount}%)</span></div>
+                    <div class="order-row"><span class="order-label">💰 Экономия:</span><span class="order-value">${(base-final).toLocaleString()} ₽</span></div>
                 `;
             }
-            
             document.getElementById('orderDetails').innerHTML = `
-                <div class="order-row">
-                    <span class="order-label">🏙️ Город:</span>
-                    <span class="order-value">${state.city}</span>
-                </div>
-                <div class="order-row">
-                    <span class="order-label">📦 Товар:</span>
-                    <span class="order-value">${state.selectedProduct.name}</span>
-                </div>
-                <div class="order-row">
-                    <span class="order-label">📊 Количество:</span>
-                    <span class="order-value">${state.quantity} г</span>
-                </div>
-                <div class="order-row">
-                    <span class="order-label">💰 Цена за г:</span>
-                    <span class="order-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
-                </div>
+                <div class="order-row"><span class="order-label">🏙️ Город:</span><span class="order-value">${state.city}</span></div>
+                <div class="order-row"><span class="order-label">📦 Товар:</span><span class="order-value">${state.selectedProduct.name}</span></div>
+                <div class="order-row"><span class="order-label">📊 Количество:</span><span class="order-value">${state.quantity} г</span></div>
+                <div class="order-row"><span class="order-label">💰 Цена за г:</span><span class="order-value">${state.selectedProduct.price.toLocaleString()} ₽</span></div>
                 ${discountHtml}
             `;
-            
-            document.getElementById('orderTotal').innerHTML = `${finalTotal.toLocaleString()} ₽`;
-            
-            if (state.appliedPromo) {
-                document.getElementById('orderDiscount').innerHTML = 
-                    `🎉 Промокод ${state.appliedPromo.code} применен! Скидка ${state.appliedPromo.discount}%`;
-            } else {
-                document.getElementById('orderDiscount').innerHTML = '';
-            }
-            
-            // Отправляем заказ (sendData закроет приложение)
+            document.getElementById('orderTotal').innerHTML = `${final.toLocaleString()} ₽`;
+            document.getElementById('orderDiscount').innerHTML = state.appliedPromo ? `🎉 Промокод ${state.appliedPromo.code} применен!` : '';
             tg.sendData(JSON.stringify(orderData));
         }
 
-        // ===== СВЯЗЬ С АДМИНОМ =====
+        // Связь с админом
         function contactAdmin() {
-            const data = {
-                action: 'contact_admin',
-                userId: userId || 0,
-                city: state.city
-            };
-            
-            tg.sendData(JSON.stringify(data));
-            
-            tg.showPopup({
-                title: '📞 Запрос отправлен',
-                message: 'Администратор свяжется с вами',
-                buttons: [{ type: 'ok' }]
-            });
+            tg.sendData(JSON.stringify({action:'contact_admin', userId: userId||0, city: state.city}));
+            tg.showPopup({title:'📞 Запрос отправлен', message:'Администратор свяжется с вами', buttons:[{type:'ok'}]});
         }
 
-        // ===== НАВИГАЦИЯ =====
         function goToMain() {
             document.getElementById('productScreen').classList.add('hidden');
             document.getElementById('confirmationScreen').classList.add('hidden');
             document.getElementById('mainScreen').classList.remove('hidden');
-            // Не сбрасываем appliedPromo при возврате в каталог
         }
 
-        // ===== ОБРАБОТКА ОТВЕТОВ ОТ БОТА =====
         function handleBotMessage(event) {
-            console.log('📩 Получен ответ от бота:', event);
             try {
                 const data = JSON.parse(event.data);
-                if (data.action === 'promo_response' && data.requestId) {
-                    if (state.pendingRequests[data.requestId]) {
-                        state.pendingRequests[data.requestId](data);
-                    }
+                if (data.action==='promo_response' && data.requestId && state.pendingRequests[data.requestId]) {
+                    state.pendingRequests[data.requestId](data);
                 }
-            } catch (e) {
-                console.log('Не удалось распарсить ответ:', e);
-            }
+            } catch (e) {}
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ =====
         function init() {
-            console.log('🚀 Запуск приложения');
-            
-            // Восстанавливаем промокод из localStorage
             loadStoredPromo();
-            
             document.getElementById('selectedCity').textContent = state.city;
             document.getElementById('citySelector').addEventListener('click', openCityModal);
             document.getElementById('closeCityModal').addEventListener('click', closeCityModal);
-            document.getElementById('confirmCity').addEventListener('click', () => {
+            document.getElementById('confirmCity').addEventListener('click', ()=>{
                 localStorage.setItem('selectedCity', state.city);
                 document.getElementById('selectedCity').textContent = state.city;
                 closeCityModal();
             });
-            
-            document.getElementById('cityModal').addEventListener('click', (e) => {
-                if (e.target === document.getElementById('cityModal')) {
-                    closeCityModal();
-                }
-            });
-            
+            document.getElementById('cityModal').addEventListener('click', e=>{ if(e.target===document.getElementById('cityModal')) closeCityModal(); });
             renderProducts();
-            
             document.getElementById('contactAdminMain').addEventListener('click', contactAdmin);
             document.getElementById('contactAdminProduct').addEventListener('click', contactAdmin);
             document.getElementById('contactAfterOrder').addEventListener('click', contactAdmin);
-            
             document.getElementById('backToCatalog').addEventListener('click', goToMain);
             document.getElementById('continueShoppingBtn').addEventListener('click', goToMain);
             document.getElementById('continueAfterOrder').addEventListener('click', goToMain);
-            
             document.getElementById('applyPromo').addEventListener('click', applyPromo);
-            document.getElementById('promoInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') applyPromo();
-            });
-            
+            document.getElementById('promoInput').addEventListener('keypress', e=>{ if(e.key==='Enter') applyPromo(); });
             document.getElementById('orderBtn').addEventListener('click', placeOrder);
-            
             tg.onEvent('message', handleBotMessage);
-            
             console.log('✅ Приложение готово');
         }
-
         init();
     </script>
 </body>
