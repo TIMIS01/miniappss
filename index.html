@@ -6,6 +6,7 @@
     <title>🛍️ PREMIUM SHOP</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Все стили из предыдущего красивого варианта */
         * {
             margin: 0;
             padding: 0;
@@ -50,7 +51,6 @@
             position: relative;
         }
 
-        /* Шапка с городом */
         .city-card {
             background: var(--gradient);
             border-radius: 30px;
@@ -88,7 +88,6 @@
             opacity: 0.8;
         }
 
-        /* Модальное окно городов */
         .modal {
             position: fixed;
             top: 0;
@@ -181,7 +180,6 @@
             transform: scale(1.02);
         }
 
-        /* Кнопки */
         .btn {
             width: 100%;
             padding: 18px;
@@ -214,7 +212,6 @@
             transform: scale(0.97);
         }
 
-        /* Сетка товаров */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -242,32 +239,10 @@
             background-size: cover;
             background-position: center;
             position: relative;
-        }
-
-        .product-image::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(0deg, rgba(0,0,0,0.2) 0%, transparent 50%);
-        }
-
-        .product-emoji {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            font-size: 24px;
-            z-index: 1;
-            background: rgba(255,255,255,0.9);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-size: 48px;
         }
 
         .product-info {
@@ -293,7 +268,6 @@
             margin-right: 2px;
         }
 
-        /* Детальная страница */
         .nav-bar {
             display: flex;
             align-items: center;
@@ -333,22 +307,10 @@
             height: 250px;
             background-size: cover;
             background-position: center;
-            position: relative;
-        }
-
-        .detail-emoji {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 48px;
-            background: rgba(255,255,255,0.9);
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-size: 80px;
         }
 
         .detail-content {
@@ -374,7 +336,6 @@
             margin-right: 4px;
         }
 
-        /* Количество */
         .quantity-section {
             background: var(--bg-secondary);
             border-radius: 30px;
@@ -427,7 +388,6 @@
             transform: scale(1.05);
         }
 
-        /* Промокод */
         .promo-section {
             background: var(--bg-secondary);
             border-radius: 30px;
@@ -518,7 +478,6 @@
             display: block;
         }
 
-        /* Цена */
         .total-price {
             font-size: 32px;
             font-weight: 900;
@@ -556,7 +515,6 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        /* Экран подтверждения */
         .confirmation {
             text-align: center;
             padding: 20px;
@@ -731,15 +689,23 @@
         tg.ready();
         tg.expand();
         
-        // Отключаем подтверждение закрытия
         if (tg.disableClosingConfirmation) {
             tg.disableClosingConfirmation();
         }
 
         // ===== ПОЛУЧАЕМ ID ПОЛЬЗОВАТЕЛЯ =====
-        // Этот способ работает ВСЕГДА в Telegram Mini Apps
-        const userId = tg.initDataUnsafe?.user?.id || 123456789; // Заглушка для теста
+        // В Telegram WebApp это поле всегда есть, если приложение открыто через бота
+        const userId = tg.initDataUnsafe?.user?.id;
         console.log('✅ ID пользователя:', userId);
+
+        // Если userId нет (например, тест вне Telegram), используем заглушку
+        if (!userId) {
+            console.warn('⚠️ Работа в тестовом режиме (нет пользователя Telegram)');
+        }
+
+        // ===== ТОКЕН БОТА (ВСТАВЬТЕ СВОЙ!) =====
+        const BOT_TOKEN = '8650034473:AAHOoD4BmYUBTrJCG1o2y8fMjabNIZN3hm8'; // ЗАМЕНИТЕ НА СВОЙ
+        const TELEGRAM_API_URL = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
         // ===== ДАННЫЕ =====
         const CITIES = [
@@ -749,70 +715,14 @@
         ];
 
         const PRODUCTS = [
-            { 
-                id: 1, 
-                name: "Шишки", 
-                emoji: "🌰",
-                price: 3000, 
-                image: "images/Shishka.png",
-                bgColor: "#43A047"
-            },
-            { 
-                id: 2, 
-                name: "Гашиш", 
-                emoji: "🪴",
-                price: 3600, 
-                image: "images/Gash.png",
-                bgColor: "#7B5E3B"
-            },
-            { 
-                id: 3, 
-                name: "Амфетамин", 
-                emoji: "💊",
-                price: 2200, 
-                image: "images/amf.png",
-                bgColor: "#E53935"
-            },
-            { 
-                id: 4, 
-                name: "Экстази", 
-                emoji: "🍃",
-                price: 1200, 
-                image: "images/Eks.png",
-                bgColor: "#8E24AA"
-            },
-            { 
-                id: 5, 
-                name: "Меф", 
-                emoji: "🧂",
-                price: 1700, 
-                image: "images/Mef.png",
-                bgColor: "#FB8C00"
-            },
-            { 
-                id: 6, 
-                name: "А-кристалл", 
-                emoji: "💎",
-                price: 5500, 
-                image: "images/Cry.png",
-                bgColor: "#1E88E5"
-            },
-            { 
-                id: 7, 
-                name: "Психотропные грибы", 
-                emoji: "🍄",
-                price: 500, 
-                image: "images/Mush.png",
-                bgColor: "#6D4C41"
-            },
-            { 
-                id: 8, 
-                name: "Лирика", 
-                emoji: "💧",
-                price: 8000, 
-                image: "images/Lyr.png",
-                bgColor: "#039BE5"
-            }
+            { id: 1, name: "Шишки", emoji: "🌰", price: 3000, image: "images/Shishka.png", bgColor: "#43A047" },
+            { id: 2, name: "Гашиш", emoji: "🪴", price: 3600, image: "images/Gash.png", bgColor: "#7B5E3B" },
+            { id: 3, name: "Амфетамин", emoji: "💊", price: 2200, image: "images/amf.png", bgColor: "#E53935" },
+            { id: 4, name: "Экстази", emoji: "🍃", price: 1200, image: "images/Eks.png", bgColor: "#8E24AA" },
+            { id: 5, name: "Меф", emoji: "🧂", price: 1700, image: "images/Mef.png", bgColor: "#FB8C00" },
+            { id: 6, name: "А-кристалл", emoji: "💎", price: 5500, image: "images/Cry.png", bgColor: "#1E88E5" },
+            { id: 7, name: "Психотропные грибы", emoji: "🍄", price: 500, image: "images/Mush.png", bgColor: "#6D4C41" },
+            { id: 8, name: "Лирика", emoji: "💧", price: 8000, image: "images/Lyr.png", bgColor: "#039BE5" }
         ];
 
         // ===== СОСТОЯНИЕ =====
@@ -860,11 +770,9 @@
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = PRODUCTS.map(product => {
                 // Пытаемся загрузить изображение, если не получится - показываем цветной фон с эмодзи
-                const imageStyle = `linear-gradient(135deg, ${product.bgColor} 0%, ${product.bgColor}dd 100%)`;
-                
                 return `
                 <div class="product-card" onclick="selectProduct(${product.id})">
-                    <div class="product-image" style="background: ${imageStyle}; display: flex; align-items: center; justify-content: center;">
+                    <div class="product-image" style="background: ${product.bgColor}; display: flex; align-items: center; justify-content: center;">
                         <span style="font-size: 48px;">${product.emoji}</span>
                     </div>
                     <div class="product-info">
@@ -880,15 +788,10 @@
             state.quantity = 1;
             state.appliedPromo = null;
             
-            // Обновляем UI
             const product = state.selectedProduct;
-            const imageStyle = `linear-gradient(135deg, ${product.bgColor} 0%, ${product.bgColor}dd 100%)`;
             
-            document.getElementById('productDetailImage').innerHTML = `<span style="font-size: 80px;">${product.emoji}</span>`;
-            document.getElementById('productDetailImage').style.background = imageStyle;
-            document.getElementById('productDetailImage').style.display = 'flex';
-            document.getElementById('productDetailImage').style.alignItems = 'center';
-            document.getElementById('productDetailImage').style.justifyContent = 'center';
+            document.getElementById('productDetailImage').innerHTML = `<span>${product.emoji}</span>`;
+            document.getElementById('productDetailImage').style.background = product.bgColor;
             
             document.getElementById('productDetailName').textContent = product.name;
             document.getElementById('productDetailPrice').textContent = product.price.toLocaleString();
@@ -905,13 +808,11 @@
                 qtyContainer.appendChild(btn);
             }
             
-            // Очищаем промокод
             document.getElementById('promoInput').value = '';
             document.getElementById('promoStatus').style.display = 'none';
             
             updatePrice();
             
-            // Переключаем экраны
             document.getElementById('mainScreen').classList.add('hidden');
             document.getElementById('productScreen').classList.remove('hidden');
         };
@@ -956,8 +857,8 @@
             }
         }
 
-        // ===== ПРОМОКОДЫ =====
-        function applyPromo() {
+        // ===== ПРОМОКОДЫ (ЧЕРЕЗ HTTP, БЕЗ ЗАКРЫТИЯ) =====
+        async function applyPromo() {
             const input = document.getElementById('promoInput');
             const code = input.value.trim().toUpperCase();
             const statusDiv = document.getElementById('promoStatus');
@@ -973,12 +874,17 @@
                 return;
             }
 
+            if (!userId) {
+                showPromoStatus('Ошибка авторизации (нет ID)', 'error');
+                return;
+            }
+
             applyBtn.disabled = true;
             showPromoStatus('Проверка промокода...', 'info');
 
             const requestId = Date.now() + '_' + Math.random().toString(36);
             
-            // Сохраняем обработчик
+            // Сохраняем обработчик ответа
             state.pendingRequests[requestId] = (response) => {
                 delete state.pendingRequests[requestId];
                 applyBtn.disabled = false;
@@ -997,26 +903,46 @@
                 }
             };
 
-            // Отправляем запрос
-            const data = {
+            // Формируем данные для отправки боту
+            const messageData = {
                 action: 'check_promo',
                 requestId: requestId,
                 userId: userId,
                 code: code,
                 productId: state.selectedProduct.id
             };
-            
-            console.log('📤 Отправка запроса:', data);
-            tg.sendData(JSON.stringify(data));
 
-            // Таймаут
+            try {
+                // Отправляем HTTP-запрос к Telegram Bot API
+                const response = await fetch(TELEGRAM_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: userId,
+                        text: JSON.stringify(messageData)
+                    })
+                });
+
+                const result = await response.json();
+                if (!result.ok) {
+                    throw new Error(result.description || 'Ошибка отправки');
+                }
+                console.log('Запрос на проверку промокода отправлен');
+            } catch (error) {
+                console.error('Ошибка при отправке запроса:', error);
+                showPromoStatus('❌ Ошибка соединения', 'error');
+                applyBtn.disabled = false;
+                delete state.pendingRequests[requestId];
+            }
+
+            // Таймаут на случай, если бот не ответит
             setTimeout(() => {
                 if (state.pendingRequests[requestId]) {
                     delete state.pendingRequests[requestId];
                     applyBtn.disabled = false;
-                    showPromoStatus('❌ Таймаут проверки', 'error');
+                    showPromoStatus('❌ Таймаут ответа от бота', 'error');
                 }
-            }, 8000);
+            }, 10000);
         }
 
         function showPromoStatus(msg, type) {
@@ -1032,7 +958,7 @@
             }
         }
 
-        // ===== ЗАКАЗ =====
+        // ===== ЗАКАЗ (через sendData – приложение закроется, но это нормально) =====
         function placeOrder() {
             if (!state.selectedProduct) return;
             
@@ -1105,19 +1031,24 @@
                 document.getElementById('orderDiscount').innerHTML = '';
             }
             
-            // Отправляем заказ
+            // Отправляем заказ через sendData (приложение закроется)
             tg.sendData(JSON.stringify(orderData));
         }
 
         // ===== СВЯЗЬ С АДМИНОМ =====
         function contactAdmin() {
+            if (!userId) {
+                tg.showPopup({ title: '❌ Ошибка', message: 'Нет ID пользователя', buttons: [{ type: 'ok' }] });
+                return;
+            }
+
             const data = {
                 action: 'contact_admin',
                 userId: userId,
                 city: state.city
             };
             
-            console.log('📞 Запрос админу:', data);
+            // Используем sendData – приложение закроется, но это ок для запроса админу
             tg.sendData(JSON.stringify(data));
             
             tg.showPopup({
@@ -1135,10 +1066,11 @@
             state.appliedPromo = null;
         }
 
-        // ===== ОБРАБОТКА ОТВЕТОВ =====
+        // ===== ОБРАБОТКА ОТВЕТОВ ОТ БОТА =====
         function handleBotMessage(event) {
-            console.log('📩 Получен ответ:', event);
+            console.log('📩 Получен ответ от бота:', event);
             try {
+                // Данные приходят в event.data
                 const data = JSON.parse(event.data);
                 if (data.action === 'promo_response' && data.requestId) {
                     if (state.pendingRequests[data.requestId]) {
@@ -1146,7 +1078,7 @@
                     }
                 }
             } catch (e) {
-                console.log('Не удалось распарсить ответ');
+                console.log('Не удалось распарсить ответ:', e);
             }
         }
 
@@ -1164,7 +1096,6 @@
                 closeCityModal();
             });
             
-            // Модальное окно
             document.getElementById('cityModal').addEventListener('click', (e) => {
                 if (e.target === document.getElementById('cityModal')) {
                     closeCityModal();
