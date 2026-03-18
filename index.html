@@ -893,92 +893,104 @@
 
         // ===== ПРОМОКОДЫ =====
         async function applyPromo() {
-            const input = document.getElementById('promoInput');
-            const code = input.value.trim().toUpperCase();
-            const statusDiv = document.getElementById('promoStatus');
-            const applyBtn = document.getElementById('applyPromo');
+    const input = document.getElementById('promoInput');
+    const code = input.value.trim().toUpperCase();
+    const statusDiv = document.getElementById('promoStatus');
+    const applyBtn = document.getElementById('applyPromo');
 
-            if (!code) {
-                showPromoStatus('Введите промокод', 'error');
-                return;
-            }
+    if (!code) {
+        showPromoStatus('Введите промокод', 'error');
+        return;
+    }
 
-            if (!state.selectedProduct) {
-                showPromoStatus('Сначала выберите товар', 'error');
-                return;
-            }
+    if (!state.selectedProduct) {
+        showPromoStatus('Сначала выберите товар', 'error');
+        return;
+    }
 
-            applyBtn.disabled = true;
-            showPromoStatus('Проверка промокода...', 'info');
+    applyBtn.disabled = true;
+    showPromoStatus('Проверка промокода...', 'info');
 
-            const requestId = Date.now() + '_' + Math.random().toString(36);
+    const requestId = Date.now() + '_' + Math.random().toString(36);
 
-            state.pendingRequests[requestId] = (response) => {
+    state.pendingRequests[requestId] = (response) => {
+        delete state.pendingRequests[requestId];
+        applyBtn.disabled = false;
+        if (response.success) {
+            state.appliedPromo = {
+                code: code,
+                discount: response.discount
+            };
+            savePromoToStorage(code, response.discount);
+            showPromoStatus(`✅ Промокод применен! Скидка ${response.discount}%`, 'success');
+            updatePrice();
+        } else {
+            showPromoStatus(response.error || '❌ Неверный промокод', 'error');
+            state.appliedPromo = null;
+            clearStoredPromo();
+            updatePrice();
+        }
+    };
+
+    if (userId) {
+        // Есть ID – используем HTTP (без закрытия)
+        const messageData = {
+            action: 'check_promo',
+            requestId: requestId,
+            userId: userId,
+            code: code,
+            productId: state.selectedProduct.id
+        };
+
+        fetch(TELEGRAM_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: userId,
+                text: JSON.stringify(messageData)
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (!result.ok) throw new Error(result.description);
+            console.log('✅ Запрос на проверку промокода отправлен');
+        })
+        .catch(error => {
+            console.error('❌ Ошибка HTTP:', error);
+            showPromoStatus('❌ Ошибка соединения', 'error');
+            applyBtn.disabled = false;
+            delete state.pendingRequests[requestId];
+        });
+
+        setTimeout(() => {
+            if (state.pendingRequests[requestId]) {
                 delete state.pendingRequests[requestId];
                 applyBtn.disabled = false;
-                if (response.success) {
-                    state.appliedPromo = {
-                        code: code,
-                        discount: response.discount
-                    };
-                    // Сохраняем в localStorage
-                    savePromoToStorage(code, response.discount);
-                    showPromoStatus(`✅ Промокод применен! Скидка ${response.discount}%`, 'success');
-                    updatePrice();
-                } else {
-                    showPromoStatus(response.error || '❌ Неверный промокод', 'error');
-                    state.appliedPromo = null;
-                    clearStoredPromo();
-                    updatePrice();
-                }
-            };
-
-            // Отправляем запрос через HTTP (если есть userId) или через sendData (запасной вариант)
-            if (userId) {
-                const messageData = {
-                    action: 'check_promo',
-                    requestId: requestId,
-                    userId: userId,
-                    code: code,
-                    productId: state.selectedProduct.id
-                };
-
-                try {
-                    const response = await fetch(TELEGRAM_API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            chat_id: userId,
-                            text: JSON.stringify(messageData)
-                        })
-                    });
-                    const result = await response.json();
-                    if (!result.ok) throw new Error(result.description);
-                    console.log('✅ Запрос на проверку промокода отправлен');
-                } catch (error) {
-                    console.error('❌ Ошибка HTTP:', error);
-                    showPromoStatus('❌ Ошибка соединения', 'error');
-                    applyBtn.disabled = false;
-                    delete state.pendingRequests[requestId];
-                }
-
-                // Таймаут на случай, если бот не ответит
-                setTimeout(() => {
-                    if (state.pendingRequests[requestId]) {
-                        delete state.pendingRequests[requestId];
-                        applyBtn.disabled = false;
-                        showPromoStatus('❌ Таймаут ответа от бота', 'error');
-                    }
-                }, 10000);
-            } else {
-                // Если нет userId (тест вне Telegram), используем sendData (приложение закроется)
-                // Но перед этим сохраним запрос в localStorage, чтобы при следующем запуске проверить
-                // Однако это сложно, проще показать ошибку
-                showPromoStatus('❌ Ошибка: нет ID пользователя', 'error');
-                applyBtn.disabled = false;
+                showPromoStatus('❌ Таймаут ответа от бота', 'error');
             }
-        }
-
+        }, 10000);
+    } else {
+        // Нет ID – используем sendData (с закрытием, но для теста)
+        const data = {
+            action: 'check_promo',
+            requestId: requestId,
+            code: code,
+            productId: state.selectedProduct.id
+        };
+        tg.sendData(JSON.stringify(data));
+        // При использовании sendData приложение закроется, поэтому не ждём ответа.
+        // Однако мы не можем показать результат здесь. В реальности, если userId нет,
+        // то это тестовый режим, и мы просто надеемся, что бот ответит.
+        showPromoStatus('⏳ Запрос отправлен, приложение закроется...', 'info');
+        // Через некоторое время снимем блокировку, но пользователь уже уйдёт.
+        setTimeout(() => {
+            applyBtn.disabled = false;
+            if (state.pendingRequests[requestId]) {
+                delete state.pendingRequests[requestId];
+            }
+        }, 5000);
+    }
+}
         function showPromoStatus(msg, type) {
             const status = document.getElementById('promoStatus');
             status.className = `promo-status ${type}`;
