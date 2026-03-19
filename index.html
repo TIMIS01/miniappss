@@ -6,6 +6,7 @@
     <title>🛍️ Магазин Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* Все стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -478,9 +479,38 @@
             text-decoration: none;
             font-weight: 600;
         }
+
+        /* Уведомление о заказе */
+        .order-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+            padding: 16px;
+            border-radius: 30px;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: transform 0.3s, opacity 0.3s;
+            z-index: 2000;
+        }
+
+        .order-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
+    <!-- Уведомление о заказе -->
+    <div class="order-notification" id="order-notification">
+        ✅ Заказ отправлен администратору!
+    </div>
+
     <!-- Модальное окно выбора города -->
     <div class="modal-overlay" id="city-modal-overlay">
         <div class="city-modal">
@@ -587,56 +617,48 @@
             id: 1, 
             name: "Шишки 🌰", 
             price: 3000, 
-            category: "audio",
             image: "images/Shishka.png"
         },
         { 
             id: 2, 
             name: "Гашиш 🪴", 
             price: 3600, 
-            category: "accessories",
             image: "images/Gash.png"
         },
         { 
             id: 3, 
             name: "Амфетамин  💊", 
             price: 2200, 
-            category: "accessories",
             image: "images/amf.png"
         },
         { 
             id: 4, 
             name: "Экстази 🍃", 
             price: 1200, 
-            category: "electronics",
             image: "images/Eks.png"
         },
         { 
             id: 5, 
             name: "Меф 🧂", 
             price: 1700, 
-            category: "electronics",
             image: "images/Mef.png"
         },
         { 
             id: 6, 
             name: "А - кристалл 💎", 
             price: 5500, 
-            category: "accessories",
             image: "images/Cry.png"
         },
         { 
             id: 7, 
             name: "Психотропные грибы 🍄", 
             price: 500, 
-            category: "electronics",
             image: "images/Mush.png"
         },
         { 
             id: 8, 
             name: "Лирика 💧", 
             price: 8000, 
-            category: "audio",
             image: "images/Lyr.png"
         },
     ];
@@ -652,6 +674,17 @@
             tempSelectedCity: 'Москва',
             lastOrder: null
         };
+
+        // Функция для показа уведомления
+        function showNotification(message) {
+            const notification = document.getElementById('order-notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
 
         // ===== ФУНКЦИИ РАБОТЫ С ГОРОДОМ =====
 
@@ -774,12 +807,8 @@
             // Отправляем в бота
             tg.sendData(JSON.stringify(contactData));
             
-            // Показываем уведомление пользователю
-            tg.showPopup({
-                title: '📞 Запрос отправлен',
-                message: 'Администратор свяжется с вами в ближайшее время. Вы также можете написать ему в чат с ботом.',
-                buttons: [{ type: 'ok' }]
-            });
+            // Показываем уведомление
+            showNotification('📞 Запрос отправлен администратору!');
         }
 
         // ===== ТОВАРЫ И ЗАКАЗЫ =====
@@ -887,15 +916,18 @@
                 </div>
                 <div class="order-detail-item">
                     <span class="detail-label">📊 Количество:</span>
-                    <span class="detail-value">${state.selectedQuantity} шт.</span>
+                    <span class="detail-value">${state.selectedQuantity} гр</span>
                 </div>
                 <div class="order-detail-item">
-                    <span class="detail-label">💰 Цена за шт:</span>
+                    <span class="detail-label">💰 Цена за гр:</span>
                     <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
                 </div>
             `;
             
             document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
+            
+            // Показываем уведомление
+            showNotification('✅ Заказ отправлен администратору!');
         }
 
         // ===== НАВИГАЦИЯ =====
@@ -938,11 +970,6 @@
         // ИНИЦИАЛИЗАЦИЯ
         initializeCity();
         loadProducts();
-
-        // Добавляем обработчик для закрытия приложения
-        document.getElementById('close-app').addEventListener('click', () => {
-            tg.close();
-        });
     </script>
 </body>
 </html>
