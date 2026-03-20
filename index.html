@@ -709,16 +709,17 @@
         if (response.ok) {
             const data = await response.json();
             if (data.status === 'ok' && data.products && data.products.length > 0) {
-                // Преобразуем товары из формата сервера в формат Mini App
-                PRODUCTS = data.products.map(p => ({
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    image: p.image || `https://via.placeholder.com/300x200?text=${encodeURIComponent(p.name)}`
-                }));
-                console.log(`✅ Загружено ${PRODUCTS.length} товаров с сервера`);
-                return true;
-            }
+    PRODUCTS = data.products.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        image: p.image,
+        unit: p.unit || 'гр',      // ← добавляем
+        sizes: p.sizes || [1, 2, 3, 4, 5]  // ← добавляем
+    }));
+    console.log(`✅ Загружено ${PRODUCTS.length} товаров с сервера`);
+    return true;
+}
         }
         
         // Если сервер вернул пустой список или ошибку
@@ -945,72 +946,89 @@
         }
         
         window.selectProduct = function(productId) {
-            state.selectedProduct = PRODUCTS.find(p => p.id === productId);
-            state.selectedQuantity = 1;
-            state.appliedPromo = null;
+    state.selectedProduct = PRODUCTS.find(p => p.id === productId);
+    state.selectedQuantity = 1;
+    state.appliedPromo = null;
+    
+    const detailImage = document.getElementById('detail-image');
+    if (detailImage) {
+        detailImage.src = state.selectedProduct.image;
+        detailImage.alt = state.selectedProduct.name;
+    }
+    
+    const detailTitle = document.getElementById('detail-title');
+    const detailPrice = document.getElementById('detail-price');
+    
+    if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
+    if (detailPrice) detailPrice.textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+    
+    // ========== ДИНАМИЧЕСКИЕ КНОПКИ КОЛИЧЕСТВА ==========
+    const qtyContainer = document.getElementById('quantity-buttons');
+    if (qtyContainer) {
+        qtyContainer.innerHTML = '';
+        
+        // Получаем размеры из товара (если есть)
+        let sizes = state.selectedProduct.sizes || [1, 2, 3, 4, 5];
+        
+        // Если sizes это строка, преобразуем в массив
+        if (typeof sizes === 'string') {
+            sizes = sizes.split(',').map(s => parseFloat(s.trim()));
+        }
+        
+        // Создаем кнопки для каждого размера
+        sizes.forEach(size => {
+            const btn = document.createElement('button');
+            btn.className = `qty-btn ${size === state.selectedQuantity ? 'selected' : ''}`;
             
-            const detailImage = document.getElementById('detail-image');
-            if (detailImage) {
-                detailImage.src = state.selectedProduct.image;
-                detailImage.alt = state.selectedProduct.name;
-            }
+            // Форматируем отображение (целые числа без .0)
+            const displaySize = Number.isInteger(size) ? size : size.toFixed(1);
+            btn.textContent = `${displaySize} ${state.selectedProduct.unit || 'гр'}`;
             
-            const detailTitle = document.getElementById('detail-title');
-            const detailPrice = document.getElementById('detail-price');
-            
-            if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
-            if (detailPrice) detailPrice.textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-            
-            const qtyContainer = document.getElementById('quantity-buttons');
-            if (qtyContainer) {
-                qtyContainer.innerHTML = '';
-                for (let qty = 1; qty <= 10; qty++) {
-                    const btn = document.createElement('button');
-                    btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-                    btn.textContent = `${qty} гр`;
-                    btn.onclick = () => selectQuantity(qty);
-                    qtyContainer.appendChild(btn);
-                }
-            }
-            
-            updateTotalPrice();
-            
-            const promoInput = document.getElementById('promo-code-input');
-            if (promoInput) promoInput.value = '';
-            const promoMessage = document.getElementById('promo-message');
-            if (promoMessage) promoMessage.innerHTML = '';
-            
-            document.getElementById('main-screen')?.classList.add('hidden');
-            document.getElementById('product-screen')?.classList.remove('hidden');
-        };
+            btn.onclick = () => selectQuantity(size);
+            qtyContainer.appendChild(btn);
+        });
+    }
+    
+    updateTotalPrice();
+    
+    const promoInput = document.getElementById('promo-code-input');
+    if (promoInput) promoInput.value = '';
+    const promoMessage = document.getElementById('promo-message');
+    if (promoMessage) promoMessage.innerHTML = '';
+    
+    document.getElementById('main-screen')?.classList.add('hidden');
+    document.getElementById('product-screen')?.classList.remove('hidden');
+};
         
         function selectQuantity(qty) {
-            state.selectedQuantity = qty;
-            state.appliedPromo = null;
-            
-            document.querySelectorAll('.qty-btn').forEach((btn, index) => {
-                if (index + 1 === qty) {
-                    btn.classList.add('selected');
-                } else {
-                    btn.classList.remove('selected');
-                }
-            });
-            
-            updateTotalPrice();
-            
-            const promoInput = document.getElementById('promo-code-input');
-            if (promoInput) promoInput.value = '';
-            const promoMessage = document.getElementById('promo-message');
-            if (promoMessage) promoMessage.innerHTML = '';
+    state.selectedQuantity = qty;
+    state.appliedPromo = null;
+    
+    document.querySelectorAll('.qty-btn').forEach((btn, index) => {
+        // Сравниваем значение кнопки с выбранным количеством
+        const btnValue = parseFloat(btn.textContent);
+        if (btnValue === qty) {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
         }
+    });
+    
+    updateTotalPrice();
+    
+    const promoInput = document.getElementById('promo-code-input');
+    if (promoInput) promoInput.value = '';
+    const promoMessage = document.getElementById('promo-message');
+    if (promoMessage) promoMessage.innerHTML = '';
+}
         
         function updateTotalPrice() {
-            if (state.selectedProduct) {
-                const total = state.selectedProduct.price * state.selectedQuantity;
-                const totalElement = document.getElementById('total-price');
-                if (totalElement) totalElement.innerHTML = `${total.toLocaleString()} ₽`;
-            }
-        }
+    if (state.selectedProduct) {
+        const total = state.selectedProduct.price * state.selectedQuantity;
+        const totalElement = document.getElementById('total-price');
+        if (totalElement) totalElement.innerHTML = `${total.toLocaleString()} ₽`;
+    }
+}
         
         // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
         async function placeOrder() {
