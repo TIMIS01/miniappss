@@ -223,6 +223,7 @@
             width: 100%;
             height: 250px;
             object-fit: cover;
+            background: var(--tg-theme-bg-color);
         }
 
         .detail-content {
@@ -291,6 +292,40 @@
             padding: 16px;
             background: var(--tg-theme-bg-color);
             border-radius: 16px;
+        }
+
+        .promo-section {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .promo-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .promo-input {
+            flex: 1;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--tg-theme-hint-color);
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 14px;
+        }
+
+        .promo-button {
+            width: auto;
+            padding: 12px 24px;
+            margin: 0;
+        }
+
+        .promo-message {
+            font-size: 12px;
+            margin-top: 8px;
+            color: var(--tg-theme-hint-color);
         }
 
         .button {
@@ -535,6 +570,15 @@
             <div class="total-price" id="total-price">0 ₽</div>
         </div>
 
+        <div class="promo-section">
+            <div class="quantity-label">🎫 Промокод</div>
+            <div class="promo-input-group">
+                <input type="text" id="promo-code-input" class="promo-input" placeholder="Введите промокод">
+                <button id="apply-promo-btn" class="button button-secondary promo-button">Применить</button>
+            </div>
+            <div id="promo-message" class="promo-message"></div>
+        </div>
+
         <button class="button button-primary" id="order-btn">✅ Оформить заказ</button>
         <button class="button button-secondary" id="contact-admin-from-product">📞 Связаться с администратором</button>
         <button class="button button-secondary" id="back-to-catalog-from-detail">⬅️ Продолжить покупки</button>
@@ -569,7 +613,7 @@
         tg.expand();
         
         // Получаем данные пользователя
-        const telegramUser = tg.initDataUnsafe?.user || null;
+        const telegramUser = tg.initDataUnsafe?.user || {};
         
         // ========== ДАННЫЕ ==========
         const CITIES = [
@@ -578,16 +622,16 @@
             "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
         ];
         
-        // Товары с корректными путями к картинкам (используем placeholder, если картинок нет)
+        // Товары с картинками
         const PRODUCTS = [
-            { id: 1, name: "Шишки 🌰", price: 3000, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Shishki" },
-            { id: 2, name: "Гашиш 🪴", price: 3600, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Gashish" },
-            { id: 3, name: "Амфетамин 💊", price: 2200, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Amfetamin" },
-            { id: 4, name: "Экстази 🍃", price: 1200, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Ekstazi" },
-            { id: 5, name: "Меф 🧂", price: 1700, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Mefedron" },
-            { id: 6, name: "А-кристалл 💎", price: 5500, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Crystal" },
-            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Mushrooms" },
-            { id: 8, name: "Лирика 💧", price: 8000, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Lirika" }
+            { id: 1, name: "Шишки 🌰", price: 3000, image: "images/Shishka.png" },
+            { id: 2, name: "Гашиш 🪴", price: 3600, image: "images/Gash.png" },
+            { id: 3, name: "Амфетамин 💊", price: 2200, image: "images/amf.png" },
+            { id: 4, name: "Экстази 🍃", price: 1200, image: "images/Eks.png" },
+            { id: 5, name: "Меф 🧂", price: 1700, image: "images/Mef.png" },
+            { id: 6, name: "А-кристалл 💎", price: 5500, image: "images/Cry.png" },
+            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "images/Mush.png" },
+            { id: 8, name: "Лирика 💧", price: 8000, image: "images/Lyr.png" }
         ];
         
         // ========== СОСТОЯНИЕ ==========
@@ -595,12 +639,16 @@
             city: 'Москва',
             selectedProduct: null,
             selectedQuantity: 1,
-            tempSelectedCity: 'Москва'
+            tempSelectedCity: 'Москва',
+            appliedPromo: null,
+            discountedTotal: 0
         };
         
         let isProcessing = false;
         
         // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
+        const BOT_API_URL = 'https://telegram-shop-bot.onrender.com/api/webhook';
+        
         function showNotification(message, isError = false) {
             tg.showPopup({
                 title: isError ? '❌ Ошибка' : '✅ Успешно',
@@ -609,9 +657,8 @@
             });
         }
         
-        // ========== ОТПРАВКА ДАННЫХ (БЕЗ ЗАКРЫТИЯ APP) ==========
+        // ========== ОТПРАВКА ДАННЫХ ==========
         async function sendOrderToBackend(orderData) {
-            // Сохраняем в localStorage как резервную копию
             let pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
             pendingOrders.push({
                 ...orderData,
@@ -619,67 +666,84 @@
             });
             localStorage.setItem('pending_orders', JSON.stringify(pendingOrders));
             
-            // Отправляем через fetch на ваш бот-сервер
-            // ВАЖНО: Замени URL на адрес твоего сервера
-            const BOT_API_URL = 'https://tg-shop-server.onrender.com/api/webhook'; // ЗАМЕНИТЬ!
-            
             try {
                 const response = await fetch(BOT_API_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        ...orderData,
-                        telegramInitData: tg.initData,
-                        telegramUser: telegramUser
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
                 });
                 
                 if (response.ok) {
-                    // Удаляем из localStorage только если успешно отправили
                     const updated = pendingOrders.filter(o => o.timestamp !== orderData.timestamp);
                     localStorage.setItem('pending_orders', JSON.stringify(updated));
                     console.log('✅ Заказ отправлен на сервер');
                     return true;
-                } else {
-                    console.log('⚠️ Сервер вернул ошибку, данные сохранены локально');
-                    return false;
                 }
+                return false;
             } catch (error) {
-                console.log('❌ Ошибка отправки, данные сохранены локально:', error);
+                console.log('❌ Ошибка отправки:', error);
                 return false;
             }
         }
         
-        // Функция для отправки запроса на связь с админом
-        async function sendContactRequest() {
-            const contactData = {
-                action: 'contact_admin',
-                city: state.city,
-                message: 'Пользователь хочет связаться с администратором',
-                userId: telegramUser?.id,
-                username: telegramUser?.username,
-                timestamp: new Date().toISOString()
-            };
+        // ========== ПРОМОКОДЫ ==========
+        async function applyPromoCode() {
+            const promoInput = document.getElementById('promo-code-input');
+            const promoMessage = document.getElementById('promo-message');
+            const code = promoInput.value.trim();
             
-            // Сохраняем локально
-            let contacts = JSON.parse(localStorage.getItem('pending_contacts') || '[]');
-            contacts.push(contactData);
-            localStorage.setItem('pending_contacts', JSON.stringify(contacts));
+            if (!code) {
+                promoMessage.textContent = '❌ Введите промокод';
+                promoMessage.style.color = 'red';
+                return;
+            }
             
-            // Отправляем на сервер
-            const BOT_API_URL = 'https://tg-shop-server.onrender.com/api/webhook';
+            promoMessage.textContent = '⏳ Проверка промокода...';
+            promoMessage.style.color = 'var(--tg-theme-hint-color)';
             
             try {
-                await fetch(BOT_API_URL, {
+                const response = await fetch(`https://telegram-shop-bot.onrender.com/api/check-promo`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(contactData)
+                    body: JSON.stringify({
+                        code: code,
+                        userId: telegramUser.id,
+                        orderAmount: state.selectedProduct.price * state.selectedQuantity
+                    })
                 });
-                showNotification('Запрос отправлен администратору! Он свяжется с вами в ближайшее время.');
+                
+                const result = await response.json();
+                
+                if (result.status === 'ok') {
+                    state.appliedPromo = result.promo;
+                    const originalTotal = state.selectedProduct.price * state.selectedQuantity;
+                    
+                    let discountAmount = 0;
+                    if (result.promo.type === 'percent') {
+                        discountAmount = originalTotal * result.promo.value / 100;
+                    } else {
+                        discountAmount = Math.min(result.promo.value, originalTotal);
+                    }
+                    
+                    const newTotal = originalTotal - discountAmount;
+                    state.discountedTotal = newTotal;
+                    
+                    promoMessage.innerHTML = `✅ Промокод применен! Скидка: ${result.promo.value}${result.promo.type === 'percent' ? '%' : ' руб'} (-${discountAmount} руб)`;
+                    promoMessage.style.color = '#4CAF50';
+                    
+                    document.getElementById('total-price').innerHTML = `
+                        <div style="text-decoration: line-through; color: gray;">${originalTotal.toLocaleString()} ₽</div>
+                        <div style="color: #4CAF50; font-size: 20px;">${newTotal.toLocaleString()} ₽</div>
+                    `;
+                } else {
+                    promoMessage.textContent = `❌ ${result.message}`;
+                    promoMessage.style.color = 'red';
+                    state.appliedPromo = null;
+                }
             } catch (error) {
-                showNotification('Запрос сохранен. Администратор свяжется с вами при следующем входе.');
+                promoMessage.textContent = '❌ Ошибка проверки промокода';
+                promoMessage.style.color = 'red';
+                console.error('Ошибка:', error);
             }
         }
         
@@ -777,12 +841,17 @@
         window.selectProduct = function(productId) {
             state.selectedProduct = PRODUCTS.find(p => p.id === productId);
             state.selectedQuantity = 1;
+            state.appliedPromo = null;
             
             const detailImage = document.getElementById('detail-image');
+            if (detailImage) {
+                detailImage.src = state.selectedProduct.image;
+                detailImage.alt = state.selectedProduct.name;
+            }
+            
             const detailTitle = document.getElementById('detail-title');
             const detailPrice = document.getElementById('detail-price');
             
-            if (detailImage) detailImage.src = state.selectedProduct.image;
             if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
             if (detailPrice) detailPrice.textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
             
@@ -800,12 +869,18 @@
             
             updateTotalPrice();
             
+            const promoInput = document.getElementById('promo-code-input');
+            if (promoInput) promoInput.value = '';
+            const promoMessage = document.getElementById('promo-message');
+            if (promoMessage) promoMessage.innerHTML = '';
+            
             document.getElementById('main-screen')?.classList.add('hidden');
             document.getElementById('product-screen')?.classList.remove('hidden');
         };
         
         function selectQuantity(qty) {
             state.selectedQuantity = qty;
+            state.appliedPromo = null;
             
             document.querySelectorAll('.qty-btn').forEach((btn, index) => {
                 if (index + 1 === qty) {
@@ -816,17 +891,22 @@
             });
             
             updateTotalPrice();
+            
+            const promoInput = document.getElementById('promo-code-input');
+            if (promoInput) promoInput.value = '';
+            const promoMessage = document.getElementById('promo-message');
+            if (promoMessage) promoMessage.innerHTML = '';
         }
         
         function updateTotalPrice() {
             if (state.selectedProduct) {
                 const total = state.selectedProduct.price * state.selectedQuantity;
                 const totalElement = document.getElementById('total-price');
-                if (totalElement) totalElement.textContent = `${total.toLocaleString()} ₽`;
+                if (totalElement) totalElement.innerHTML = `${total.toLocaleString()} ₽`;
             }
         }
         
-        // ========== ОФОРМЛЕНИЕ ЗАКАЗА (БЕЗ ЗАКРЫТИЯ) ==========
+        // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
         async function placeOrder() {
             if (isProcessing) {
                 showNotification('Заказ уже оформляется, пожалуйста, подождите...');
@@ -848,38 +928,56 @@
             }
             
             try {
-                const total = state.selectedProduct.price * state.selectedQuantity;
+                const originalTotal = state.selectedProduct.price * state.selectedQuantity;
+                let finalTotal = originalTotal;
+                let promoData = null;
+                
+                if (state.appliedPromo) {
+                    if (state.appliedPromo.type === 'percent') {
+                        finalTotal = originalTotal - (originalTotal * state.appliedPromo.value / 100);
+                    } else {
+                        finalTotal = Math.max(0, originalTotal - state.appliedPromo.value);
+                    }
+                    promoData = state.appliedPromo;
+                }
                 
                 const orderData = {
                     action: 'order',
                     productId: state.selectedProduct.id,
                     productName: state.selectedProduct.name,
                     quantity: state.selectedQuantity,
-                    totalPrice: total,
+                    totalPrice: originalTotal,
+                    finalPrice: Math.round(finalTotal),
                     city: state.city,
-                    userId: telegramUser?.id,
-                    username: telegramUser?.username,
-                    firstName: telegramUser?.first_name,
-                    lastName: telegramUser?.last_name,
+                    userId: telegramUser.id,
+                    username: telegramUser.username,
+                    firstName: telegramUser.first_name,
+                    lastName: telegramUser.last_name,
+                    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+                    promocode: promoData,
                     timestamp: new Date().toISOString()
                 };
                 
                 console.log('📦 Оформление заказа:', orderData);
                 
-                // Отправляем данные на сервер (НЕ используем tg.sendData!)
                 await sendOrderToBackend(orderData);
                 
-                // Сохраняем последний заказ
                 state.lastOrder = orderData;
                 
-                // Показываем экран подтверждения
                 document.getElementById('product-screen')?.classList.add('hidden');
                 document.getElementById('confirmation-screen')?.classList.remove('hidden');
                 
-                // Заполняем детали заказа
                 const orderDetails = document.getElementById('order-details');
                 if (orderDetails) {
                     orderDetails.innerHTML = `
+                        <div class="order-detail-item">
+                            <span class="detail-label">👤 Покупатель:</span>
+                            <span class="detail-value">${orderData.fullName} ${orderData.username ? '@' + orderData.username : ''}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">🆔 ID:</span>
+                            <span class="detail-value">${orderData.userId || 'не указан'}</span>
+                        </div>
                         <div class="order-detail-item">
                             <span class="detail-label">🏙️ Город:</span>
                             <span class="detail-value">${state.city}</span>
@@ -896,13 +994,19 @@
                             <span class="detail-label">💰 Цена за гр:</span>
                             <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
                         </div>
+                        ${promoData ? `
+                        <div class="order-detail-item">
+                            <span class="detail-label">🎫 Промокод:</span>
+                            <span class="detail-value">${promoData.code} (${promoData.value}${promoData.type === 'percent' ? '%' : ' руб'})</span>
+                        </div>
+                        ` : ''}
                     `;
                 }
                 
                 const totalAmount = document.getElementById('confirmation-total');
-                if (totalAmount) totalAmount.textContent = `${total.toLocaleString()} ₽`;
+                if (totalAmount) totalAmount.textContent = `${Math.round(finalTotal).toLocaleString()} ₽`;
                 
-                showNotification(`Заказ оформлен!\n${state.selectedProduct.name} x${state.selectedQuantity} = ${total} руб.\nМенеджер свяжется с вами.`);
+                showNotification(`Заказ оформлен!\n${state.selectedProduct.name} x${state.selectedQuantity} = ${Math.round(finalTotal)} руб.\nМенеджер свяжется с вами.`);
                 
             } catch (error) {
                 console.error('Ошибка при оформлении заказа:', error);
@@ -919,8 +1023,29 @@
         }
         
         // ========== СВЯЗЬ С АДМИНИСТРАТОРОМ ==========
-        function contactAdmin() {
-            sendContactRequest();
+        async function contactAdmin() {
+            const contactData = {
+                action: 'contact_admin',
+                city: state.city,
+                message: 'Пользователь хочет связаться с администратором',
+                userId: telegramUser.id,
+                username: telegramUser.username,
+                firstName: telegramUser.first_name,
+                lastName: telegramUser.last_name,
+                fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(contactData)
+                });
+                showNotification('Запрос отправлен администратору! Он свяжется с вами в ближайшее время.');
+            } catch (error) {
+                showNotification('Запрос сохранен. Администратор свяжется с вами при следующем входе.');
+            }
         }
         
         // ========== НАВИГАЦИЯ ==========
@@ -938,7 +1063,6 @@
             initializeCity();
             loadProducts();
             
-            // Навешиваем обработчики
             const cityHeader = document.getElementById('city-header');
             if (cityHeader) cityHeader.addEventListener('click', openCityModal);
             
@@ -955,14 +1079,12 @@
                 });
             }
             
-            // Кнопки связи с админом
             const adminBtns = ['contact-admin-main', 'contact-admin-from-product', 'contact-admin-after-order'];
             adminBtns.forEach(id => {
                 const btn = document.getElementById(id);
                 if (btn) btn.addEventListener('click', contactAdmin);
             });
             
-            // Кнопки навигации
             const backBtns = ['back-to-catalog', 'back-to-catalog-from-detail', 'continue-shopping-after-order'];
             backBtns.forEach(id => {
                 const btn = document.getElementById(id);
@@ -972,21 +1094,12 @@
             const orderBtn = document.getElementById('order-btn');
             if (orderBtn) orderBtn.addEventListener('click', placeOrder);
             
-            // Периодическая отправка накопленных данных (каждые 30 секунд)
-            setInterval(async () => {
-                const pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
-                if (pendingOrders.length > 0) {
-                    console.log(`📤 Отправка ${pendingOrders.length} накопленных заказов...`);
-                    for (const order of pendingOrders) {
-                        await sendOrderToBackend(order);
-                    }
-                }
-            }, 30000);
+            const applyPromoBtn = document.getElementById('apply-promo-btn');
+            if (applyPromoBtn) applyPromoBtn.addEventListener('click', applyPromoCode);
             
             console.log('✅ Mini App инициализирован');
         }
         
-        // Запускаем когда DOM загружен
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
