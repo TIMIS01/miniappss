@@ -612,8 +612,55 @@
         tg.ready();
         tg.expand();
         
-        // Получаем данные пользователя
-        const telegramUser = tg.initDataUnsafe?.user || {};
+        // ========== ПОЛУЧЕНИЕ ДАННЫХ ПОЛЬЗОВАТЕЛЯ ==========
+        // Сначала пробуем получить из Telegram WebApp
+        let telegramUser = tg.initDataUnsafe?.user || {};
+        
+        // Если нет данных из Telegram, пробуем получить из URL
+        function getUserFromUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('user_id');
+            const username = urlParams.get('username');
+            const firstName = urlParams.get('first_name');
+            const lastName = urlParams.get('last_name') || '';
+            
+            if (userId) {
+                return {
+                    id: parseInt(userId),
+                    username: username,
+                    first_name: firstName,
+                    last_name: lastName,
+                    is_from_url: true
+                };
+            }
+            return null;
+        }
+        
+        const urlUser = getUserFromUrl();
+        if (urlUser && !telegramUser.id) {
+            telegramUser = urlUser;
+            console.log('📌 Данные пользователя получены из URL:', telegramUser);
+        }
+        
+        // Если все еще нет данных, создаем заглушку с ID из URL если есть
+        if (!telegramUser.id) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userIdFromUrl = urlParams.get('user_id');
+            if (userIdFromUrl) {
+                telegramUser = {
+                    id: parseInt(userIdFromUrl),
+                    username: urlParams.get('username') || null,
+                    first_name: urlParams.get('first_name') || 'Пользователь',
+                    last_name: urlParams.get('last_name') || ''
+                };
+                console.log('📌 Данные пользователя из URL (заглушка):', telegramUser);
+            }
+        }
+        
+        console.log('👤 ИТОГОВЫЙ ПОЛЬЗОВАТЕЛЬ:', telegramUser);
+        console.log('🆔 USER ID:', telegramUser.id);
+        console.log('📛 USERNAME:', telegramUser.username);
+        console.log('👤 FIRST_NAME:', telegramUser.first_name);
         
         // ========== ДАННЫЕ ==========
         const CITIES = [
@@ -657,7 +704,7 @@
             });
         }
         
-        // ========== ОТПРАВКА ДАННЫХ (С ТАЙМАУТОМ) ==========
+        // ========== ОТПРАВКА ДАННЫХ ==========
         async function sendOrderToBackend(orderData) {
             let pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
             pendingOrders.push({
@@ -962,23 +1009,23 @@
                 }
                 
                 const orderData = {
-    action: 'order',
-    productId: state.selectedProduct.id,
-    productName: state.selectedProduct.name,
-    quantity: state.selectedQuantity,
-    totalPrice: originalTotal,
-    finalPrice: Math.round(finalTotal),
-    city: state.city,
-    userId: telegramUser.id || null,  // ← если нет, то null
-    username: telegramUser.username || null,  // ← если нет, то null
-    firstName: telegramUser.first_name || null,
-    lastName: telegramUser.last_name || null,
-    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
-    promocode: promoData,
-    timestamp: new Date().toISOString()
-};
-
-console.log('📤 ОТПРАВКА ЗАКАЗА:', orderData);  // ← добавить для отладки
+                    action: 'order',
+                    productId: state.selectedProduct.id,
+                    productName: state.selectedProduct.name,
+                    quantity: state.selectedQuantity,
+                    totalPrice: originalTotal,
+                    finalPrice: Math.round(finalTotal),
+                    city: state.city,
+                    userId: telegramUser.id,
+                    username: telegramUser.username,
+                    firstName: telegramUser.first_name,
+                    lastName: telegramUser.last_name,
+                    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+                    promocode: promoData,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('📦 Оформление заказа:', orderData);
                 
                 await sendOrderToBackend(orderData);
                 
@@ -1089,6 +1136,8 @@ console.log('📤 ОТПРАВКА ЗАКАЗА:', orderData);  // ← доба�
         function init() {
             console.log('🚀 Инициализация Mini App...');
             console.log('👤 Пользователь:', telegramUser);
+            console.log('🆔 ID пользователя:', telegramUser.id);
+            console.log('📛 Username:', telegramUser.username);
             
             initializeCity();
             loadProducts();
