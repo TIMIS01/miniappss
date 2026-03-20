@@ -715,7 +715,7 @@
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 15000);
                 
-                const response = await fetch(`https://telegram-shop-bot.onrender.com/api/check-promo`, {
+                const response = await fetch(`https://tg-shop-server.onrender.com/api/check-promo`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -962,23 +962,23 @@
                 }
                 
                 const orderData = {
-                    action: 'order',
-                    productId: state.selectedProduct.id,
-                    productName: state.selectedProduct.name,
-                    quantity: state.selectedQuantity,
-                    totalPrice: originalTotal,
-                    finalPrice: Math.round(finalTotal),
-                    city: state.city,
-                    userId: telegramUser.id,
-                    username: telegramUser.username,
-                    firstName: telegramUser.first_name,
-                    lastName: telegramUser.last_name,
-                    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
-                    promocode: promoData,
-                    timestamp: new Date().toISOString()
-                };
-                
-                console.log('📦 Оформление заказа:', orderData);
+    action: 'order',
+    productId: state.selectedProduct.id,
+    productName: state.selectedProduct.name,
+    quantity: state.selectedQuantity,
+    totalPrice: originalTotal,
+    finalPrice: Math.round(finalTotal),
+    city: state.city,
+    userId: telegramUser.id || null,  // ← если нет, то null
+    username: telegramUser.username || null,  // ← если нет, то null
+    firstName: telegramUser.first_name || null,
+    lastName: telegramUser.last_name || null,
+    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+    promocode: promoData,
+    timestamp: new Date().toISOString()
+};
+
+console.log('📤 ОТПРАВКА ЗАКАЗА:', orderData);  // ← добавить для отладки
                 
                 await sendOrderToBackend(orderData);
                 
