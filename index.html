@@ -6,7 +6,6 @@
     <title>🛍️ Магазин Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Твои стили остаются без изменений */
         * {
             margin: 0;
             padding: 0;
@@ -321,11 +320,6 @@
             border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
-        .button-success {
-            background: #4CAF50;
-            color: white;
-        }
-
         .confirmation-screen {
             text-align: center;
             padding: 20px 20px 30px;
@@ -462,52 +456,30 @@
             100% { opacity: 1; }
         }
 
-        .info-message {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 16px;
-            padding: 16px;
-            margin: 20px 0;
+        .loading {
             text-align: center;
-            font-size: 14px;
-            opacity: 0.8;
+            padding: 40px;
+            font-size: 18px;
+            color: var(--tg-theme-hint-color);
         }
 
-        .info-message a {
-            color: var(--tg-theme-button-color);
-            text-decoration: none;
-            font-weight: 600;
+        .spinner {
+            border: 3px solid var(--tg-theme-secondary-bg-color);
+            border-top: 3px solid var(--tg-theme-button-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
         }
-        
-        /* Стили для уведомления */
-        .toast-notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--tg-theme-button-color);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-weight: 600;
-            z-index: 2000;
-            animation: slideUp 0.3s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        @keyframes slideUp {
-            from {
-                transform: translateX(-50%) translateY(100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(-50%) translateY(0);
-                opacity: 1;
-            }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <!-- Модальное окно выбора города -->
     <div class="modal-overlay" id="city-modal-overlay">
         <div class="city-modal">
             <div class="modal-header">
@@ -519,7 +491,6 @@
         </div>
     </div>
 
-    <!-- Главный экран -->
     <div id="main-screen">
         <div class="city-header" id="city-header">
             <div class="city-title">
@@ -536,10 +507,14 @@
             📞 Связаться с администратором
         </button>
 
-        <div class="products-grid" id="products-grid"></div>
+        <div id="products-grid" class="products-grid">
+            <div class="loading">
+                <div class="spinner"></div>
+                Загрузка товаров...
+            </div>
+        </div>
     </div>
 
-    <!-- Экран товара -->
     <div id="product-screen" class="hidden">
         <div class="nav-bar">
             <button class="back-button" id="back-to-catalog">←</button>
@@ -555,7 +530,7 @@
         </div>
 
         <div class="quantity-selector">
-            <div class="quantity-label">📦 Количество</div>
+            <div class="quantity-label">📦 Количество (грамм)</div>
             <div class="quantity-buttons" id="quantity-buttons"></div>
             <div class="total-price" id="total-price">0 ₽</div>
         </div>
@@ -565,7 +540,6 @@
         <button class="button button-secondary" id="back-to-catalog-from-detail">⬅️ Продолжить покупки</button>
     </div>
 
-    <!-- Экран подтверждения заказа -->
     <div id="confirmation-screen" class="hidden">
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
@@ -585,59 +559,49 @@
                     </div>
                 </div>
             </div>
-
-            <div class="info-message">
-                💬 Вы также можете написать администратору в любое время через чат с ботом
-            </div>
         </div>
     </div>
 
     <script>
-        // Инициализация Telegram Web App
+        // Telegram Web App инициализация
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
         
-        // Отключаем автоматическое закрытие при любых обстоятельствах
-        tg.disableClosingConfirmation();
-        
-        // Сохраняем данные пользователя
+        // Получаем данные пользователя
         const telegramUser = tg.initDataUnsafe?.user || null;
         
-        // Список городов
+        // ========== ДАННЫЕ ==========
         const CITIES = [
             "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
             "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
             "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
         ];
-
-        // Данные товаров
-        const PRODUCTS = [
-            { id: 1, name: "Шишки 🌰", price: 3000, image: "images/Shishka.png" },
-            { id: 2, name: "Гашиш 🪴", price: 3600, image: "images/Gash.png" },
-            { id: 3, name: "Амфетамин 💊", price: 2200, image: "images/amf.png" },
-            { id: 4, name: "Экстази 🍃", price: 1200, image: "images/Eks.png" },
-            { id: 5, name: "Меф 🧂", price: 1700, image: "images/Mef.png" },
-            { id: 6, name: "А - кристалл 💎", price: 5500, image: "images/Cry.png" },
-            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "images/Mush.png" },
-            { id: 8, name: "Лирика 💧", price: 8000, image: "images/Lyr.png" },
-        ];
-
-        const STORAGE_KEY = 'shop_selected_city';
         
+        // Товары с корректными путями к картинкам (используем placeholder, если картинок нет)
+        const PRODUCTS = [
+            { id: 1, name: "Шишки 🌰", price: 3000, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Shishki" },
+            { id: 2, name: "Гашиш 🪴", price: 3600, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Gashish" },
+            { id: 3, name: "Амфетамин 💊", price: 2200, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Amfetamin" },
+            { id: 4, name: "Экстази 🍃", price: 1200, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Ekstazi" },
+            { id: 5, name: "Меф 🧂", price: 1700, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Mefedron" },
+            { id: 6, name: "А-кристалл 💎", price: 5500, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Crystal" },
+            { id: 7, name: "Психотропные грибы 🍄", price: 500, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Mushrooms" },
+            { id: 8, name: "Лирика 💧", price: 8000, image: "https://via.placeholder.com/300x200/40a7e3/ffffff?text=Lirika" }
+        ];
+        
+        // ========== СОСТОЯНИЕ ==========
         let state = {
             city: 'Москва',
             selectedProduct: null,
             selectedQuantity: 1,
-            tempSelectedCity: 'Москва',
-            lastOrder: null
+            tempSelectedCity: 'Москва'
         };
         
         let isProcessing = false;
         
-        // Функция показа уведомления (не закрывает приложение)
+        // ========== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ==========
         function showNotification(message, isError = false) {
-            // Используем встроенное уведомление Telegram (не закрывает приложение)
             tg.showPopup({
                 title: isError ? '❌ Ошибка' : '✅ Успешно',
                 message: message,
@@ -645,80 +609,117 @@
             });
         }
         
-        // ===== ФУНКЦИИ ГОРОДА =====
-        function getCityFromUrl() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const city = urlParams.get('city');
-            if (city) {
-                try {
-                    return decodeURIComponent(city);
-                } catch (e) {
-                    return city;
-                }
-            }
-            return null;
-        }
-
-        function loadCityFromStorage() {
+        // ========== ОТПРАВКА ДАННЫХ (БЕЗ ЗАКРЫТИЯ APP) ==========
+        async function sendOrderToBackend(orderData) {
+            // Сохраняем в localStorage как резервную копию
+            let pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
+            pendingOrders.push({
+                ...orderData,
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem('pending_orders', JSON.stringify(pendingOrders));
+            
+            // Отправляем через fetch на ваш бот-сервер
+            // ВАЖНО: Замени URL на адрес твоего сервера
+            const BOT_API_URL = 'https://tg-shop-server.onrender.com/api/webhook'; // ЗАМЕНИТЬ!
+            
             try {
-                const savedCity = localStorage.getItem(STORAGE_KEY);
-                if (savedCity && CITIES.includes(savedCity)) {
-                    return savedCity;
+                const response = await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...orderData,
+                        telegramInitData: tg.initData,
+                        telegramUser: telegramUser
+                    })
+                });
+                
+                if (response.ok) {
+                    // Удаляем из localStorage только если успешно отправили
+                    const updated = pendingOrders.filter(o => o.timestamp !== orderData.timestamp);
+                    localStorage.setItem('pending_orders', JSON.stringify(updated));
+                    console.log('✅ Заказ отправлен на сервер');
+                    return true;
+                } else {
+                    console.log('⚠️ Сервер вернул ошибку, данные сохранены локально');
+                    return false;
                 }
-            } catch (e) {
-                console.error('Ошибка загрузки из localStorage:', e);
+            } catch (error) {
+                console.log('❌ Ошибка отправки, данные сохранены локально:', error);
+                return false;
             }
-            return null;
         }
-
-        function saveCityToStorage(city) {
+        
+        // Функция для отправки запроса на связь с админом
+        async function sendContactRequest() {
+            const contactData = {
+                action: 'contact_admin',
+                city: state.city,
+                message: 'Пользователь хочет связаться с администратором',
+                userId: telegramUser?.id,
+                username: telegramUser?.username,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Сохраняем локально
+            let contacts = JSON.parse(localStorage.getItem('pending_contacts') || '[]');
+            contacts.push(contactData);
+            localStorage.setItem('pending_contacts', JSON.stringify(contacts));
+            
+            // Отправляем на сервер
+            const BOT_API_URL = 'https://tg-shop-server.onrender.com/api/webhook';
+            
             try {
-                localStorage.setItem(STORAGE_KEY, city);
-                const indicator = document.getElementById('save-indicator');
-                if (indicator) {
-                    indicator.style.display = 'inline-block';
-                    setTimeout(() => {
-                        indicator.style.display = 'none';
-                    }, 2000);
-                }
-            } catch (e) {
-                console.error('Ошибка сохранения в localStorage:', e);
+                await fetch(BOT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(contactData)
+                });
+                showNotification('Запрос отправлен администратору! Он свяжется с вами в ближайшее время.');
+            } catch (error) {
+                showNotification('Запрос сохранен. Администратор свяжется с вами при следующем входе.');
             }
         }
-
+        
+        // ========== ФУНКЦИИ ГОРОДА ==========
         function initializeCity() {
-            const savedCity = loadCityFromStorage();
-            if (savedCity) {
-                state.city = savedCity;
-                state.tempSelectedCity = savedCity;
-            } else {
-                const urlCity = getCityFromUrl();
-                if (urlCity && CITIES.includes(urlCity)) {
-                    state.city = urlCity;
-                    state.tempSelectedCity = urlCity;
-                    saveCityToStorage(urlCity);
+            try {
+                const savedCity = localStorage.getItem('selected_city');
+                if (savedCity && CITIES.includes(savedCity)) {
+                    state.city = savedCity;
+                    state.tempSelectedCity = savedCity;
+                } else {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const urlCity = urlParams.get('city');
+                    if (urlCity && CITIES.includes(decodeURIComponent(urlCity))) {
+                        state.city = decodeURIComponent(urlCity);
+                        state.tempSelectedCity = state.city;
+                        localStorage.setItem('selected_city', state.city);
+                    }
                 }
+            } catch (e) {
+                console.error('Ошибка загрузки города:', e);
             }
             updateCityDisplay();
         }
-
+        
         function updateCityDisplay() {
-            const cityNameElement = document.getElementById('city-name-text');
-            if (cityNameElement) {
-                cityNameElement.textContent = state.city;
-            }
+            const cityElement = document.getElementById('city-name-text');
+            if (cityElement) cityElement.textContent = state.city;
         }
-
+        
         function loadCitiesModal() {
             const grid = document.getElementById('cities-grid');
+            if (!grid) return;
             grid.innerHTML = CITIES.map(city => `
-                <div class="city-item ${city === state.city ? 'selected' : ''}" 
-                     onclick="selectTempCity('${city}')">
+                <div class="city-item ${city === state.city ? 'selected' : ''}" onclick="selectTempCity('${city}')">
                     ${city}
                 </div>
             `).join('');
         }
-
+        
         window.selectTempCity = function(city) {
             state.tempSelectedCity = city;
             document.querySelectorAll('.city-item').forEach(el => {
@@ -729,168 +730,42 @@
                 }
             });
         };
-
+        
         function confirmCity() {
             if (state.tempSelectedCity !== state.city) {
                 state.city = state.tempSelectedCity;
-                saveCityToStorage(state.city);
+                localStorage.setItem('selected_city', state.city);
                 updateCityDisplay();
                 loadCitiesModal();
+                
+                const indicator = document.getElementById('save-indicator');
+                if (indicator) {
+                    indicator.style.display = 'inline-block';
+                    setTimeout(() => indicator.style.display = 'none', 2000);
+                }
             }
             closeCityModal();
         }
-
+        
         function openCityModal() {
             state.tempSelectedCity = state.city;
             loadCitiesModal();
             document.getElementById('city-modal-overlay').classList.add('show');
         }
-
+        
         function closeCityModal() {
             document.getElementById('city-modal-overlay').classList.remove('show');
         }
         
-        // ===== ОТПРАВКА ДАННЫХ В БОТА (ГЛАВНОЕ РЕШЕНИЕ) =====
-        
-        // КЛЮЧЕВОЙ МОМЕНТ: Отправляем данные через основной чат, а не через WebApp
-        function sendDataToBot(data) {
-            return new Promise((resolve) => {
-                try {
-                    // Сохраняем данные в localStorage для "отложенной" отправки
-                    const pendingData = {
-                        ...data,
-                        userId: telegramUser?.id,
-                        username: telegramUser?.username,
-                        timestamp: new Date().toISOString()
-                    };
-                    
-                    // Сохраняем в очередь
-                    let queue = JSON.parse(localStorage.getItem('pending_bot_data') || '[]');
-                    queue.push(pendingData);
-                    localStorage.setItem('pending_bot_data', JSON.stringify(queue));
-                    
-                    console.log('📦 Данные сохранены в очередь:', pendingData);
-                    
-                    // Пытаемся отправить через основное приложение Telegram
-                    // Используем openTelegramLink для отправки сообщения в чат с ботом
-                    const messageText = encodeURIComponent(
-                        `🛍 НОВЫЙ ЗАКАЗ!\n\n` +
-                        `Товар: ${data.productName || 'Запрос связи'}\n` +
-                        `Количество: ${data.quantity || 1} гр\n` +
-                        `Сумма: ${data.totalPrice || 0} руб.\n` +
-                        `Город: ${data.city}\n` +
-                        `Пользователь: @${telegramUser?.username || 'Неизвестный'}`
-                    );
-                    
-                    // Создаем ссылку на бота с предзаполненным сообщением
-                    const botUsername = 'YOUR_BOT_USERNAME'; // ЗАМЕНИ НА СВОЙ!
-                    const deepLink = `https://t.me/${botUsername}?start=order_${Date.now()}&text=${messageText}`;
-                    
-                    // Это НЕ закроет Mini App, а откроет чат в новой вкладке
-                    // Но мы не хотим открывать чат, просто отправляем данные через WebApp
-                    
-                    // Используем основной метод отправки, но с флагом, что это НЕ закроет приложение
-                    // Если tg.sendData все же закрывает - перехватываем и предотвращаем
-                    
-                    resolve(true);
-                    
-                } catch (error) {
-                    console.error('Ошибка отправки:', error);
-                    resolve(false);
-                }
-            });
-        }
-        
-        // ===== ФУНКЦИЯ СВЯЗИ С АДМИНИСТРАТОРОМ =====
-        function contactAdmin() {
-            const contactData = {
-                action: 'contact_admin',
-                city: state.city,
-                message: 'Пользователь хочет связаться с администратором',
-                username: telegramUser?.username,
-                userId: telegramUser?.id
-            };
-            
-            console.log('📞 Запрос связи:', contactData);
-            
-            // Сохраняем в localStorage для надежности
-            let queue = JSON.parse(localStorage.getItem('pending_bot_data') || '[]');
-            queue.push(contactData);
-            localStorage.setItem('pending_bot_data', JSON.stringify(queue));
-            
-            // Отправляем через WebApp
-            try {
-                tg.sendData(JSON.stringify(contactData));
-                showNotification('Запрос отправлен администратору! Он свяжется с вами в ближайшее время.');
-            } catch (error) {
-                console.error('Ошибка:', error);
-                showNotification('Данные сохранены. Администратор свяжется с вами.', false);
-            }
-        }
-        
-        // ===== ФУНКЦИЯ ЗАКАЗА (БЕЗ ЗАКРЫТИЯ) =====
-        // ЕДИНСТВЕННЫЙ СПОСОБ НЕ ЗАКРЫВАТЬ MINI APP:
-// НЕ ИСПОЛЬЗОВАТЬ tg.sendData() ВООБЩЕ!
-
-async function placeOrder() {
-    // 1. Сохраняем заказ в localStorage
-    const order = {
-        action: 'order',
-        productName: state.selectedProduct.name,
-        quantity: state.selectedQuantity,
-        totalPrice: total,
-        city: state.city,
-        timestamp: Date.now()
-    };
-    
-    let pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
-    pendingOrders.push(order);
-    localStorage.setItem('pending_orders', JSON.stringify(pendingOrders));
-    
-    // 2. Показываем экран подтверждения
-    showConfirmation(order);
-    
-    // 3. Отправляем данные через вебхук (если есть сервер)
-    try {
-        await fetch('https://your-server.com/api/order', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                ...order,
-                telegramInitData: tg.initData
-            })
-        });
-    } catch (error) {
-        // Данные уже в localStorage, отправятся позже
-        console.log('Офлайн-режим, данные сохранены');
-    }
-    
-    // 4. НЕ вызываем tg.sendData() — ПРИЛОЖЕНИЕ НЕ ЗАКРОЕТСЯ!
-}
-
-// 5. Периодическая отправка накопленных данных
-setInterval(() => {
-    const pending = JSON.parse(localStorage.getItem('pending_orders') || '[]');
-    if (pending.length > 0) {
-        // Отправляем через сервер, а не через tg.sendData()
-        fetch('https://your-server.com/api/sync', {
-            method: 'POST',
-            body: JSON.stringify({ orders: pending })
-        }).then(() => {
-            localStorage.setItem('pending_orders', '[]');
-        });
-    }
-}, 30000);
-            }
-        }
-        
-        // ===== ТОВАРЫ =====
+        // ========== ТОВАРЫ ==========
         function loadProducts() {
             const grid = document.getElementById('products-grid');
+            if (!grid) return;
+            
             grid.innerHTML = PRODUCTS.map(product => `
                 <div class="product-card" onclick="selectProduct(${product.id})">
                     <img class="product-image" src="${product.image}" alt="${product.name}" 
-                         onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                         onerror="this.src='https://via.placeholder.com/300x200/cccccc/666666?text=${encodeURIComponent(product.name)}'">
                     <div class="product-info">
                         <div class="product-title">${product.name}</div>
                         <div class="product-price">${product.price.toLocaleString()} ₽</div>
@@ -898,32 +773,37 @@ setInterval(() => {
                 </div>
             `).join('');
         }
-
+        
         window.selectProduct = function(productId) {
             state.selectedProduct = PRODUCTS.find(p => p.id === productId);
             state.selectedQuantity = 1;
             
-            document.getElementById('detail-image').src = state.selectedProduct.image;
-            document.getElementById('detail-title').textContent = state.selectedProduct.name;
-            document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-            document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
+            const detailImage = document.getElementById('detail-image');
+            const detailTitle = document.getElementById('detail-title');
+            const detailPrice = document.getElementById('detail-price');
+            
+            if (detailImage) detailImage.src = state.selectedProduct.image;
+            if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
+            if (detailPrice) detailPrice.textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
             
             const qtyContainer = document.getElementById('quantity-buttons');
-            qtyContainer.innerHTML = '';
-            for (let qty = 1; qty <= 5; qty++) {
-                const btn = document.createElement('button');
-                btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-                btn.textContent = `${qty} гр`;
-                btn.onclick = () => selectQuantity(qty);
-                qtyContainer.appendChild(btn);
+            if (qtyContainer) {
+                qtyContainer.innerHTML = '';
+                for (let qty = 1; qty <= 10; qty++) {
+                    const btn = document.createElement('button');
+                    btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
+                    btn.textContent = `${qty} гр`;
+                    btn.onclick = () => selectQuantity(qty);
+                    qtyContainer.appendChild(btn);
+                }
             }
             
             updateTotalPrice();
             
-            document.getElementById('main-screen').classList.add('hidden');
-            document.getElementById('product-screen').classList.remove('hidden');
+            document.getElementById('main-screen')?.classList.add('hidden');
+            document.getElementById('product-screen')?.classList.remove('hidden');
         };
-
+        
         function selectQuantity(qty) {
             state.selectedQuantity = qty;
             
@@ -937,70 +817,181 @@ setInterval(() => {
             
             updateTotalPrice();
         }
-
+        
         function updateTotalPrice() {
             if (state.selectedProduct) {
                 const total = state.selectedProduct.price * state.selectedQuantity;
-                document.getElementById('total-price').textContent = `${total.toLocaleString()} ₽`;
+                const totalElement = document.getElementById('total-price');
+                if (totalElement) totalElement.textContent = `${total.toLocaleString()} ₽`;
             }
         }
         
-        // ===== НАВИГАЦИЯ =====
+        // ========== ОФОРМЛЕНИЕ ЗАКАЗА (БЕЗ ЗАКРЫТИЯ) ==========
+        async function placeOrder() {
+            if (isProcessing) {
+                showNotification('Заказ уже оформляется, пожалуйста, подождите...');
+                return;
+            }
+            
+            if (!state.selectedProduct) {
+                showNotification('Выберите товар', true);
+                return;
+            }
+            
+            isProcessing = true;
+            
+            const orderBtn = document.getElementById('order-btn');
+            const originalText = orderBtn?.textContent || 'Оформить заказ';
+            if (orderBtn) {
+                orderBtn.textContent = '⏳ Оформление...';
+                orderBtn.disabled = true;
+            }
+            
+            try {
+                const total = state.selectedProduct.price * state.selectedQuantity;
+                
+                const orderData = {
+                    action: 'order',
+                    productId: state.selectedProduct.id,
+                    productName: state.selectedProduct.name,
+                    quantity: state.selectedQuantity,
+                    totalPrice: total,
+                    city: state.city,
+                    userId: telegramUser?.id,
+                    username: telegramUser?.username,
+                    firstName: telegramUser?.first_name,
+                    lastName: telegramUser?.last_name,
+                    timestamp: new Date().toISOString()
+                };
+                
+                console.log('📦 Оформление заказа:', orderData);
+                
+                // Отправляем данные на сервер (НЕ используем tg.sendData!)
+                await sendOrderToBackend(orderData);
+                
+                // Сохраняем последний заказ
+                state.lastOrder = orderData;
+                
+                // Показываем экран подтверждения
+                document.getElementById('product-screen')?.classList.add('hidden');
+                document.getElementById('confirmation-screen')?.classList.remove('hidden');
+                
+                // Заполняем детали заказа
+                const orderDetails = document.getElementById('order-details');
+                if (orderDetails) {
+                    orderDetails.innerHTML = `
+                        <div class="order-detail-item">
+                            <span class="detail-label">🏙️ Город:</span>
+                            <span class="detail-value">${state.city}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">📦 Товар:</span>
+                            <span class="detail-value">${state.selectedProduct.name}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">📊 Количество:</span>
+                            <span class="detail-value">${state.selectedQuantity} гр</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">💰 Цена за гр:</span>
+                            <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                }
+                
+                const totalAmount = document.getElementById('confirmation-total');
+                if (totalAmount) totalAmount.textContent = `${total.toLocaleString()} ₽`;
+                
+                showNotification(`Заказ оформлен!\n${state.selectedProduct.name} x${state.selectedQuantity} = ${total} руб.\nМенеджер свяжется с вами.`);
+                
+            } catch (error) {
+                console.error('Ошибка при оформлении заказа:', error);
+                showNotification('Не удалось оформить заказ. Данные сохранены локально.', true);
+            } finally {
+                setTimeout(() => {
+                    isProcessing = false;
+                    if (orderBtn) {
+                        orderBtn.textContent = originalText;
+                        orderBtn.disabled = false;
+                    }
+                }, 2000);
+            }
+        }
+        
+        // ========== СВЯЗЬ С АДМИНИСТРАТОРОМ ==========
+        function contactAdmin() {
+            sendContactRequest();
+        }
+        
+        // ========== НАВИГАЦИЯ ==========
         function goToMainScreen() {
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('confirmation-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
+            document.getElementById('product-screen')?.classList.add('hidden');
+            document.getElementById('confirmation-screen')?.classList.add('hidden');
+            document.getElementById('main-screen')?.classList.remove('hidden');
         }
         
-        // ===== ОБРАБОТЧИКИ =====
-        document.getElementById('city-header').addEventListener('click', openCityModal);
-        document.getElementById('close-modal-btn').addEventListener('click', closeCityModal);
-        document.getElementById('confirm-city-btn').addEventListener('click', confirmCity);
-        
-        document.getElementById('city-modal-overlay').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('city-modal-overlay')) {
-                closeCityModal();
+        // ========== ИНИЦИАЛИЗАЦИЯ ==========
+        function init() {
+            console.log('🚀 Инициализация Mini App...');
+            console.log('👤 Пользователь:', telegramUser);
+            
+            initializeCity();
+            loadProducts();
+            
+            // Навешиваем обработчики
+            const cityHeader = document.getElementById('city-header');
+            if (cityHeader) cityHeader.addEventListener('click', openCityModal);
+            
+            const closeModal = document.getElementById('close-modal-btn');
+            if (closeModal) closeModal.addEventListener('click', closeCityModal);
+            
+            const confirmCityBtn = document.getElementById('confirm-city-btn');
+            if (confirmCityBtn) confirmCityBtn.addEventListener('click', confirmCity);
+            
+            const modalOverlay = document.getElementById('city-modal-overlay');
+            if (modalOverlay) {
+                modalOverlay.addEventListener('click', (e) => {
+                    if (e.target === modalOverlay) closeCityModal();
+                });
             }
-        });
-
-        // Кнопки связи с админом
-        document.getElementById('contact-admin-main')?.addEventListener('click', contactAdmin);
-        document.getElementById('contact-admin-from-product')?.addEventListener('click', contactAdmin);
-        document.getElementById('contact-admin-after-order')?.addEventListener('click', contactAdmin);
-
-        // Навигация
-        document.getElementById('back-to-catalog')?.addEventListener('click', goToMainScreen);
-        document.getElementById('back-to-catalog-from-detail')?.addEventListener('click', goToMainScreen);
-        document.getElementById('continue-shopping-after-order')?.addEventListener('click', goToMainScreen);
-
-        // Заказ
-        document.getElementById('order-btn')?.addEventListener('click', placeOrder);
-        
-        // ИНИЦИАЛИЗАЦИЯ
-        initializeCity();
-        loadProducts();
-        
-        // Периодическая проверка и отправка накопленных данных (на случай, если что-то не отправилось)
-        setInterval(() => {
-            const pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
-            if (pendingOrders.length > 0) {
-                console.log(`📤 Отправка ${pendingOrders.length} накопленных заказов...`);
-                // Отправляем накопленные данные
-                for (const order of pendingOrders) {
-                    try {
-                        tg.sendData(JSON.stringify(order));
-                    } catch (e) {
-                        console.error('Ошибка отправки накопленного заказа:', e);
+            
+            // Кнопки связи с админом
+            const adminBtns = ['contact-admin-main', 'contact-admin-from-product', 'contact-admin-after-order'];
+            adminBtns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', contactAdmin);
+            });
+            
+            // Кнопки навигации
+            const backBtns = ['back-to-catalog', 'back-to-catalog-from-detail', 'continue-shopping-after-order'];
+            backBtns.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.addEventListener('click', goToMainScreen);
+            });
+            
+            const orderBtn = document.getElementById('order-btn');
+            if (orderBtn) orderBtn.addEventListener('click', placeOrder);
+            
+            // Периодическая отправка накопленных данных (каждые 30 секунд)
+            setInterval(async () => {
+                const pendingOrders = JSON.parse(localStorage.getItem('pending_orders') || '[]');
+                if (pendingOrders.length > 0) {
+                    console.log(`📤 Отправка ${pendingOrders.length} накопленных заказов...`);
+                    for (const order of pendingOrders) {
+                        await sendOrderToBackend(order);
                     }
                 }
-                // Очищаем после отправки
-                if (pendingOrders.length > 0) {
-                    setTimeout(() => {
-                        localStorage.setItem('pending_orders', '[]');
-                    }, 5000);
-                }
-            }
-        }, 30000); // Каждые 30 секунд
+            }, 30000);
+            
+            console.log('✅ Mini App инициализирован');
+        }
+        
+        // Запускаем когда DOM загружен
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
     </script>
 </body>
 </html>
