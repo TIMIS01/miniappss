@@ -42,16 +42,21 @@
             padding: 12px;
             max-width: 500px;
             margin: 0 auto;
-            transition: background-color 0.3s, color 0.3s;
         }
 
+        /* Шапка с городом */
         .city-header {
-            background: var(--tg-theme-button-color);
+            background: linear-gradient(135deg, var(--tg-theme-button-color), #5f9cea);
             border-radius: 30px;
             padding: 20px;
             margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(64, 167, 227, 0.3);
-            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .city-header:active {
+            transform: scale(0.98);
         }
 
         .city-title {
@@ -59,6 +64,9 @@
             opacity: 0.9;
             margin-bottom: 4px;
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .city-name {
@@ -67,16 +75,99 @@
             color: white;
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .debug-info {
-            background: var(--tg-theme-secondary-bg-color);
-            border-radius: 12px;
-            padding: 10px;
+        .change-city-icon {
+            font-size: 18px;
+            opacity: 0.8;
+        }
+
+        /* Модальное окно выбора города */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .city-modal {
+            background: var(--tg-theme-bg-color);
+            border-radius: 30px;
+            padding: 24px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            overflow-y: auto;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.show .city-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-            font-size: 12px;
-            font-family: monospace;
-            display: none; /* Скрыто по умолчанию, включите для отладки */
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--tg-theme-text-color);
+            font-size: 24px;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        .cities-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .city-item {
+            padding: 14px 8px;
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .city-item.selected {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .city-item:active {
+            transform: scale(0.95);
         }
 
         .products-grid {
@@ -216,6 +307,10 @@
             margin-bottom: 10px;
         }
 
+        .button:active {
+            opacity: 0.8;
+        }
+
         .button-primary {
             background: var(--tg-theme-button-color);
             color: var(--tg-theme-button-text-color);
@@ -227,22 +322,27 @@
             border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
+        .button-success {
+            background: #4CAF50;
+            color: white;
+        }
+
         .confirmation-screen {
             text-align: center;
-            padding: 40px 20px;
+            padding: 20px 20px 30px;
         }
 
         .success-icon {
             font-size: 64px;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
             animation: scaleIn 0.5s;
         }
 
         .order-details {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 20px;
-            padding: 24px;
-            margin: 24px 0;
+            padding: 20px;
+            margin: 20px 0;
             text-align: left;
         }
 
@@ -271,6 +371,49 @@
             font-weight: 800;
             color: var(--tg-theme-button-color);
             margin: 20px 0;
+        }
+
+        .contact-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px dashed rgba(128, 128, 128, 0.3);
+        }
+
+        .contact-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--tg-theme-button-color);
+        }
+
+        .contact-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .contact-button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+
+        .contact-button:active {
+            transform: scale(0.95);
+        }
+
+        .contact-button.primary {
+            background: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
+        }
+
+        .contact-button.secondary {
+            background: var(--tg-theme-secondary-bg-color);
+            color: var(--tg-theme-text-color);
+            border: 1px solid rgba(128, 128, 128, 0.2);
         }
 
         @keyframes scaleIn {
@@ -303,21 +446,72 @@
             padding: 8px;
             margin-right: 8px;
         }
+
+        .save-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .info-message {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            padding: 16px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .info-message a {
+            color: var(--tg-theme-button-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
+    <!-- Модальное окно выбора города -->
+    <div class="modal-overlay" id="city-modal-overlay">
+        <div class="city-modal">
+            <div class="modal-header">
+                <div class="modal-title">🏙️ Выберите город</div>
+                <button class="close-modal" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="cities-grid" id="cities-grid"></div>
+            <button class="button button-primary" id="confirm-city-btn">Подтвердить</button>
+        </div>
+    </div>
+
     <!-- Главный экран -->
     <div id="main-screen">
         <div class="city-header" id="city-header">
-            <div class="city-title">🏙️ ВАШ ГОРОД</div>
-            <div class="city-name" id="city-display">ЗАГРУЗКА...</div>
+            <div class="city-title">
+                <span>🏙️ ВАШ ГОРОД</span>
+                <span class="change-city-icon">▼</span>
+            </div>
+            <div class="city-name" id="city-display">
+                <span id="city-name-text">ЗАГРУЗКА...</span>
+                <span class="save-indicator" id="save-indicator" style="display: none;"></span>
+            </div>
         </div>
 
-        <div class="debug-info" id="debug-info"></div>
+        <!-- Кнопка связи с администратором на главном экране -->
+        <button class="button button-secondary" id="contact-admin-main" style="margin-bottom: 20px;">
+            📞 Связаться с администратором
+        </button>
 
-        <div class="products-grid" id="products-grid">
-            <!-- Товары загружаются через JS -->
-        </div>
+        <div class="products-grid" id="products-grid"></div>
     </div>
 
     <!-- Экран товара -->
@@ -342,10 +536,11 @@
         </div>
 
         <button class="button button-primary" id="order-btn">✅ Оформить заказ</button>
+        <button class="button button-secondary" id="contact-admin-from-product">📞 Связаться с администратором</button>
         <button class="button button-secondary" id="back-to-catalog-from-detail">⬅️ Продолжить покупки</button>
     </div>
 
-    <!-- Экран подтверждения -->
+    <!-- Экран подтверждения заказа -->
     <div id="confirmation-screen" class="hidden">
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
@@ -353,9 +548,23 @@
             
             <div class="order-details" id="order-details"></div>
             <div class="total-amount" id="confirmation-total">0 ₽</div>
-            
-            <button class="button button-primary" id="continue-shopping">🛍️ Продолжить покупки</button>
-            <button class="button button-secondary" id="close-app">🔚 Закрыть</button>
+
+            <!-- Секция связи с администратором после заказа -->
+            <div class="contact-section">
+                <div class="contact-title">📞 Нужна помощь с заказом?</div>
+                <div class="contact-buttons">
+                    <div class="contact-button primary" id="contact-admin-after-order">
+                        Написать администратору
+                    </div>
+                    <div class="contact-button secondary" id="continue-shopping-after-order">
+                        Продолжить покупки
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-message">
+                💬 Вы также можете написать администратору в любое время через чат с ботом
+            </div>
         </div>
     </div>
 
@@ -365,103 +574,216 @@
         tg.ready();
         tg.expand();
 
+        // Список городов
+        const CITIES = [
+            "Москва", "Санкт-Петербург", "Новосибирск", "Екатеринбург", "Казань",
+            "Нижний Новгород", "Челябинск", "Самара", "Омск", "Ростов-на-Дону",
+            "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
+        ];
+
         // Данные товаров
         const PRODUCTS = [
-            { id: 1, name: "Наушники Sony WH-1000XM4", price: 15000, image: "https://m.media-amazon.com/images/I/61g6Yx1rQLL._AC_SL1500_.jpg" },
-            { id: 2, name: "Клавиатура Mechanical", price: 8000, image: "https://m.media-amazon.com/images/I/61G0JNIBGQL._AC_SL1500_.jpg" },
-            { id: 3, name: "Игровая мышь Logitech", price: 5000, image: "https://m.media-amazon.com/images/I/61rL2pVg5QL._AC_SL1500_.jpg" },
-            { id: 4, name: "Монитор 24\" IPS", price: 22000, image: "https://m.media-amazon.com/images/I/71fFZvBqj3L._AC_SL1500_.jpg" },
-            { id: 5, name: "Внешний SSD 1TB", price: 12000, image: "https://m.media-amazon.com/images/I/71Yg2H-i6gL._AC_SL1500_.jpg" },
-            { id: 6, name: "Коврик для мыши", price: 1500, image: "https://m.media-amazon.com/images/I/61bM8b6J5bL._AC_SL1200_.jpg" },
-            { id: 7, name: "Веб-камера HD", price: 6500, image: "https://m.media-amazon.com/images/I/61y2Uj4oVwL._AC_SL1500_.jpg" },
-            { id: 8, name: "Микрофон USB", price: 9000, image: "https://m.media-amazon.com/images/I/61Tqj0r6JZL._AC_SL1500_.jpg" },
-            { id: 9, name: "Акустическая система", price: 18000, image: "https://m.media-amazon.com/images/I/71tF7UOQQPL._AC_SL1500_.jpg" },
-            { id: 10, name: "Ноутбук Dell XPS", price: 75000, image: "https://m.media-amazon.com/images/I/71wF7Y6nDkL._AC_SL1500_.jpg" }
-        ];
+        { 
+            id: 1, 
+            name: "Шишки 🌰", 
+            price: 3000, 
+            category: "audio",
+            image: "images/Shishka.png"
+        },
+        { 
+            id: 2, 
+            name: "Гашиш 🪴", 
+            price: 3600, 
+            category: "accessories",
+            image: "images/Gash.png"
+        },
+        { 
+            id: 3, 
+            name: "Амфетамин  💊", 
+            price: 2200, 
+            category: "accessories",
+            image: "images/amf.png"
+        },
+        { 
+            id: 4, 
+            name: "Экстази 🍃", 
+            price: 1200, 
+            category: "electronics",
+            image: "images/Eks.png"
+        },
+        { 
+            id: 5, 
+            name: "Меф 🧂", 
+            price: 1700, 
+            category: "electronics",
+            image: "images/Mef.png"
+        },
+        { 
+            id: 6, 
+            name: "А - кристалл 💎", 
+            price: 5500, 
+            category: "accessories",
+            image: "images/Cry.png"
+        },
+        { 
+            id: 7, 
+            name: "Психотропные грибы 🍄", 
+            price: 500, 
+            category: "electronics",
+            image: "images/Mush.png"
+        },
+        { 
+            id: 8, 
+            name: "Лирика 💧", 
+            price: 8000, 
+            category: "audio",
+            image: "images/Lyr.png"
+        },
+    ];
+
+        // Ключ для localStorage
+        const STORAGE_KEY = 'shop_selected_city';
 
         // Состояние приложения
         let state = {
-            city: 'Москва', // По умолчанию
+            city: 'Москва',
             selectedProduct: null,
-            selectedQuantity: 1
+            selectedQuantity: 1,
+            tempSelectedCity: 'Москва',
+            lastOrder: null
         };
 
-        // Функция для отладки
-        function debug(message) {
-            console.log('🔍', message);
-            const debugEl = document.getElementById('debug-info');
-            if (debugEl) {
-                debugEl.innerHTML += message + '<br>';
-                debugEl.style.display = 'block';
-            }
-        }
+        // ===== ФУНКЦИИ РАБОТЫ С ГОРОДОМ =====
 
-        debug('Mini App запущен');
-
-        // ПОЛУЧАЕМ ГОРОД ИЗ URL
         function getCityFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             const city = urlParams.get('city');
-            debug(`Город из URL: ${city}`);
-            return city;
-        }
-
-        // ПОЛУЧАЕМ ГОРОД ИЗ START PARAM (если есть)
-        function getCityFromStartParam() {
-            if (tg.initDataUnsafe && tg.initDataUnsafe.start_param) {
-                debug(`Start param: ${tg.initDataUnsafe.start_param}`);
-                return tg.initDataUnsafe.start_param;
+            if (city) {
+                try {
+                    return decodeURIComponent(city);
+                } catch (e) {
+                    return city;
+                }
             }
             return null;
         }
 
-        // ОСНОВНАЯ ФУНКЦИЯ ПОЛУЧЕНИЯ ГОРОДА
-        function getCity() {
-            // Сначала проверяем URL (приоритет 1)
-            const urlCity = getCityFromUrl();
-            if (urlCity) {
-                try {
-                    const decodedCity = decodeURIComponent(urlCity);
-                    debug(`✅ Город из URL: ${decodedCity}`);
-                    return decodedCity;
-                } catch (e) {
-                    debug(`❌ Ошибка декодирования URL: ${e}`);
+        function loadCityFromStorage() {
+            try {
+                const savedCity = localStorage.getItem(STORAGE_KEY);
+                if (savedCity && CITIES.includes(savedCity)) {
+                    return savedCity;
+                }
+            } catch (e) {
+                console.error('Ошибка загрузки из localStorage:', e);
+            }
+            return null;
+        }
+
+        function saveCityToStorage(city) {
+            try {
+                localStorage.setItem(STORAGE_KEY, city);
+                const indicator = document.getElementById('save-indicator');
+                if (indicator) {
+                    indicator.style.display = 'inline-block';
+                    setTimeout(() => {
+                        indicator.style.display = 'none';
+                    }, 2000);
+                }
+            } catch (e) {
+                console.error('Ошибка сохранения в localStorage:', e);
+            }
+        }
+
+        function initializeCity() {
+            const savedCity = loadCityFromStorage();
+            if (savedCity) {
+                state.city = savedCity;
+                state.tempSelectedCity = savedCity;
+            } else {
+                const urlCity = getCityFromUrl();
+                if (urlCity && CITIES.includes(urlCity)) {
+                    state.city = urlCity;
+                    state.tempSelectedCity = urlCity;
+                    saveCityToStorage(urlCity);
                 }
             }
+            updateCityDisplay();
+        }
 
-            // Потом проверяем start_param (приоритет 2)
-            const startCity = getCityFromStartParam();
-            if (startCity) {
-                debug(`✅ Город из start_param: ${startCity}`);
-                return startCity;
+        function updateCityDisplay() {
+            const cityNameElement = document.getElementById('city-name-text');
+            if (cityNameElement) {
+                cityNameElement.textContent = state.city;
             }
-
-            // Если ничего не нашли - Москва по умолчанию
-            debug(`⚠️ Город не найден, используем Москва`);
-            return 'Москва';
         }
 
-        // УСТАНАВЛИВАЕМ ГОРОД
-        const city = getCity();
-        state.city = city;
-        
-        debug(`🏙️ ИТОГОВЫЙ ГОРОД: ${state.city}`);
-        
-        // ОБНОВЛЯЕМ ОТОБРАЖЕНИЕ
-        const cityDisplay = document.getElementById('city-display');
-        if (cityDisplay) {
-            cityDisplay.textContent = state.city;
+        function loadCitiesModal() {
+            const grid = document.getElementById('cities-grid');
+            grid.innerHTML = CITIES.map(city => `
+                <div class="city-item ${city === state.city ? 'selected' : ''}" 
+                     onclick="selectTempCity('${city}')">
+                    ${city}
+                </div>
+            `).join('');
         }
 
-        // Меняем цвет хедера в зависимости от города (просто для красоты)
-        const cityHeader = document.getElementById('city-header');
-        if (cityHeader) {
-            // Генерируем цвет на основе названия города
-            const hue = (state.city.length * 10) % 360;
-            cityHeader.style.background = `linear-gradient(135deg, var(--tg-theme-button-color), hsl(${hue}, 70%, 50%))`;
+        window.selectTempCity = function(city) {
+            state.tempSelectedCity = city;
+            document.querySelectorAll('.city-item').forEach(el => {
+                if (el.textContent.trim() === city) {
+                    el.classList.add('selected');
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+        };
+
+        function confirmCity() {
+            if (state.tempSelectedCity !== state.city) {
+                state.city = state.tempSelectedCity;
+                saveCityToStorage(state.city);
+                updateCityDisplay();
+                loadCitiesModal();
+            }
+            closeCityModal();
         }
 
-        // Загрузка товаров
+        function openCityModal() {
+            state.tempSelectedCity = state.city;
+            loadCitiesModal();
+            document.getElementById('city-modal-overlay').classList.add('show');
+        }
+
+        function closeCityModal() {
+            document.getElementById('city-modal-overlay').classList.remove('show');
+        }
+
+        // ===== ФУНКЦИИ СВЯЗИ С АДМИНИСТРАТОРОМ =====
+
+        function contactAdmin() {
+            // Отправляем запрос на связь с администратором
+            const contactData = {
+                action: 'contact_admin',
+                city: state.city,
+                message: 'Пользователь хочет связаться с администратором'
+            };
+            
+            console.log('📞 Запрос связи с администратором:', contactData);
+            
+            // Отправляем в бота
+            tg.sendData(JSON.stringify(contactData));
+            
+            // Показываем уведомление пользователю
+            tg.showPopup({
+                title: '📞 Запрос отправлен',
+                message: 'Администратор свяжется с вами в ближайшее время. Вы также можете написать ему в чат с ботом.',
+                buttons: [{ type: 'ok' }]
+            });
+        }
+
+        // ===== ТОВАРЫ И ЗАКАЗЫ =====
+
         function loadProducts() {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = PRODUCTS.map(product => `
@@ -476,7 +798,6 @@
             `).join('');
         }
 
-        // Выбор товара
         window.selectProduct = function(productId) {
             state.selectedProduct = PRODUCTS.find(p => p.id === productId);
             state.selectedQuantity = 1;
@@ -484,13 +805,14 @@
             document.getElementById('detail-image').src = state.selectedProduct.image;
             document.getElementById('detail-title').textContent = state.selectedProduct.name;
             document.getElementById('detail-price').textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
+            document.getElementById('product-nav-title').textContent = state.selectedProduct.name;
             
             const qtyContainer = document.getElementById('quantity-buttons');
             qtyContainer.innerHTML = '';
             for (let qty = 1; qty <= 5; qty++) {
                 const btn = document.createElement('button');
                 btn.className = `qty-btn ${qty === 1 ? 'selected' : ''}`;
-                btn.textContent = `${qty} шт`;
+                btn.textContent = `${qty} гр`;
                 btn.onclick = () => selectQuantity(qty);
                 qtyContainer.appendChild(btn);
             }
@@ -522,36 +844,42 @@
             }
         }
 
-        // ОФОРМЛЕНИЕ ЗАКАЗА (с городом)
         function placeOrder() {
             if (!state.selectedProduct) return;
             
             const total = state.selectedProduct.price * state.selectedQuantity;
             
-            // ФОРМИРУЕМ ДАННЫЕ ЗАКАЗА С ГОРОДОМ
+            // Сохраняем последний заказ
+            state.lastOrder = {
+                product: state.selectedProduct,
+                quantity: state.selectedQuantity,
+                total: total,
+                city: state.city
+            };
+            
             const orderData = {
                 action: 'order',
                 productId: state.selectedProduct.id,
                 productName: state.selectedProduct.name,
                 quantity: state.selectedQuantity,
                 totalPrice: total,
-                city: state.city  // ВАЖНО: передаем город!
+                city: state.city
             };
             
-            debug(`📦 Отправка заказа: ${JSON.stringify(orderData)}`);
+            console.log('📦 Оформление заказа:', orderData);
             
             // Отправляем в бота
             tg.sendData(JSON.stringify(orderData));
             
-            // Показываем подтверждение
+            // Показываем экран подтверждения
             document.getElementById('product-screen').classList.add('hidden');
             document.getElementById('confirmation-screen').classList.remove('hidden');
             
-            // Детали заказа
+            // Заполняем детали заказа
             document.getElementById('order-details').innerHTML = `
                 <div class="order-detail-item">
-                    <span class="detail-label">🏙️ ГОРОД:</span>
-                    <span class="detail-value" style="color: var(--tg-theme-button-color); font-weight: 800;">${state.city}</span>
+                    <span class="detail-label">🏙️ Город:</span>
+                    <span class="detail-value">${state.city}</span>
                 </div>
                 <div class="order-detail-item">
                     <span class="detail-label">📦 Товар:</span>
@@ -562,39 +890,59 @@
                     <span class="detail-value">${state.selectedQuantity} шт.</span>
                 </div>
                 <div class="order-detail-item">
-                    <span class="detail-label">💰 Сумма:</span>
-                    <span class="detail-value">${total.toLocaleString()} ₽</span>
+                    <span class="detail-label">💰 Цена за шт:</span>
+                    <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
                 </div>
             `;
             
             document.getElementById('confirmation-total').textContent = `${total.toLocaleString()} ₽`;
         }
 
-        // Навигация
-        document.getElementById('back-to-catalog').addEventListener('click', () => {
+        // ===== НАВИГАЦИЯ =====
+
+        function goToMainScreen() {
             document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        });
-
-        document.getElementById('back-to-catalog-from-detail').addEventListener('click', () => {
-            document.getElementById('product-screen').classList.add('hidden');
-            document.getElementById('main-screen').classList.remove('hidden');
-        });
-
-        document.getElementById('order-btn').addEventListener('click', placeOrder);
-
-        document.getElementById('continue-shopping').addEventListener('click', () => {
             document.getElementById('confirmation-screen').classList.add('hidden');
             document.getElementById('main-screen').classList.remove('hidden');
+        }
+
+        // ===== ОБРАБОТЧИКИ СОБЫТИЙ =====
+        
+        // Город
+        document.getElementById('city-header').addEventListener('click', openCityModal);
+        document.getElementById('close-modal-btn').addEventListener('click', closeCityModal);
+        document.getElementById('confirm-city-btn').addEventListener('click', confirmCity);
+        
+        document.getElementById('city-modal-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('city-modal-overlay')) {
+                closeCityModal();
+            }
         });
 
+        // Связь с администратором
+        document.getElementById('contact-admin-main').addEventListener('click', contactAdmin);
+        document.getElementById('contact-admin-from-product').addEventListener('click', contactAdmin);
+        document.getElementById('contact-admin-after-order').addEventListener('click', contactAdmin);
+
+        // Навигация
+        document.getElementById('back-to-catalog').addEventListener('click', goToMainScreen);
+        document.getElementById('back-to-catalog-from-detail').addEventListener('click', goToMainScreen);
+        document.getElementById('continue-shopping-after-order').addEventListener('click', goToMainScreen);
+
+        // Заказ
+        document.getElementById('order-btn').addEventListener('click', placeOrder);
+
+        // Продолжить покупки после заказа
+        document.getElementById('continue-shopping-after-order').addEventListener('click', goToMainScreen);
+
+        // ИНИЦИАЛИЗАЦИЯ
+        initializeCity();
+        loadProducts();
+
+        // Добавляем обработчик для закрытия приложения
         document.getElementById('close-app').addEventListener('click', () => {
             tg.close();
         });
-
-        // Инициализация
-        loadProducts();
-        debug(`🚀 Mini App готов. Город: ${state.city}`);
     </script>
 </body>
 </html>
