@@ -209,7 +209,7 @@
         .product-price {
             color: var(--tg-theme-button-color);
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
         }
 
         .product-detail {
@@ -237,8 +237,8 @@
         }
 
         .detail-price {
-            font-size: 28px;
-            font-weight: 800;
+            font-size: 18px;
+            font-weight: 600;
             color: var(--tg-theme-button-color);
             margin-bottom: 24px;
         }
@@ -251,45 +251,18 @@
         }
 
         .quantity-label {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             opacity: 0.8;
         }
 
-        .quantity-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .qty-btn {
-            flex: 1;
-            min-width: 60px;
-            padding: 14px 8px;
-            background: var(--tg-theme-bg-color);
-            color: var(--tg-theme-text-color);
-            border: 2px solid transparent;
-            border-radius: 16px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .qty-btn.selected {
-            background: var(--tg-theme-button-color);
-            color: var(--tg-theme-button-text-color);
-            border-color: var(--tg-theme-button-color);
-        }
-
         .total-price {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             text-align: center;
-            margin: 16px 0;
-            padding: 16px;
+            margin: 0;
+            padding: 12px;
             background: var(--tg-theme-bg-color);
             border-radius: 16px;
         }
@@ -512,6 +485,48 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .calc-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .calc-input {
+            flex: 2;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid var(--tg-theme-hint-color);
+            background: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-size: 14px;
+        }
+
+        .calc-result {
+            flex: 2;
+            margin: 0;
+            padding: 12px;
+            background: var(--tg-theme-bg-color);
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .calc-equals {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .info-message {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 16px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 12px;
+            opacity: 0.7;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -560,24 +575,48 @@
             <img class="detail-image" id="detail-image" src="" alt="product">
             <div class="detail-content">
                 <div class="detail-title" id="detail-title">Название</div>
-                <div class="detail-price" id="detail-price">0 ₽</div>
+                <div class="detail-price" id="detail-price">0 ₽ / гр</div>
             </div>
         </div>
 
         <div class="quantity-selector">
-            <div class="quantity-label">📦 Количество (грамм)</div>
-            <div class="quantity-buttons" id="quantity-buttons"></div>
-            <div class="total-price" id="total-price">0 ₽</div>
+            <div class="quantity-label">⚖️ Калькулятор веса и стоимости</div>
+            
+            <div class="calc-row">
+                <input type="number" id="weight-input" class="calc-input" placeholder="Введите вес" step="any" value="1">
+                <span id="weight-unit" style="min-width: 40px;">гр</span>
+                <span class="calc-equals">≈</span>
+                <div id="price-from-weight" class="calc-result">0 ₽</div>
+            </div>
+            
+            <div class="calc-row">
+                <input type="number" id="amount-input" class="calc-input" placeholder="Введите сумму" step="any">
+                <span class="calc-equals">≈</span>
+                <div id="weight-from-amount" class="calc-result">0 гр</div>
+            </div>
+            
+            <div class="info-message">
+                💡 Выше указана примерная стоимость/вес товара исходя из данных, которые вы ввели. После оформления заказа с вами свяжется администратор чтобы подобрать имеющуюся граммовку в вашем ценовом сегменте.
+            </div>
         </div>
 
         <div class="promo-section">
-            <div class="quantity-label">🎫 Промокод</div>
-            <div class="promo-input-group">
-                <input type="text" id="promo-code-input" class="promo-input" placeholder="Введите промокод">
-                <button id="apply-promo-btn" class="button button-secondary promo-button">Применить</button>
-            </div>
-            <div id="promo-message" class="promo-message"></div>
+    <div class="quantity-label">🎫 Промокод</div>
+    <div class="promo-input-group">
+        <input type="text" id="promo-code-input" class="promo-input" placeholder="Введите промокод">
+        <button id="apply-promo-btn" class="button button-secondary promo-button">Применить</button>
+    </div>
+    <div id="promo-message" class="promo-message"></div>
         </div>
+        <div style="margin-top: 12px; display: flex; gap: 10px;">
+        <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="promo-type" value="discount" checked> 💰 Скидка на цену
+        </label>
+        <label style="display: flex; align-items: center; gap: 5px;">
+            <input type="radio" name="promo-type" value="bonus"> 🎁 Бонус к количеству
+        </label>
+    </div>
+</div>
 
         <button class="button button-primary" id="order-btn">✅ Оформить заказ</button>
         <button class="button button-secondary" id="contact-admin-from-product">📞 Связаться с администратором</button>
@@ -654,8 +693,6 @@
         }
         
         console.log('👤 ИТОГОВЫЙ ПОЛЬЗОВАТЕЛЬ:', telegramUser);
-        console.log('🆔 USER ID:', telegramUser.id);
-        console.log('📛 USERNAME:', telegramUser.username);
         
         // ========== ДАННЫЕ ==========
         const CITIES = [
@@ -664,10 +701,6 @@
             "Уфа", "Красноярск", "Воронеж", "Пермь", "Волгоград"
         ];
         
-        // Локальные товары (резервные, если сервер не ответит)
-        const LOCAL_PRODUCTS = [];
-        
-        // Товары будут загружены с сервера
         let PRODUCTS = [];
         
         // ========== СОСТОЯНИЕ ==========
@@ -695,48 +728,109 @@
         
         // ========== ЗАГРУЗКА ТОВАРОВ С СЕРВЕРА ==========
         async function loadProductsFromServer() {
-    try {
-        console.log('🔄 Загрузка товаров с сервера...');
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000);
-        
-        const response = await fetch('https://tg-shop-server.onrender.com/api/products', {
-            signal: controller.signal
-        });
-        
-        clearTimeout(timeoutId);
-        
-        if (response.ok) {
-            const data = await response.json();
-            if (data.status === 'ok' && data.products && data.products.length > 0) {
-    PRODUCTS = data.products.map(p => ({
-        id: p.id,
-        name: p.name,
-        price: p.price,
-        image: p.image,
-        unit: p.unit || 'гр',      // ← добавляем
-        sizes: p.sizes || [1, 2, 3, 4, 5]  // ← добавляем
-    }));
-    console.log(`✅ Загружено ${PRODUCTS.length} товаров с сервера`);
-    return true;
-}
+            try {
+                console.log('🔄 Загрузка товаров с сервера...');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch('https://tg-shop-server.onrender.com/api/products', {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.status === 'ok' && data.products && data.products.length > 0) {
+                        PRODUCTS = data.products.map(p => ({
+                            id: p.id,
+                            name: p.name,
+                            price: p.price,
+                            image: p.image,
+                            unit: p.unit || 'гр'
+                        }));
+                        console.log(`✅ Загружено ${PRODUCTS.length} товаров с сервера`);
+                        return true;
+                    }
+                }
+                console.log('⚠️ Сервер вернул пустой список');
+                PRODUCTS = [];
+                return false;
+            } catch (error) {
+                console.log('❌ Ошибка загрузки товаров:', error);
+                PRODUCTS = [];
+                return false;
+            }
         }
         
-        // Если сервер вернул пустой список или ошибку
-        console.log('⚠️ Сервер вернул пустой список, используем локальные товары');
-        PRODUCTS = [...LOCAL_PRODUCTS]; // LOCAL_PRODUCTS = [] (пустой)
-        return false;
+        // ========== КАЛЬКУЛЯТОР ==========
+        let currentPricePerUnit = 0;
+        let currentUnit = 'гр';
         
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log('⏰ Таймаут загрузки товаров с сервера');
-        } else {
-            console.log('❌ Ошибка загрузки товаров с сервера:', error.message);
+        function updateCalculator() {
+    if (!state.selectedProduct) return;
+    
+    currentPricePerUnit = state.selectedProduct.price;
+    currentUnit = state.selectedProduct.unit || 'гр';
+    
+    const weightUnitSpan = document.getElementById('weight-unit');
+    if (weightUnitSpan) weightUnitSpan.textContent = currentUnit;
+    
+    const weightInput = document.getElementById('weight-input');
+    const amountInput = document.getElementById('amount-input');
+    const priceFromWeightSpan = document.getElementById('price-from-weight');
+    const weightFromAmountSpan = document.getElementById('weight-from-amount');
+    
+    if (!weightInput || !amountInput) return;
+    
+    function updatePriceFromWeight() {
+        let weight = parseFloat(weightInput.value);
+        if (isNaN(weight) || weight <= 0) {
+            weight = 1;
+            weightInput.value = 1;
         }
-        console.log('⚠️ Используем локальные товары');
-        PRODUCTS = [...LOCAL_PRODUCTS]; // LOCAL_PRODUCTS = [] (пустой)
-        return false;
+        
+        let effectivePrice = currentPricePerUnit;
+        
+        // Если есть бонусный промокод, увеличиваем количество
+        if (state.appliedPromo && state.appliedPromoType === 'bonus') {
+            const bonusMultiplier = 1 + (state.appliedPromo.value / 100);
+            const bonusWeight = weight * bonusMultiplier;
+            priceFromWeightSpan.innerHTML = `${Math.round(weight * effectivePrice).toLocaleString()} ₽<br><span style="font-size: 10px; opacity: 0.7;">(+${bonusWeight.toFixed(2)} ${currentUnit} с бонусом)</span>`;
+            return;
+        }
+        
+        const calculatedPrice = weight * effectivePrice;
+        priceFromWeightSpan.textContent = `${Math.round(calculatedPrice).toLocaleString()} ₽`;
+        state.selectedQuantity = weight;
     }
+    
+    function updateWeightFromAmount() {
+        let amount = parseFloat(amountInput.value);
+        if (isNaN(amount) || amount <= 0) {
+            weightFromAmountSpan.textContent = `0 ${currentUnit}`;
+            return;
+        }
+        
+        let effectivePrice = currentPricePerUnit;
+        let baseWeight = amount / effectivePrice;
+        
+        // Если есть бонусный промокод, увеличиваем количество
+        if (state.appliedPromo && state.appliedPromoType === 'bonus') {
+            const bonusMultiplier = 1 + (state.appliedPromo.value / 100);
+            const bonusWeight = baseWeight * bonusMultiplier;
+            weightFromAmountSpan.innerHTML = `${bonusWeight.toFixed(2)} ${currentUnit}<br><span style="font-size: 10px; opacity: 0.7;">(без бонуса: ${baseWeight.toFixed(2)})</span>`;
+            return;
+        }
+        
+        weightFromAmountSpan.textContent = `${baseWeight.toFixed(2)} ${currentUnit}`;
+    }
+    
+    weightInput.oninput = updatePriceFromWeight;
+    amountInput.oninput = updateWeightFromAmount;
+    
+    updatePriceFromWeight();
+    if (amountInput.value) updateWeightFromAmount();
 }
         
         // ========== ОТПРАВКА ДАННЫХ ==========
@@ -769,85 +863,130 @@
                 }
                 return false;
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    console.log('⏰ Таймаут отправки заказа, данные сохранены локально');
-                } else {
-                    console.log('❌ Ошибка отправки:', error);
-                }
+                console.log('❌ Ошибка отправки:', error);
                 return false;
             }
         }
         
         // ========== ПРОМОКОДЫ ==========
         async function applyPromoCode() {
-            const promoInput = document.getElementById('promo-code-input');
-            const promoMessage = document.getElementById('promo-message');
-            const code = promoInput.value.trim();
+    const promoInput = document.getElementById('promo-code-input');
+    const promoMessage = document.getElementById('promo-message');
+    const code = promoInput.value.trim();
+    
+    // Получаем выбранный тип промокода
+    const promoTypeRadio = document.querySelector('input[name="promo-type"]:checked');
+    const promoType = promoTypeRadio ? promoTypeRadio.value : 'discount';
+    
+    if (!code) {
+        promoMessage.textContent = '❌ Введите промокод';
+        promoMessage.style.color = 'red';
+        return;
+    }
+    
+    promoMessage.textContent = '⏳ Проверка промокода...';
+    promoMessage.style.color = 'var(--tg-theme-hint-color)';
+    
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
+        
+        const response = await fetch(`https://tg-shop-server.onrender.com/api/check-promo`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                code: code,
+                userId: telegramUser.id,
+                orderAmount: currentPricePerUnit,
+                promoType: promoType
+            }),
+            signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        const result = await response.json();
+        
+        if (result.status === 'ok') {
+            state.appliedPromo = result.promo;
+            state.appliedPromoType = promoType;
             
-            if (!code) {
-                promoMessage.textContent = '❌ Введите промокод';
-                promoMessage.style.color = 'red';
-                return;
-            }
+            const originalTotal = currentPricePerUnit;
+            const weightInput = document.getElementById('weight-input');
+            const amountInput = document.getElementById('amount-input');
+            const currentWeight = parseFloat(weightInput.value) || 1;
             
-            promoMessage.textContent = '⏳ Проверка промокода...';
-            promoMessage.style.color = 'var(--tg-theme-hint-color)';
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
+            if (promoType === 'discount') {
+                // Скидка на цену
+                const discountAmount = originalTotal * result.promo.value / 100;
+                const newPricePerUnit = originalTotal - discountAmount;
                 
-                const response = await fetch(`https://tg-shop-server.onrender.com/api/check-promo`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        code: code,
-                        userId: telegramUser.id,
-                        orderAmount: state.selectedProduct.price * state.selectedQuantity
-                    }),
-                    signal: controller.signal
-                });
+                promoMessage.innerHTML = `✅ Промокод применен! Скидка: ${result.promo.value}% (-${discountAmount.toFixed(2)} руб за ${currentUnit})`;
+                promoMessage.style.color = '#4CAF50';
                 
-                clearTimeout(timeoutId);
-                const result = await response.json();
+                // Обновляем цену за единицу для расчетов
+                currentPricePerUnit = newPricePerUnit;
                 
-                if (result.status === 'ok') {
-                    state.appliedPromo = result.promo;
-                    const originalTotal = state.selectedProduct.price * state.selectedQuantity;
-                    
-                    let discountAmount = 0;
-                    if (result.promo.type === 'percent') {
-                        discountAmount = originalTotal * result.promo.value / 100;
-                    } else {
-                        discountAmount = Math.min(result.promo.value, originalTotal);
-                    }
-                    
-                    const newTotal = originalTotal - discountAmount;
-                    state.discountedTotal = newTotal;
-                    
-                    promoMessage.innerHTML = `✅ Промокод применен! Скидка: ${result.promo.value}${result.promo.type === 'percent' ? '%' : ' руб'} (-${discountAmount} руб)`;
-                    promoMessage.style.color = '#4CAF50';
-                    
-                    document.getElementById('total-price').innerHTML = `
-                        <div style="text-decoration: line-through; color: gray;">${originalTotal.toLocaleString()} ₽</div>
-                        <div style="color: #4CAF50; font-size: 20px;">${newTotal.toLocaleString()} ₽</div>
-                    `;
-                } else {
-                    promoMessage.textContent = `❌ ${result.message}`;
-                    promoMessage.style.color = 'red';
-                    state.appliedPromo = null;
+                // Пересчитываем калькулятор
+                if (weightInput.value) {
+                    const newTotal = parseFloat(weightInput.value) * newPricePerUnit;
+                    document.getElementById('price-from-weight').textContent = `${Math.round(newTotal).toLocaleString()} ₽`;
                 }
-            } catch (error) {
-                if (error.name === 'AbortError') {
-                    promoMessage.textContent = '⏰ Сервер не отвечает, попробуйте позже';
-                } else {
-                    promoMessage.textContent = '❌ Ошибка проверки промокода';
+                if (amountInput.value) {
+                    const newWeight = parseFloat(amountInput.value) / newPricePerUnit;
+                    document.getElementById('weight-from-amount').textContent = `${newWeight.toFixed(2)} ${currentUnit}`;
                 }
-                promoMessage.style.color = 'red';
-                console.error('Ошибка:', error);
-                state.appliedPromo = null;
+                
+            } else {
+                // Бонус к количеству
+                const bonusPercent = result.promo.value;
+                const bonusMultiplier = 1 + (bonusPercent / 100);
+                
+                promoMessage.innerHTML = `✅ Промокод применен! Бонус: +${bonusPercent}% к количеству`;
+                promoMessage.style.color = '#4CAF50';
+                
+                // Сохраняем бонус в state
+                state.promoBonus = bonusMultiplier;
+                
+                // Пересчитываем калькулятор с бонусом
+                if (amountInput.value) {
+                    const amount = parseFloat(amountInput.value);
+                    const baseWeight = amount / originalTotal;
+                    const bonusWeight = baseWeight * bonusMultiplier;
+                    document.getElementById('weight-from-amount').textContent = `${bonusWeight.toFixed(2)} ${currentUnit}`;
+                    promoMessage.innerHTML += `<br>💰 За ${amount} руб вы получите ${bonusWeight.toFixed(2)} ${currentUnit} (вместо ${baseWeight.toFixed(2)})`;
+                }
+                if (weightInput.value) {
+                    const weight = parseFloat(weightInput.value);
+                    const bonusWeight = weight * bonusMultiplier;
+                    const totalPrice = weight * originalTotal;
+                    document.getElementById('price-from-weight').textContent = `${Math.round(totalPrice).toLocaleString()} ₽`;
+                    promoMessage.innerHTML += `<br>📦 За ${weight} ${currentUnit} вы заплатите ${Math.round(totalPrice)} руб, а получите ${bonusWeight.toFixed(2)} ${currentUnit}`;
+                }
+                
+                // Обновляем отображение в блоке количества
+                const totalPriceElement = document.getElementById('total-price');
+                if (totalPriceElement && weightInput.value) {
+                    const weight = parseFloat(weightInput.value);
+                    const totalPrice = weight * originalTotal;
+                    totalPriceElement.innerHTML = `${Math.round(totalPrice).toLocaleString()} ₽`;
+                }
             }
+        } else {
+            promoMessage.textContent = `❌ ${result.message}`;
+            promoMessage.style.color = 'red';
+            state.appliedPromo = null;
+            state.appliedPromoType = null;
+            state.promoBonus = null;
         }
+    } catch (error) {
+        promoMessage.textContent = '❌ Ошибка проверки промокода';
+        promoMessage.style.color = 'red';
+        console.error('Ошибка:', error);
+        state.appliedPromo = null;
+        state.appliedPromoType = null;
+        state.promoBonus = null;
+    }
+}
         
         // ========== ФУНКЦИИ ГОРОДА ==========
         function initializeCity() {
@@ -939,212 +1078,228 @@
                          onerror="this.src='https://via.placeholder.com/300x200/cccccc/666666?text=${encodeURIComponent(product.name)}'">
                     <div class="product-info">
                         <div class="product-title">${product.name}</div>
-                        <div class="product-price">${product.price.toLocaleString()} ₽</div>
+                        <div class="product-price">${product.price.toLocaleString()} ₽ / ${product.unit || 'гр'}</div>
                     </div>
                 </div>
             `).join('');
         }
         
         window.selectProduct = function(productId) {
-    state.selectedProduct = PRODUCTS.find(p => p.id === productId);
-    state.selectedQuantity = 1;
-    state.appliedPromo = null;
-    
-    const detailImage = document.getElementById('detail-image');
-    if (detailImage) {
-        detailImage.src = state.selectedProduct.image;
-        detailImage.alt = state.selectedProduct.name;
-    }
-    
-    const detailTitle = document.getElementById('detail-title');
-    const detailPrice = document.getElementById('detail-price');
-    
-    if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
-    if (detailPrice) detailPrice.textContent = state.selectedProduct.price.toLocaleString() + ' ₽';
-    
-    // ========== ДИНАМИЧЕСКИЕ КНОПКИ КОЛИЧЕСТВА ==========
-    const qtyContainer = document.getElementById('quantity-buttons');
-    if (qtyContainer) {
-        qtyContainer.innerHTML = '';
-        
-        // Получаем размеры из товара (если есть)
-        let sizes = state.selectedProduct.sizes || [1, 2, 3, 4, 5];
-        
-        // Если sizes это строка, преобразуем в массив
-        if (typeof sizes === 'string') {
-            sizes = sizes.split(',').map(s => parseFloat(s.trim()));
-        }
-        
-        // Создаем кнопки для каждого размера
-        sizes.forEach(size => {
-            const btn = document.createElement('button');
-            btn.className = `qty-btn ${size === state.selectedQuantity ? 'selected' : ''}`;
+            state.selectedProduct = PRODUCTS.find(p => p.id === productId);
+            state.selectedQuantity = 1;
+            state.appliedPromo = null;
             
-            // Форматируем отображение (целые числа без .0)
-            const displaySize = Number.isInteger(size) ? size : size.toFixed(1);
-            btn.textContent = `${displaySize} ${state.selectedProduct.unit || 'гр'}`;
+            const detailImage = document.getElementById('detail-image');
+            if (detailImage) {
+                detailImage.src = state.selectedProduct.image;
+                detailImage.alt = state.selectedProduct.name;
+            }
             
-            btn.onclick = () => selectQuantity(size);
-            qtyContainer.appendChild(btn);
-        });
-    }
-    
-    updateTotalPrice();
-    
-    const promoInput = document.getElementById('promo-code-input');
-    if (promoInput) promoInput.value = '';
-    const promoMessage = document.getElementById('promo-message');
-    if (promoMessage) promoMessage.innerHTML = '';
-    
-    document.getElementById('main-screen')?.classList.add('hidden');
-    document.getElementById('product-screen')?.classList.remove('hidden');
-};
-        
-        function selectQuantity(qty) {
-    state.selectedQuantity = qty;
-    state.appliedPromo = null;
-    
-    document.querySelectorAll('.qty-btn').forEach((btn, index) => {
-        // Сравниваем значение кнопки с выбранным количеством
-        const btnValue = parseFloat(btn.textContent);
-        if (btnValue === qty) {
-            btn.classList.add('selected');
-        } else {
-            btn.classList.remove('selected');
-        }
-    });
-    
-    updateTotalPrice();
-    
-    const promoInput = document.getElementById('promo-code-input');
-    if (promoInput) promoInput.value = '';
-    const promoMessage = document.getElementById('promo-message');
-    if (promoMessage) promoMessage.innerHTML = '';
-}
-        
-        function updateTotalPrice() {
-    if (state.selectedProduct) {
-        const total = state.selectedProduct.price * state.selectedQuantity;
-        const totalElement = document.getElementById('total-price');
-        if (totalElement) totalElement.innerHTML = `${total.toLocaleString()} ₽`;
-    }
-}
+            const detailTitle = document.getElementById('detail-title');
+            const detailPrice = document.getElementById('detail-price');
+            
+            if (detailTitle) detailTitle.textContent = state.selectedProduct.name;
+            if (detailPrice) detailPrice.textContent = `${state.selectedProduct.price.toLocaleString()} ₽ / ${state.selectedProduct.unit || 'гр'}`;
+            
+            // Обновляем единицу измерения в калькуляторе
+            const weightUnitSpan = document.getElementById('weight-unit');
+            if (weightUnitSpan) weightUnitSpan.textContent = state.selectedProduct.unit || 'гр';
+            
+            // Инициализируем калькулятор
+            updateCalculator();
+            
+            const promoInput = document.getElementById('promo-code-input');
+            if (promoInput) promoInput.value = '';
+            const promoMessage = document.getElementById('promo-message');
+            if (promoMessage) promoMessage.innerHTML = '';
+            
+            document.getElementById('main-screen')?.classList.add('hidden');
+            document.getElementById('product-screen')?.classList.remove('hidden');
+        };
         
         // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
         async function placeOrder() {
-            if (isProcessing) {
-                showNotification('Заказ уже оформляется, пожалуйста, подождите...');
-                return;
-            }
+    if (isProcessing) {
+        showNotification('Заказ уже оформляется, пожалуйста, подождите...');
+        return;
+    }
+    
+    if (!state.selectedProduct) {
+        showNotification('Выберите товар', true);
+        return;
+    }
+    
+    isProcessing = true;
+    
+    const orderBtn = document.getElementById('order-btn');
+    const originalText = orderBtn?.textContent || 'Оформить заказ';
+    if (orderBtn) {
+        orderBtn.textContent = '⏳ Оформление...';
+        orderBtn.disabled = true;
+    }
+    
+    try {
+        const weightInput = document.getElementById('weight-input');
+        let selectedWeight = parseFloat(weightInput.value) || 1;
+        let selectedAmount = null;
+        
+        const amountInput = document.getElementById('amount-input');
+        if (amountInput.value) {
+            selectedAmount = parseFloat(amountInput.value);
+        }
+        
+        const originalPricePerUnit = state.selectedProduct.price;
+        let finalPricePerUnit = originalPricePerUnit;
+        let finalQuantity = selectedWeight;
+        let promoData = null;
+        let promoBonusMultiplier = 1;
+        
+        // Применяем промокод
+        if (state.appliedPromo) {
+            promoData = state.appliedPromo;
             
-            if (!state.selectedProduct) {
-                showNotification('Выберите товар', true);
-                return;
-            }
-            
-            isProcessing = true;
-            
-            const orderBtn = document.getElementById('order-btn');
-            const originalText = orderBtn?.textContent || 'Оформить заказ';
-            if (orderBtn) {
-                orderBtn.textContent = '⏳ Оформление...';
-                orderBtn.disabled = true;
-            }
-            
-            try {
-                const originalTotal = state.selectedProduct.price * state.selectedQuantity;
-                let finalTotal = originalTotal;
-                let promoData = null;
-                
-                if (state.appliedPromo) {
-                    if (state.appliedPromo.type === 'percent') {
-                        finalTotal = originalTotal - (originalTotal * state.appliedPromo.value / 100);
-                    } else {
-                        finalTotal = Math.max(0, originalTotal - state.appliedPromo.value);
-                    }
-                    promoData = state.appliedPromo;
-                }
-                
-                const orderData = {
-                    action: 'order',
-                    productId: state.selectedProduct.id,
-                    productName: state.selectedProduct.name,
-                    quantity: state.selectedQuantity,
-                    totalPrice: originalTotal,
-                    finalPrice: Math.round(finalTotal),
-                    city: state.city,
-                    userId: telegramUser.id,
-                    username: telegramUser.username,
-                    firstName: telegramUser.first_name,
-                    lastName: telegramUser.last_name,
-                    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
-                    promocode: promoData,
-                    timestamp: new Date().toISOString()
-                };
-                
-                console.log('📦 Оформление заказа:', orderData);
-                
-                await sendOrderToBackend(orderData);
-                
-                state.lastOrder = orderData;
-                
-                document.getElementById('product-screen')?.classList.add('hidden');
-                document.getElementById('confirmation-screen')?.classList.remove('hidden');
-                
-                const orderDetails = document.getElementById('order-details');
-                if (orderDetails) {
-                    orderDetails.innerHTML = `
-                        <div class="order-detail-item">
-                            <span class="detail-label">👤 Покупатель:</span>
-                            <span class="detail-value">${orderData.fullName} ${orderData.username ? '@' + orderData.username : ''}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">🆔 ID:</span>
-                            <span class="detail-value">${orderData.userId || 'не указан'}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">🏙️ Город:</span>
-                            <span class="detail-value">${state.city}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">📦 Товар:</span>
-                            <span class="detail-value">${state.selectedProduct.name}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">📊 Количество:</span>
-                            <span class="detail-value">${state.selectedQuantity} гр</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">💰 Цена за гр:</span>
-                            <span class="detail-value">${state.selectedProduct.price.toLocaleString()} ₽</span>
-                        </div>
-                        ${promoData ? `
-                        <div class="order-detail-item">
-                            <span class="detail-label">🎫 Промокод:</span>
-                            <span class="detail-value">${promoData.code} (${promoData.value}${promoData.type === 'percent' ? '%' : ' руб'})</span>
-                        </div>
-                        ` : ''}
-                    `;
-                }
-                
-                const totalAmount = document.getElementById('confirmation-total');
-                if (totalAmount) totalAmount.textContent = `${Math.round(finalTotal).toLocaleString()} ₽`;
-                
-                showNotification(`Заказ оформлен!\n${state.selectedProduct.name} x${state.selectedQuantity} = ${Math.round(finalTotal)} руб.\nМенеджер свяжется с вами.`);
-                
-            } catch (error) {
-                console.error('Ошибка при оформлении заказа:', error);
-                showNotification('Не удалось оформить заказ. Данные сохранены локально.', true);
-            } finally {
-                setTimeout(() => {
-                    isProcessing = false;
-                    if (orderBtn) {
-                        orderBtn.textContent = originalText;
-                        orderBtn.disabled = false;
-                    }
-                }, 2000);
+            if (state.appliedPromoType === 'discount') {
+                // Скидка на цену
+                finalPricePerUnit = originalPricePerUnit * (1 - promoData.value / 100);
+                finalQuantity = selectedWeight;
+            } else {
+                // Бонус к количеству
+                promoBonusMultiplier = 1 + (promoData.value / 100);
+                finalQuantity = selectedWeight * promoBonusMultiplier;
+                finalPricePerUnit = originalPricePerUnit;
             }
         }
+        
+        const totalPrice = finalPricePerUnit * selectedWeight;
+        let finalTotal = totalPrice;
+        
+        if (state.appliedPromo && state.appliedPromoType === 'discount') {
+            finalTotal = totalPrice;
+        }
+        
+        const orderData = {
+            action: 'order',
+            productId: state.selectedProduct.id,
+            productName: state.selectedProduct.name,
+            quantity: selectedWeight,
+            finalQuantity: finalQuantity,
+            pricePerUnit: originalPricePerUnit,
+            finalPricePerUnit: finalPricePerUnit,
+            totalPrice: totalPrice,
+            finalPrice: Math.round(finalTotal),
+            city: state.city,
+            userId: telegramUser.id,
+            username: telegramUser.username,
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name,
+            fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+            unit: state.selectedProduct.unit || 'гр',
+            promocode: promoData,
+            promoType: state.appliedPromoType,
+            promoBonusMultiplier: promoBonusMultiplier,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Если пользователь ввел сумму, а не вес
+        if (selectedAmount && !weightInput.value) {
+            orderData.orderType = 'amount';
+            orderData.amount = selectedAmount;
+        }
+        
+        console.log('📦 Оформление заказа:', orderData);
+        
+        await sendOrderToBackend(orderData);
+        
+        state.lastOrder = orderData;
+        
+        document.getElementById('product-screen')?.classList.add('hidden');
+        document.getElementById('confirmation-screen')?.classList.remove('hidden');
+        
+        const orderDetails = document.getElementById('order-details');
+        if (orderDetails) {
+            let promoText = '';
+            if (promoData) {
+                if (state.appliedPromoType === 'discount') {
+                    promoText = `<div class="order-detail-item">
+                        <span class="detail-label">🎫 Промокод:</span>
+                        <span class="detail-value">${promoData.code} (скидка ${promoData.value}%)</span>
+                    </div>`;
+                } else {
+                    promoText = `<div class="order-detail-item">
+                        <span class="detail-label">🎫 Промокод:</span>
+                        <span class="detail-value">${promoData.code} (+${promoData.value}% бонус)</span>
+                    </div>`;
+                }
+            }
+            
+            orderDetails.innerHTML = `
+                <div class="order-detail-item">
+                    <span class="detail-label">👤 Покупатель:</span>
+                    <span class="detail-value">${orderData.fullName} ${orderData.username ? '@' + orderData.username : ''}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">🆔 ID:</span>
+                    <span class="detail-value">${orderData.userId || 'не указан'}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">🏙️ Город:</span>
+                    <span class="detail-value">${state.city}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📦 Товар:</span>
+                    <span class="detail-value">${state.selectedProduct.name}</span>
+                </div>
+                ${state.appliedPromoType === 'bonus' ? `
+                <div class="order-detail-item">
+                    <span class="detail-label">📊 Заказано:</span>
+                    <span class="detail-value">${selectedWeight} ${orderData.unit}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">🎁 Получите:</span>
+                    <span class="detail-value">${finalQuantity.toFixed(2)} ${orderData.unit} (+${state.appliedPromo.value}%)</span>
+                </div>
+                ` : `
+                <div class="order-detail-item">
+                    <span class="detail-label">📊 Количество:</span>
+                    <span class="detail-value">${selectedWeight} ${orderData.unit}</span>
+                </div>
+                `}
+                <div class="order-detail-item">
+                    <span class="detail-label">💰 Цена за ${orderData.unit}:</span>
+                    <span class="detail-value">${orderData.pricePerUnit.toLocaleString()} ₽</span>
+                </div>
+                ${state.appliedPromoType === 'discount' ? `
+                <div class="order-detail-item">
+                    <span class="detail-label">💰 Цена со скидкой:</span>
+                    <span class="detail-value">${orderData.finalPricePerUnit.toLocaleString()} ₽</span>
+                </div>
+                ` : ''}
+                ${promoText}
+                <div class="order-detail-item">
+                    <span class="detail-label">💵 Итого:</span>
+                    <span class="detail-value">${Math.round(orderData.finalPrice).toLocaleString()} ₽</span>
+                </div>
+            `;
+        }
+        
+        const totalAmount = document.getElementById('confirmation-total');
+        if (totalAmount) totalAmount.textContent = `${Math.round(finalTotal).toLocaleString()} ₽`;
+        
+        showNotification(`Заказ оформлен!\n${state.selectedProduct.name}\n${selectedWeight} ${orderData.unit} = ${Math.round(finalTotal)} руб.\nМенеджер свяжется с вами.`);
+        
+    } catch (error) {
+        console.error('Ошибка при оформлении заказа:', error);
+        showNotification('Не удалось оформить заказ. Данные сохранены локально.', true);
+    } finally {
+        setTimeout(() => {
+            isProcessing = false;
+            if (orderBtn) {
+                orderBtn.textContent = originalText;
+                orderBtn.disabled = false;
+            }
+        }, 2000);
+    }
+}
         
         // ========== СВЯЗЬ С АДМИНИСТРАТОРОМ ==========
         async function contactAdmin() {
@@ -1174,11 +1329,7 @@
                 clearTimeout(timeoutId);
                 showNotification('Запрос отправлен администратору! Он свяжется с вами в ближайшее время.');
             } catch (error) {
-                if (error.name === 'AbortError') {
-                    showNotification('Сервер не отвечает, но запрос сохранен. Администратор свяжется с вами.');
-                } else {
-                    showNotification('Запрос сохранен. Администратор свяжется с вами при следующем входе.');
-                }
+                showNotification('Запрос сохранен. Администратор свяжется с вами при следующем входе.');
             }
         }
         
@@ -1195,8 +1346,6 @@
             console.log('👤 Пользователь:', telegramUser);
             
             initializeCity();
-            
-            // Загружаем товары с сервера
             await loadProductsFromServer();
             loadProducts();
             
