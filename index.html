@@ -608,13 +608,6 @@
     </div>
     <div id="promo-message" class="promo-message"></div>
         </div>
-        <div style="margin-top: 12px; display: flex; gap: 10px;">
-        <label style="display: flex; align-items: center; gap: 5px;">
-            <input type="radio" name="promo-type" value="discount" checked> 💰 Скидка на цену
-        </label>
-        <label style="display: flex; align-items: center; gap: 5px;">
-            <input type="radio" name="promo-type" value="bonus"> 🎁 Бонус к количеству
-        </label>
     </div>
 </div>
 
@@ -770,13 +763,24 @@
         function updateCalculator() {
     if (!state.selectedProduct) return;
     
-    currentPricePerUnit = state.selectedProduct.price;
+    // Сохраняем исходную цену (без скидки)
+    const basePricePerUnit = state.selectedProduct.price;
+    let effectivePricePerUnit = basePricePerUnit;
+    
+    // Если есть активный промокод и мы в режиме веса → применяем скидку
+    const weightInput = document.getElementById('weight-input');
+    const hasWeight = weightInput.value && parseFloat(weightInput.value) > 0;
+    
+    if (state.appliedPromo && hasWeight) {
+        effectivePricePerUnit = basePricePerUnit * (1 - state.appliedPromo.value / 100);
+    }
+    
+    currentPricePerUnit = effectivePricePerUnit;
     currentUnit = state.selectedProduct.unit || 'гр';
     
     const weightUnitSpan = document.getElementById('weight-unit');
     if (weightUnitSpan) weightUnitSpan.textContent = currentUnit;
     
-    const weightInput = document.getElementById('weight-input');
     const amountInput = document.getElementById('amount-input');
     const priceFromWeightSpan = document.getElementById('price-from-weight');
     const weightFromAmountSpan = document.getElementById('weight-from-amount');
@@ -790,18 +794,18 @@
             weightInput.value = 1;
         }
         
-        let effectivePrice = currentPricePerUnit;
+        let priceToShow = weight * effectivePricePerUnit;
         
-        // Если есть бонусный промокод, увеличиваем количество
-        if (state.appliedPromo && state.appliedPromoType === 'bonus') {
-            const bonusMultiplier = 1 + (state.appliedPromo.value / 100);
-            const bonusWeight = weight * bonusMultiplier;
-            priceFromWeightSpan.innerHTML = `${Math.round(weight * effectivePrice).toLocaleString()} ₽<br><span style="font-size: 10px; opacity: 0.7;">(+${bonusWeight.toFixed(2)} ${currentUnit} с бонусом)</span>`;
+        // Если есть бонусный режим (пользователь ввел сумму), показываем и без бонуса
+        if (state.appliedPromo && state.promoBonus && amountInput.value) {
+            const amount = parseFloat(amountInput.value);
+            const baseWeightForAmount = amount / basePricePerUnit;
+            const bonusWeight = baseWeightForAmount * state.promoBonus;
+            priceFromWeightSpan.innerHTML = `${Math.round(priceToShow).toLocaleString()} ₽<br><span style="font-size: 10px; opacity: 0.7;">💰 ${amount} руб = ${bonusWeight.toFixed(2)} ${currentUnit} (с бонусом)</span>`;
             return;
         }
         
-        const calculatedPrice = weight * effectivePrice;
-        priceFromWeightSpan.textContent = `${Math.round(calculatedPrice).toLocaleString()} ₽`;
+        priceFromWeightSpan.textContent = `${Math.round(priceToShow).toLocaleString()} ₽`;
         state.selectedQuantity = weight;
     }
     
@@ -812,18 +816,19 @@
             return;
         }
         
-        let effectivePrice = currentPricePerUnit;
-        let baseWeight = amount / effectivePrice;
+        let baseWeight = amount / basePricePerUnit;
         
-        // Если есть бонусный промокод, увеличиваем количество
-        if (state.appliedPromo && state.appliedPromoType === 'bonus') {
+        // Если есть активный промокод → применяем бонус к количеству
+        if (state.appliedPromo) {
             const bonusMultiplier = 1 + (state.appliedPromo.value / 100);
             const bonusWeight = baseWeight * bonusMultiplier;
-            weightFromAmountSpan.innerHTML = `${bonusWeight.toFixed(2)} ${currentUnit}<br><span style="font-size: 10px; opacity: 0.7;">(без бонуса: ${baseWeight.toFixed(2)})</span>`;
+            weightFromAmountSpan.innerHTML = `${bonusWeight.toFixed(2)} ${currentUnit}<br><span style="font-size: 10px; opacity: 0.7;">(без бонуса: ${baseWeight.toFixed(2)} ${currentUnit})</span>`;
+            state.promoBonus = bonusMultiplier;
             return;
         }
         
         weightFromAmountSpan.textContent = `${baseWeight.toFixed(2)} ${currentUnit}`;
+        state.promoBonus = null;
     }
     
     weightInput.oninput = updatePriceFromWeight;
@@ -874,10 +879,6 @@
     const promoMessage = document.getElementById('promo-message');
     const code = promoInput.value.trim();
     
-    // Получаем выбранный тип промокода
-    const promoTypeRadio = document.querySelector('input[name="promo-type"]:checked');
-    const promoType = promoTypeRadio ? promoTypeRadio.value : 'discount';
-    
     if (!code) {
         promoMessage.textContent = '❌ Введите промокод';
         promoMessage.style.color = 'red';
@@ -896,9 +897,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 code: code,
-                userId: telegramUser.id,
-                orderAmount: currentPricePerUnit,
-                promoType: promoType
+                userId: telegramUser.id
             }),
             signal: controller.signal
         });
@@ -908,74 +907,55 @@
         
         if (result.status === 'ok') {
             state.appliedPromo = result.promo;
-            state.appliedPromoType = promoType;
             
-            const originalTotal = currentPricePerUnit;
             const weightInput = document.getElementById('weight-input');
             const amountInput = document.getElementById('amount-input');
-            const currentWeight = parseFloat(weightInput.value) || 1;
             
-            if (promoType === 'discount') {
-                // Скидка на цену
-                const discountAmount = originalTotal * result.promo.value / 100;
-                const newPricePerUnit = originalTotal - discountAmount;
-                
-                promoMessage.innerHTML = `✅ Промокод применен! Скидка: ${result.promo.value}% (-${discountAmount.toFixed(2)} руб за ${currentUnit})`;
-                promoMessage.style.color = '#4CAF50';
-                
-                // Обновляем цену за единицу для расчетов
+            // Определяем, что ввел пользователь: вес или сумму
+            const hasWeight = weightInput.value && parseFloat(weightInput.value) > 0;
+            const hasAmount = amountInput.value && parseFloat(amountInput.value) > 0;
+            
+            if (hasWeight) {
+                // Пользователь ввел ВЕС → применяем СКИДКУ на цену
+                const originalPrice = currentPricePerUnit;
+                const discountAmount = originalPrice * result.promo.value / 100;
+                const newPricePerUnit = originalPrice - discountAmount;
                 currentPricePerUnit = newPricePerUnit;
                 
-                // Пересчитываем калькулятор
-                if (weightInput.value) {
-                    const newTotal = parseFloat(weightInput.value) * newPricePerUnit;
-                    document.getElementById('price-from-weight').textContent = `${Math.round(newTotal).toLocaleString()} ₽`;
-                }
-                if (amountInput.value) {
-                    const newWeight = parseFloat(amountInput.value) / newPricePerUnit;
-                    document.getElementById('weight-from-amount').textContent = `${newWeight.toFixed(2)} ${currentUnit}`;
-                }
+                const weight = parseFloat(weightInput.value);
+                const newTotal = weight * newPricePerUnit;
                 
-            } else {
-                // Бонус к количеству
-                const bonusPercent = result.promo.value;
-                const bonusMultiplier = 1 + (bonusPercent / 100);
-                
-                promoMessage.innerHTML = `✅ Промокод применен! Бонус: +${bonusPercent}% к количеству`;
+                promoMessage.innerHTML = `✅ Промокод применен! Скидка ${result.promo.value}%: ${originalPrice} → ${newPricePerUnit.toFixed(2)} руб / ${currentUnit}`;
                 promoMessage.style.color = '#4CAF50';
                 
-                // Сохраняем бонус в state
+                document.getElementById('price-from-weight').textContent = `${Math.round(newTotal).toLocaleString()} ₽`;
+                
+            } else if (hasAmount) {
+                // Пользователь ввел СУММУ → применяем БОНУС к количеству
+                const amount = parseFloat(amountInput.value);
+                const baseWeight = amount / currentPricePerUnit;
+                const bonusMultiplier = 1 + (result.promo.value / 100);
+                const bonusWeight = baseWeight * bonusMultiplier;
+                
+                promoMessage.innerHTML = `✅ Промокод применен! +${result.promo.value}% бонус: ${baseWeight.toFixed(2)} → ${bonusWeight.toFixed(2)} ${currentUnit}`;
+                promoMessage.style.color = '#4CAF50';
+                
+                document.getElementById('weight-from-amount').innerHTML = `${bonusWeight.toFixed(2)} ${currentUnit}<br><span style="font-size: 10px; opacity: 0.7;">(без бонуса: ${baseWeight.toFixed(2)})</span>`;
+                
+                // Сохраняем бонус для заказа
                 state.promoBonus = bonusMultiplier;
+                state.promoBonusValue = result.promo.value;
                 
-                // Пересчитываем калькулятор с бонусом
-                if (amountInput.value) {
-                    const amount = parseFloat(amountInput.value);
-                    const baseWeight = amount / originalTotal;
-                    const bonusWeight = baseWeight * bonusMultiplier;
-                    document.getElementById('weight-from-amount').textContent = `${bonusWeight.toFixed(2)} ${currentUnit}`;
-                    promoMessage.innerHTML += `<br>💰 За ${amount} руб вы получите ${bonusWeight.toFixed(2)} ${currentUnit} (вместо ${baseWeight.toFixed(2)})`;
-                }
-                if (weightInput.value) {
-                    const weight = parseFloat(weightInput.value);
-                    const bonusWeight = weight * bonusMultiplier;
-                    const totalPrice = weight * originalTotal;
-                    document.getElementById('price-from-weight').textContent = `${Math.round(totalPrice).toLocaleString()} ₽`;
-                    promoMessage.innerHTML += `<br>📦 За ${weight} ${currentUnit} вы заплатите ${Math.round(totalPrice)} руб, а получите ${bonusWeight.toFixed(2)} ${currentUnit}`;
-                }
-                
-                // Обновляем отображение в блоке количества
-                const totalPriceElement = document.getElementById('total-price');
-                if (totalPriceElement && weightInput.value) {
-                    const weight = parseFloat(weightInput.value);
-                    const totalPrice = weight * originalTotal;
-                    totalPriceElement.innerHTML = `${Math.round(totalPrice).toLocaleString()} ₽`;
-                }
+            } else {
+                // Ничего не введено
+                promoMessage.innerHTML = `✅ Промокод ${result.promo.code} активирован! Введите вес или сумму для расчета.`;
+                promoMessage.style.color = '#4CAF50';
             }
+            
         } else {
             promoMessage.textContent = `❌ ${result.message}`;
             promoMessage.style.color = 'red';
             state.appliedPromo = null;
-            state.appliedPromoType = null;
             state.promoBonus = null;
         }
     } catch (error) {
@@ -983,7 +963,6 @@
         promoMessage.style.color = 'red';
         console.error('Ошибка:', error);
         state.appliedPromo = null;
-        state.appliedPromoType = null;
         state.promoBonus = null;
     }
 }
@@ -1140,42 +1119,47 @@
     
     try {
         const weightInput = document.getElementById('weight-input');
-        let selectedWeight = parseFloat(weightInput.value) || 1;
-        let selectedAmount = null;
-        
         const amountInput = document.getElementById('amount-input');
-        if (amountInput.value) {
+        
+        const hasWeight = weightInput.value && parseFloat(weightInput.value) > 0;
+        const hasAmount = amountInput.value && parseFloat(amountInput.value) > 0;
+        
+        let selectedWeight = 1;
+        let selectedAmount = null;
+        let orderType = 'weight';
+        
+        if (hasWeight) {
+            selectedWeight = parseFloat(weightInput.value);
+            orderType = 'weight';
+        } else if (hasAmount) {
             selectedAmount = parseFloat(amountInput.value);
+            orderType = 'amount';
+            selectedWeight = selectedAmount / state.selectedProduct.price;
         }
         
-        const originalPricePerUnit = state.selectedProduct.price;
-        let finalPricePerUnit = originalPricePerUnit;
+        const basePricePerUnit = state.selectedProduct.price;
+        let finalPricePerUnit = basePricePerUnit;
         let finalQuantity = selectedWeight;
         let promoData = null;
         let promoBonusMultiplier = 1;
         
-        // Применяем промокод
         if (state.appliedPromo) {
             promoData = state.appliedPromo;
             
-            if (state.appliedPromoType === 'discount') {
-                // Скидка на цену
-                finalPricePerUnit = originalPricePerUnit * (1 - promoData.value / 100);
+            if (orderType === 'weight') {
+                // Ввели вес → применяем скидку на цену
+                finalPricePerUnit = basePricePerUnit * (1 - promoData.value / 100);
                 finalQuantity = selectedWeight;
             } else {
-                // Бонус к количеству
+                // Ввели сумму → применяем бонус к количеству
                 promoBonusMultiplier = 1 + (promoData.value / 100);
                 finalQuantity = selectedWeight * promoBonusMultiplier;
-                finalPricePerUnit = originalPricePerUnit;
+                finalPricePerUnit = basePricePerUnit;
             }
         }
         
         const totalPrice = finalPricePerUnit * selectedWeight;
         let finalTotal = totalPrice;
-        
-        if (state.appliedPromo && state.appliedPromoType === 'discount') {
-            finalTotal = totalPrice;
-        }
         
         const orderData = {
             action: 'order',
@@ -1183,7 +1167,7 @@
             productName: state.selectedProduct.name,
             quantity: selectedWeight,
             finalQuantity: finalQuantity,
-            pricePerUnit: originalPricePerUnit,
+            pricePerUnit: basePricePerUnit,
             finalPricePerUnit: finalPricePerUnit,
             totalPrice: totalPrice,
             finalPrice: Math.round(finalTotal),
@@ -1195,14 +1179,12 @@
             fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
             unit: state.selectedProduct.unit || 'гр',
             promocode: promoData,
-            promoType: state.appliedPromoType,
+            orderType: orderType,
             promoBonusMultiplier: promoBonusMultiplier,
             timestamp: new Date().toISOString()
         };
         
-        // Если пользователь ввел сумму, а не вес
-        if (selectedAmount && !weightInput.value) {
-            orderData.orderType = 'amount';
+        if (orderType === 'amount') {
             orderData.amount = selectedAmount;
         }
         
@@ -1219,7 +1201,7 @@
         if (orderDetails) {
             let promoText = '';
             if (promoData) {
-                if (state.appliedPromoType === 'discount') {
+                if (orderType === 'weight') {
                     promoText = `<div class="order-detail-item">
                         <span class="detail-label">🎫 Промокод:</span>
                         <span class="detail-value">${promoData.code} (скидка ${promoData.value}%)</span>
@@ -1249,14 +1231,14 @@
                     <span class="detail-label">📦 Товар:</span>
                     <span class="detail-value">${state.selectedProduct.name}</span>
                 </div>
-                ${state.appliedPromoType === 'bonus' ? `
+                ${orderType === 'amount' ? `
                 <div class="order-detail-item">
-                    <span class="detail-label">📊 Заказано:</span>
-                    <span class="detail-value">${selectedWeight} ${orderData.unit}</span>
+                    <span class="detail-label">💰 Бюджет:</span>
+                    <span class="detail-value">${selectedAmount} руб</span>
                 </div>
                 <div class="order-detail-item">
-                    <span class="detail-label">🎁 Получите:</span>
-                    <span class="detail-value">${finalQuantity.toFixed(2)} ${orderData.unit} (+${state.appliedPromo.value}%)</span>
+                    <span class="detail-label">📊 Получит:</span>
+                    <span class="detail-value">${finalQuantity.toFixed(2)} ${orderData.unit}</span>
                 </div>
                 ` : `
                 <div class="order-detail-item">
@@ -1268,7 +1250,7 @@
                     <span class="detail-label">💰 Цена за ${orderData.unit}:</span>
                     <span class="detail-value">${orderData.pricePerUnit.toLocaleString()} ₽</span>
                 </div>
-                ${state.appliedPromoType === 'discount' ? `
+                ${orderType === 'weight' && orderData.finalPricePerUnit !== orderData.pricePerUnit ? `
                 <div class="order-detail-item">
                     <span class="detail-label">💰 Цена со скидкой:</span>
                     <span class="detail-value">${orderData.finalPricePerUnit.toLocaleString()} ₽</span>
