@@ -296,7 +296,13 @@
             text-align: center;
             color: var(--tg-theme-hint-color);
         }
-
+.min-order-hint {
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.6;
+    text-align: center;
+    color: var(--tg-theme-hint-color);
+}
         .calc-equals {
             font-size: 16px;
             font-weight: 600;
@@ -640,8 +646,12 @@
             <div class="detail-content">
                 <div class="detail-title" id="detail-title">Название</div>
                 <div class="detail-price" id="detail-price">0 ₽ / гр</div>
-            </div>
+           <!-- ПОДСКАЗКА: минимальная сумма заказа -->
+        <div class="min-order-hint" style="margin-top: 8px; font-size: 12px; opacity: 0.6; text-align: center;">
+            🛒 Заказ доступен от <span id="min-order-amount">1500</span> ₽
         </div>
+    </div>
+</div>
 
         <div class="quantity-selector">
             <div class="quantity-label">⚖️ Калькулятор веса и стоимости</div>
