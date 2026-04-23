@@ -304,6 +304,65 @@
             white-space: pre-wrap;
         }
 
+        /* ========== ПЛАТЕЖНАЯ КАРТОЧКА ========== */
+        .payment-card {
+            background: var(--tg-theme-secondary-bg-color);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 2px solid var(--tg-theme-button-color);
+        }
+        .payment-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--tg-theme-button-color);
+        }
+        .payment-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+        }
+        .payment-row:last-of-type {
+            border-bottom: none;
+        }
+        .payment-label {
+            opacity: 0.7;
+        }
+        .payment-value {
+            font-weight: 600;
+        }
+        .payment-total {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--tg-theme-button-color);
+            text-align: center;
+            margin: 20px 0;
+        }
+        .payment-button {
+            background: #34c759;
+            color: white;
+            border: none;
+            border-radius: 18px;
+            padding: 16px;
+            font-weight: 700;
+            font-size: 18px;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .payment-button:active {
+            opacity: 0.8;
+        }
+        .payment-note {
+            font-size: 12px;
+            opacity: 0.6;
+            text-align: center;
+            margin-top: 12px;
+        }
+
         .promo-section {
             background: var(--tg-theme-secondary-bg-color);
             border-radius: 24px;
@@ -466,7 +525,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
 
         .nav-bar {
@@ -575,6 +634,26 @@
             </div>
         </div>
 
+        <!-- ПЛАТЕЖНАЯ КАРТОЧКА (изначально скрыта) -->
+        <div id="payment-card" class="payment-card hidden">
+            <div class="payment-title">💳 Детали заказа</div>
+            <div class="payment-row">
+                <span class="payment-label">Товар:</span>
+                <span class="payment-value" id="payment-product">-</span>
+            </div>
+            <div class="payment-row">
+                <span class="payment-label">Город:</span>
+                <span class="payment-value" id="payment-city">-</span>
+            </div>
+            <div class="payment-row">
+                <span class="payment-label">Скидка:</span>
+                <span class="payment-value" id="payment-discount">0 ₽</span>
+            </div>
+            <div class="payment-total" id="payment-total">0 ₽</div>
+            <button class="payment-button" id="pay-now-btn">💵 Оплатить заказ</button>
+            <div class="payment-note">🔒 Оплата происходит через защищённое соединение Telegram</div>
+        </div>
+
         <div class="promo-section">
             <div class="quantity-label">🎫 Промокод</div>
             <div class="promo-input-group">
@@ -592,7 +671,7 @@
     <div id="confirmation-screen" class="hidden">
         <div class="confirmation-screen">
             <div class="success-icon">🎉</div>
-            <h2>Заказ оформлен!</h2>
+            <h2>Заказ отправлен!</h2>
             
             <div class="order-details" id="order-details"></div>
             <div class="total-amount" id="confirmation-total">0 ₽</div>
@@ -687,7 +766,8 @@
             city: 'Москва и область',
             selectedProduct: null,
             tempSelectedCity: 'Москва и область',
-            appliedPromo: null
+            appliedPromo: null,
+            finalPrice: 0
         };
         
         let isProcessing = false;
@@ -794,17 +874,34 @@
                 
                 if (result.status === 'ok') {
                     state.appliedPromo = result.promo;
+                    
+                    // Пересчитываем цену
+                    const basePrice = state.selectedProduct.price;
+                    const finalPrice = basePrice * (1 - result.promo.value / 100);
+                    state.finalPrice = finalPrice;
+                    
                     promoMessage.innerHTML = `✅ Промокод применен! Скидка ${result.promo.value}%`;
                     promoMessage.style.color = '#4CAF50';
+                    
+                    // Обновляем цену в карточке товара
+                    document.getElementById('detail-price').textContent = `${finalPrice.toLocaleString()} ₽`;
+                    
+                    // Если платежная карточка открыта, обновляем данные в ней
+                    if (!document.getElementById('payment-card').classList.contains('hidden')) {
+                        document.getElementById('payment-discount').textContent = `${(basePrice - finalPrice).toLocaleString()} ₽`;
+                        document.getElementById('payment-total').textContent = `${finalPrice.toLocaleString()} ₽`;
+                    }
                 } else {
                     promoMessage.textContent = `❌ ${result.message}`;
                     promoMessage.style.color = 'red';
                     state.appliedPromo = null;
+                    state.finalPrice = state.selectedProduct.price;
                 }
             } catch (error) {
                 promoMessage.textContent = '❌ Ошибка проверки промокода';
                 promoMessage.style.color = 'red';
                 state.appliedPromo = null;
+                state.finalPrice = state.selectedProduct?.price || 0;
             }
         }
         
@@ -907,6 +1004,7 @@
         window.selectProduct = function(productId) {
             state.selectedProduct = PRODUCTS.find(p => p.id === productId);
             state.appliedPromo = null;
+            state.finalPrice = state.selectedProduct.price;
             
             const container = document.getElementById('detail-image-container');
             if (container) {
@@ -941,44 +1039,62 @@
             document.getElementById('detail-price').textContent = `${state.selectedProduct.price.toLocaleString()} ₽`;
             document.getElementById('detail-description').textContent = state.selectedProduct.description || '';
             
+            // Скрываем платежную карточку при смене товара
+            document.getElementById('payment-card').classList.add('hidden');
+            document.getElementById('order-btn').classList.remove('hidden');
+            
+            // Очищаем промокод
+            document.getElementById('promo-code-input').value = '';
+            document.getElementById('promo-message').innerHTML = '';
+            
             document.getElementById('main-screen')?.classList.add('hidden');
             document.getElementById('product-screen')?.classList.remove('hidden');
         };
         
-        // ========== ОФОРМЛЕНИЕ ЗАКАЗА ==========
-        async function placeOrder() {
-            if (isProcessing) {
-                showNotification('Заказ уже оформляется...');
-                return;
-            }
-            
+        // ========== ОФОРМЛЕНИЕ ЗАКАЗА (ПОКАЗ ПЛАТЕЖНОЙ КАРТОЧКИ) ==========
+        function showPaymentCard() {
             if (!state.selectedProduct) {
                 showNotification('Выберите товар', true);
                 return;
             }
             
+            const basePrice = state.selectedProduct.price;
+            const finalPrice = state.finalPrice;
+            const discount = basePrice - finalPrice;
+            
+            // Заполняем данные в платежной карточке
+            document.getElementById('payment-product').textContent = state.selectedProduct.name;
+            document.getElementById('payment-city').textContent = state.city;
+            document.getElementById('payment-discount').textContent = discount > 0 ? `${discount.toLocaleString()} ₽` : '0 ₽';
+            document.getElementById('payment-total').textContent = `${finalPrice.toLocaleString()} ₽`;
+            
+            // Скрываем кнопку "Купить" и показываем платежную карточку
+            document.getElementById('order-btn').classList.add('hidden');
+            document.getElementById('payment-card').classList.remove('hidden');
+        }
+        
+        // ========== ОТПРАВКА ЗАКАЗА В БОТА ==========
+        async function sendOrderToBot() {
+            if (isProcessing) {
+                showNotification('Заказ уже оформляется...');
+                return;
+            }
+            
             isProcessing = true;
             
-            const orderBtn = document.getElementById('order-btn');
-            const originalText = orderBtn?.textContent || 'Купить';
-            if (orderBtn) {
-                orderBtn.textContent = '⏳ Оформление...';
-                orderBtn.disabled = true;
+            const payBtn = document.getElementById('pay-now-btn');
+            const originalText = payBtn?.textContent || 'Оплатить заказ';
+            if (payBtn) {
+                payBtn.textContent = '⏳ Отправка...';
+                payBtn.disabled = true;
             }
             
             try {
-                const basePrice = state.selectedProduct.price;
-                let finalPrice = basePrice;
-                
-                if (state.appliedPromo) {
-                    finalPrice = basePrice * (1 - state.appliedPromo.value / 100);
-                }
-                
                 const orderData = {
                     action: 'order',
                     productId: state.selectedProduct.id,
                     productName: state.selectedProduct.name,
-                    price: finalPrice,
+                    price: state.finalPrice,
                     city: state.city,
                     userId: telegramUser.id,
                     username: telegramUser.username,
@@ -989,19 +1105,59 @@
                     timestamp: new Date().toISOString()
                 };
                 
-                console.log('📦 Оформление заказа:', orderData);
+                console.log('📦 Отправка заказа в бота:', orderData);
                 
                 // Отправляем данные в бота через WebApp
                 tg.sendData(JSON.stringify(orderData));
-                tg.close();
+                
+                // Показываем экран подтверждения
+                document.getElementById('product-screen')?.classList.add('hidden');
+                document.getElementById('confirmation-screen')?.classList.remove('hidden');
+                
+                const orderDetails = document.getElementById('order-details');
+                if (orderDetails) {
+                    let promoText = '';
+                    if (state.appliedPromo) {
+                        promoText = `<div class="order-detail-item">
+                            <span class="detail-label">🎫 Промокод:</span>
+                            <span class="detail-value">${state.appliedPromo.code} (скидка ${state.appliedPromo.value}%)</span>
+                        </div>`;
+                    }
+                    
+                    orderDetails.innerHTML = `
+                        <div class="order-detail-item">
+                            <span class="detail-label">👤 Покупатель:</span>
+                            <span class="detail-value">${orderData.fullName}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">🏙️ Город:</span>
+                            <span class="detail-value">${state.city}</span>
+                        </div>
+                        <div class="order-detail-item">
+                            <span class="detail-label">📦 Товар:</span>
+                            <span class="detail-value">${state.selectedProduct.name}</span>
+                        </div>
+                        ${promoText}
+                        <div class="order-detail-item">
+                            <span class="detail-label">💰 Сумма:</span>
+                            <span class="detail-value">${state.finalPrice.toLocaleString()} ₽</span>
+                        </div>
+                    `;
+                }
+                
+                const totalAmount = document.getElementById('confirmation-total');
+                if (totalAmount) totalAmount.textContent = `${state.finalPrice.toLocaleString()} ₽`;
+                
+                // Закрываем Mini App через 2 секунды
+                setTimeout(() => tg.close(), 2000);
                 
             } catch (error) {
-                console.error('Ошибка при оформлении заказа:', error);
-                showNotification('Не удалось оформить заказ', true);
+                console.error('Ошибка при отправке заказа:', error);
+                showNotification('Не удалось отправить заказ', true);
                 isProcessing = false;
-                if (orderBtn) {
-                    orderBtn.textContent = originalText;
-                    orderBtn.disabled = false;
+                if (payBtn) {
+                    payBtn.textContent = originalText;
+                    payBtn.disabled = false;
                 }
             }
         }
@@ -1072,8 +1228,13 @@
                 if (btn) btn.addEventListener('click', goToMainScreen);
             });
             
+            // Кнопка "Купить" теперь показывает платежную карточку
             const orderBtn = document.getElementById('order-btn');
-            if (orderBtn) orderBtn.addEventListener('click', placeOrder);
+            if (orderBtn) orderBtn.addEventListener('click', showPaymentCard);
+            
+            // Кнопка "Оплатить заказ" отправляет данные в бота
+            const payNowBtn = document.getElementById('pay-now-btn');
+            if (payNowBtn) payNowBtn.addEventListener('click', sendOrderToBot);
             
             const applyPromoBtn = document.getElementById('apply-promo-btn');
             if (applyPromoBtn) applyPromoBtn.addEventListener('click', applyPromoCode);
