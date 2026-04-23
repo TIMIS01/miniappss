@@ -1050,6 +1050,107 @@
             document.getElementById('main-screen')?.classList.add('hidden');
             document.getElementById('product-screen')?.classList.remove('hidden');
         };
+
+// ========== ОТПРАВКА ЗАКАЗА В БОТА ==========
+async function sendOrderToBot() {
+    if (isProcessing) {
+        showNotification('Заказ уже оформляется...');
+        return;
+    }
+    
+    if (!state.selectedProduct) {
+        showNotification('Выберите товар', true);
+        return;
+    }
+    
+    isProcessing = true;
+    
+    const payBtn = document.getElementById('pay-now-btn');
+    const originalText = payBtn?.textContent || 'Оплатить заказ';
+    if (payBtn) {
+        payBtn.textContent = '⏳ Отправка...';
+        payBtn.disabled = true;
+    }
+    
+    try {
+        const orderData = {
+            action: 'order',
+            productId: state.selectedProduct.id,
+            productName: state.selectedProduct.name,
+            price: state.finalPrice,
+            city: state.city,
+            userId: telegramUser.id,
+            username: telegramUser.username,
+            firstName: telegramUser.first_name,
+            lastName: telegramUser.last_name,
+            fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
+            promocode: state.appliedPromo,
+            timestamp: new Date().toISOString()
+        };
+        
+        console.log('📦 Отправка заказа в бота:', orderData);
+        
+        // Отправляем данные в бота через WebApp
+        tg.sendData(JSON.stringify(orderData));
+        
+        // ========== ПОКАЗЫВАЕМ УВЕДОМЛЕНИЕ В MINI APP ==========
+        showNotification('✅ Платёжная ссылка направлена в чат бота. Проверьте Telegram.', false);
+        
+        // Показываем экран подтверждения
+        document.getElementById('product-screen')?.classList.add('hidden');
+        document.getElementById('confirmation-screen')?.classList.remove('hidden');
+        
+        const orderDetails = document.getElementById('order-details');
+        if (orderDetails) {
+            let promoText = '';
+            if (state.appliedPromo) {
+                promoText = `<div class="order-detail-item">
+                    <span class="detail-label">🎫 Промокод:</span>
+                    <span class="detail-value">${state.appliedPromo.code} (скидка ${state.appliedPromo.value}%)</span>
+                </div>`;
+            }
+            
+            orderDetails.innerHTML = `
+                <div class="order-detail-item">
+                    <span class="detail-label">👤 Покупатель:</span>
+                    <span class="detail-value">${orderData.fullName}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">🏙️ Город:</span>
+                    <span class="detail-value">${state.city}</span>
+                </div>
+                <div class="order-detail-item">
+                    <span class="detail-label">📦 Товар:</span>
+                    <span class="detail-value">${state.selectedProduct.name}</span>
+                </div>
+                ${promoText}
+                <div class="order-detail-item">
+                    <span class="detail-label">💰 Сумма:</span>
+                    <span class="detail-value">${state.finalPrice.toLocaleString()} ₽</span>
+                </div>
+            `;
+        }
+        
+        const totalAmount = document.getElementById('confirmation-total');
+        if (totalAmount) totalAmount.textContent = `${state.finalPrice.toLocaleString()} ₽`;
+        
+        // Плавно закрываем Mini App через 3 секунды (чтобы пользователь успел прочитать)
+        setTimeout(() => tg.close(), 3000);
+        
+    } catch (error) {
+        console.error('Ошибка при отправке заказа:', error);
+        showNotification('Не удалось отправить заказ. Попробуйте позже.', true);
+        isProcessing = false;
+        if (payBtn) {
+            payBtn.textContent = originalText;
+            payBtn.disabled = false;
+        }
+    }
+}
+        
+
+
+
         
         // ========== ОФОРМЛЕНИЕ ЗАКАЗА (ПОКАЗ ПЛАТЕЖНОЙ КАРТОЧКИ) ==========
         function showPaymentCard() {
@@ -1073,94 +1174,7 @@
             document.getElementById('payment-card').classList.remove('hidden');
         }
         
-        // ========== ОТПРАВКА ЗАКАЗА В БОТА ==========
-        async function sendOrderToBot() {
-            if (isProcessing) {
-                showNotification('Заказ уже оформляется...');
-                return;
-            }
-            
-            isProcessing = true;
-            
-            const payBtn = document.getElementById('pay-now-btn');
-            const originalText = payBtn?.textContent || 'Оплатить заказ';
-            if (payBtn) {
-                payBtn.textContent = '⏳ Отправка...';
-                payBtn.disabled = true;
-            }
-            
-            try {
-                const orderData = {
-                    action: 'order',
-                    productId: state.selectedProduct.id,
-                    productName: state.selectedProduct.name,
-                    price: state.finalPrice,
-                    city: state.city,
-                    userId: telegramUser.id,
-                    username: telegramUser.username,
-                    firstName: telegramUser.first_name,
-                    lastName: telegramUser.last_name,
-                    fullName: [telegramUser.first_name, telegramUser.last_name].filter(Boolean).join(' ') || 'Пользователь',
-                    promocode: state.appliedPromo,
-                    timestamp: new Date().toISOString()
-                };
-                
-                console.log('📦 Отправка заказа в бота:', orderData);
-                
-                // Отправляем данные в бота через WebApp
-                tg.sendData(JSON.stringify(orderData));
-                
-                // Показываем экран подтверждения
-                document.getElementById('product-screen')?.classList.add('hidden');
-                document.getElementById('confirmation-screen')?.classList.remove('hidden');
-                
-                const orderDetails = document.getElementById('order-details');
-                if (orderDetails) {
-                    let promoText = '';
-                    if (state.appliedPromo) {
-                        promoText = `<div class="order-detail-item">
-                            <span class="detail-label">🎫 Промокод:</span>
-                            <span class="detail-value">${state.appliedPromo.code} (скидка ${state.appliedPromo.value}%)</span>
-                        </div>`;
-                    }
-                    
-                    orderDetails.innerHTML = `
-                        <div class="order-detail-item">
-                            <span class="detail-label">👤 Покупатель:</span>
-                            <span class="detail-value">${orderData.fullName}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">🏙️ Город:</span>
-                            <span class="detail-value">${state.city}</span>
-                        </div>
-                        <div class="order-detail-item">
-                            <span class="detail-label">📦 Товар:</span>
-                            <span class="detail-value">${state.selectedProduct.name}</span>
-                        </div>
-                        ${promoText}
-                        <div class="order-detail-item">
-                            <span class="detail-label">💰 Сумма:</span>
-                            <span class="detail-value">${state.finalPrice.toLocaleString()} ₽</span>
-                        </div>
-                    `;
-                }
-                
-                const totalAmount = document.getElementById('confirmation-total');
-                if (totalAmount) totalAmount.textContent = `${state.finalPrice.toLocaleString()} ₽`;
-                
-                // Закрываем Mini App через 2 секунды
-                setTimeout(() => tg.close(), 2000);
-                
-            } catch (error) {
-                console.error('Ошибка при отправке заказа:', error);
-                showNotification('Не удалось отправить заказ', true);
-                isProcessing = false;
-                if (payBtn) {
-                    payBtn.textContent = originalText;
-                    payBtn.disabled = false;
-                }
-            }
-        }
+        
         
         // ========== СВЯЗЬ С АДМИНИСТРАТОРОМ ==========
         async function contactAdmin() {
