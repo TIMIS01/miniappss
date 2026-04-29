@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет | PCGGPRO</title>
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #0d1321;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --danger: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
+
+        .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; }
+        .nav { display: flex; gap: 25px; align-items: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 15px; }
+        .nav a:hover { color: var(--primary); }
+        .btn-logout { background: rgba(231, 76, 60, 0.1); color: var(--danger); padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600; }
+
+        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .profile-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; margin-bottom: 25px; }
+        .profile-card h1 { font-size: 24px; margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-item label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
+        .info-item span { font-size: 16px; font-weight: 500; }
+
+        .orders-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; }
+        .orders-card h2 { font-size: 20px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border); color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+        td { padding: 15px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+        .badge-new { background: rgba(74, 158, 255, 0.2); color: var(--primary); }
+        .badge-done { background: rgba(0, 212, 170, 0.2); color: var(--secondary); }
+
+        .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+
+        @media (max-width: 600px) {
+            .info-grid { grid-template-columns: 1fr; }
+            .header-inner { flex-direction: column; gap: 10px; }
+            .nav { gap: 15px; flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <nav class="nav">
+            <a href="/">Главная</a>
+            <a href="/#catalog">Каталог</a>
+            <a href="/offer.html">Оферта</a>
+            <a href="#" onclick="logout()" class="btn-logout">🚪 Выйти</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <div class="profile-card">
+        <h1>👤 Личный кабинет</h1>
+        <div class="info-grid" id="userInfo">
+            <div class="info-item"><label>Имя</label><span id="profileName">—</span></div>
+            <div class="info-item"><label>Email</label><span id="profileEmail">—</span></div>
+            <div class="info-item"><label>Город</label><span id="profileCity">—</span></div>
+            <div class="info-item"><label>Telegram</label><span id="profileTelegram">—</span></div>
+        </div>
+    </div>
+
+    <div class="orders-card">
+        <h2>📦 Мои заказы</h2>
+        <div id="ordersList">
+            <div class="empty">Загрузка заказов...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+    // Проверка авторизации
+    if (!user) {
+        alert('Вы не авторизованы. Сейчас вы будете перенаправлены на страницу входа.');
+        window.location.href = '/login.html';
+    }
+
+    // Заполняем данные пользователя
+    if (user) {
+        document.getElementById('profileName').textContent = user.full_name || '—';
+        document.getElementById('profileEmail').textContent = user.email || '—';
+        document.getElementById('profileCity').textContent = user.city || '—';
+        document.getElementById('profileTelegram').textContent = user.telegram || '—';
+    }
+
+    // Загружаем заказы
+    async function loadOrders() {
+        try {
+            const response = await fetch(`${API_URL}/orders`);
+            const data = await response.json();
+            const orders = (data.orders || []).filter(o => o.user_id == user.id);
+
+            const container = document.getElementById('ordersList');
+            
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="empty">У вас пока нет заказов.</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <table>
+                    <thead>
+                        <tr><th>ID</th><th>Товар</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr>
+                    </thead>
+                    <tbody>
+                        ${orders.map(o => {
+                            const date = new Date(o.created_at || o.order_date);
+                            return `
+                                <tr>
+                                    <td>#${o.id}</td>
+                                    <td>${o.product_name || '—'}</td>
+                                    <td>${(o.total_price || 0).toLocaleString()} ₽</td>
+                                    <td><span class="badge ${o.status === 'доставлен' ? 'badge-done' : 'badge-new'}">${o.status || 'новый'}</span></td>
+                                    <td>${date.toLocaleDateString('ru-RU')}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (error) {
+            document.getElementById('ordersList').innerHTML = '<div class="empty">Ошибка загрузки заказов.</div>';
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    }
+
+    loadOrders();
+</script>
+
+</body>
+</html>

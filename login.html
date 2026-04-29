@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход | PCGGPRO</title>
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #0d1321;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --danger: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .auth-card h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .auth-card p {
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .auth-links {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>🖥️ PCGGPRO</h1>
+        <p>Войдите в свой аккаунт</p>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="example@mail.ru" required>
+            </div>
+
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="password" placeholder="Введите пароль" required>
+            </div>
+
+            <div class="error-message" id="loginError">Неверный email или пароль</div>
+
+            <button type="submit" class="btn-primary">🔑 Войти</button>
+        </form>
+
+        <div class="auth-links">
+            <a href="/register.html">📝 Зарегистрироваться</a>
+            <a href="#">❓ Забыли пароль?</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+            const response = await fetch(`${API_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: email,
+                    password: password
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                // Сохраняем токен в localStorage для будущих запросов
+                localStorage.setItem('auth_token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                alert('✅ Вход выполнен успешно!');
+                window.location.href = '/profile.html';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером. Попробуйте позже.');
+        }
+    });
+</script>
+
+</body>
+</html>

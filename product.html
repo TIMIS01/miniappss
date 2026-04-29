@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Товар | PCGGPRO</title>
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #0d1321;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --shadow-hover: 0 8px 30px rgba(74, 158, 255, 0.15);
+            --radius: 16px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
+
+        /* ========== ШАПКА ========== */
+        .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
+        .logo span { color: var(--text); }
+        .nav { display: flex; gap: 25px; align-items: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 15px; }
+        .nav a:hover { color: var(--primary); }
+        #cart-count { background: var(--secondary); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+
+        /* ========== КОНТЕНТ ========== */
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 30px; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; background: var(--bg-card); border-radius: var(--radius); padding: 30px; border: 1px solid var(--border); }
+
+        .product-gallery { position: relative; }
+        .main-image { width: 100%; height: 350px; object-fit: contain; border-radius: 12px; background: var(--bg-dark); }
+        .thumbnails { display: flex; gap: 10px; margin-top: 15px; }
+        .thumb { width: 70px; height: 70px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.3s; background: var(--bg-dark); }
+        .thumb:hover, .thumb.active { border-color: var(--primary); }
+
+        .product-info h1 { font-size: 28px; margin-bottom: 5px; color: var(--text); }
+        .product-price { font-size: 32px; font-weight: 800; color: var(--secondary); margin: 20px 0; }
+
+        .specs-table { width: 100%; margin: 25px 0; border-collapse: collapse; }
+        .specs-table td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .specs-table td:first-child { color: var(--text-muted); width: 40%; }
+        .specs-table td:last-child { color: var(--text); font-weight: 500; }
+
+        .btn-buy { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; margin-top: 20px; }
+        .btn-buy:hover { background: var(--primary-dark); box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
+        .btn-buy.added { background: var(--secondary); }
+
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: #000; padding: 14px 28px; border-radius: 25px; font-weight: 600; z-index: 1000; opacity: 0; transition: opacity 0.3s; }
+        .toast.show { opacity: 1; }
+
+        @media (max-width: 768px) {
+            .product-grid { grid-template-columns: 1fr; gap: 25px; padding: 20px; }
+            .main-image { height: 250px; }
+            .product-info h1 { font-size: 22px; }
+            .product-price { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <nav class="nav">
+            <a href="/">Главная</a>
+            <a href="/#catalog">Каталог</a>
+            <a href="/offer.html">Оферта</a>
+            <a href="/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <a href="/" class="back-link">← Назад в каталог</a>
+    
+    <div class="product-grid">
+        <div class="product-gallery">
+            <img id="mainImage" class="main-image" src="https://via.placeholder.com/500x400/111827/4a9eff?text=PCGGPRO" alt="Товар">
+            <div class="thumbnails" id="thumbnails"></div>
+        </div>
+        
+        <div class="product-info">
+            <h1 id="productName">Загрузка...</h1>
+            <div class="product-price" id="productPrice">0 ₽</div>
+            
+            <table class="specs-table" id="specsTable"></table>
+            
+            <button class="btn-buy" id="buyBtn" onclick="addToCart()">🛒 В корзину</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">✅ Добавлено в корзину</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('id');
+    let currentProduct = null;
+
+    // Загрузка товара
+    async function loadProduct() {
+        if (!productId) {
+            document.getElementById('productName').textContent = 'Товар не найден';
+            return;
+        }
+        
+        try {
+            const response = await fetch(`${API_URL}/products`);
+            const data = await response.json();
+            const product = (data.products || []).find(p => p.id == productId);
+            
+            if (!product) {
+                document.getElementById('productName').textContent = 'Товар не найден';
+                return;
+            }
+            
+            currentProduct = product;
+            document.getElementById('productName').textContent = product.name;
+            document.getElementById('productPrice').textContent = `${product.price.toLocaleString()} ₽`;
+            
+            // Галерея
+            const images = product.images || [];
+            if (images.length > 0) {
+                document.getElementById('mainImage').src = images[0];
+                
+                const thumbnails = document.getElementById('thumbnails');
+                thumbnails.innerHTML = images.map((img, i) => `
+                    <img src="${img}" class="thumb ${i === 0 ? 'active' : ''}" 
+                         onclick="document.getElementById('mainImage').src='${img}'; document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active')); event.target.classList.add('active')"
+                         onerror="this.style.display='none'">
+                `).join('');
+            }
+            
+            // Таблица характеристик
+            const specs = [];
+            if (product.cpu) specs.push({ label: '🖥️ Процессор', value: product.cpu });
+            if (product.gpu) specs.push({ label: '🎮 Видеокарта', value: product.gpu });
+            if (product.ram) specs.push({ label: '🧠 ОЗУ', value: product.ram });
+            if (product.storage) specs.push({ label: '💾 Накопитель', value: product.storage });
+            if (product.psu) specs.push({ label: '⚡ Блок питания', value: product.psu });
+            if (product.description) specs.push({ label: '📝 Описание', value: product.description });
+            
+            document.getElementById('specsTable').innerHTML = specs.map(s => `
+                <tr><td>${s.label}</td><td>${s.value}</td></tr>
+            `).join('');
+            
+        } catch (error) {
+            document.getElementById('productName').textContent = 'Ошибка загрузки';
+        }
+    }
+
+    // Добавление в корзину
+    function addToCart() {
+        if (!currentProduct) return;
+        
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const existing = cart.find(item => item.id === currentProduct.id);
+        
+        if (existing) {
+            existing.quantity = (existing.quantity || 1) + 1;
+        } else {
+            cart.push({
+                id: currentProduct.id,
+                name: currentProduct.name,
+                price: currentProduct.price,
+                quantity: 1
+            });
+        }
+        
+        localStorage.setItem('cart', JSON.stringify(cart));
+        updateCartCount();
+        
+        // Анимация кнопки
+        const btn = document.getElementById('buyBtn');
+        btn.textContent = '✅ В корзине';
+        btn.classList.add('added');
+        setTimeout(() => {
+            btn.textContent = '🛒 В корзину';
+            btn.classList.remove('added');
+        }, 1500);
+        
+        // Показываем уведомление
+        const toast = document.getElementById('toast');
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function updateCartCount() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+        document.getElementById('cart-count').textContent = count;
+    }
+
+    loadProduct();
+    updateCartCount();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация | PCGGPRO</title>
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #0d1321;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --danger: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 40px 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .auth-card h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--text);
+        }
+
+        .auth-card p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 15px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .email-row {
+            display: flex;
+            gap: 10px;
+        }
+        .email-row input {
+            flex: 1;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .btn-primary:disabled {
+            background: #555;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .btn-outline {
+            padding: 14px 16px;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .btn-outline:hover {
+            background: rgba(74, 158, 255, 0.1);
+        }
+
+        .btn-outline:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Блок подтверждения почты */
+        .verify-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        .verify-box p {
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .code-input-group {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .code-input {
+            width: 42px;
+            height: 50px;
+            text-align: center;
+            font-size: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-weight: 700;
+        }
+
+        .code-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .auth-links {
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .auth-links a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        .message {
+            font-size: 13px;
+            margin-top: 8px;
+        }
+        .message.success { color: var(--secondary); }
+        .message.error { color: var(--danger); }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <h1>🖥️ PCGGPRO</h1>
+        <p>Создайте аккаунт для оформления заказов</p>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" id="name" placeholder="Введите ваше имя" required>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <div class="email-row">
+                    <input type="email" id="email" placeholder="example@mail.ru" required>
+                    <button type="button" class="btn-outline" id="sendCodeBtn" onclick="sendVerificationCode()">📧 Отправить код</button>
+                </div>
+                <div class="message" id="sendCodeMsg"></div>
+            </div>
+
+            <!-- Блок подтверждения (изначально скрыт) -->
+            <div class="verify-box" id="verifyBox">
+                <p>📩 Мы отправили 6-значный код на вашу почту. Введите его ниже:</p>
+                <div class="code-input-group" id="codeInputs">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'next')">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'next')">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'next')">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'next')">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'next')">
+                    <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this, 'done')">
+                </div>
+                <div class="message" id="verifyMsg"></div>
+            </div>
+
+            <div class="form-group">
+                <label>Telegram (необязательно)</label>
+                <input type="text" id="telegram" placeholder="@username">
+            </div>
+
+            <div class="form-group">
+                <label>Город</label>
+                <input type="text" id="city" placeholder="Москва" required>
+            </div>
+
+            <div class="form-group">
+                <label>Пароль</label>
+                <input type="password" id="password" placeholder="Минимум 6 символов" required>
+                <div class="message error" id="passwordError">Пароль должен быть не менее 6 символов</div>
+            </div>
+
+            <button type="submit" class="btn-primary" id="registerBtn">🚀 Зарегистрироваться</button>
+        </form>
+
+        <div class="auth-links">
+            Уже есть аккаунт? <a href="/login.html">Войти</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+    let emailVerified = false;
+    let verificationCode = null;
+
+    // ========== ОТПРАВКА КОДА НА ПОЧТУ ==========
+    async function sendVerificationCode() {
+        const email = document.getElementById('email').value.trim();
+        const sendBtn = document.getElementById('sendCodeBtn');
+        const sendMsg = document.getElementById('sendCodeMsg');
+
+        if (!email || !email.includes('@') || !email.includes('.')) {
+            sendMsg.textContent = '❌ Введите корректный email';
+            sendMsg.className = 'message error';
+            return;
+        }
+
+        sendBtn.disabled = true;
+        sendBtn.textContent = '⏳ Отправка...';
+        sendMsg.textContent = '';
+
+        try {
+            const response = await fetch(`${API_URL}/send-verification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                verificationCode = data.code; // В реальном проекте код НЕ должен возвращаться с сервера!
+                document.getElementById('verifyBox').style.display = 'block';
+                sendMsg.textContent = '✅ Код отправлен на вашу почту';
+                sendMsg.className = 'message success';
+                sendBtn.textContent = '📧 Отправлено';
+                document.getElementById('codeInputs').children[0].focus();
+            } else {
+                const data = await response.json();
+                sendMsg.textContent = '❌ ' + (data.message || 'Ошибка отправки');
+                sendMsg.className = 'message error';
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📧 Отправить код';
+            }
+        } catch (error) {
+            sendMsg.textContent = '❌ Ошибка соединения с сервером';
+            sendMsg.className = 'message error';
+            sendBtn.disabled = false;
+            sendBtn.textContent = '📧 Отправить код';
+        }
+    }
+
+    // ========== ПЕРЕКЛЮЧЕНИЕ ФОКУСА МЕЖДУ ЦИФРАМИ КОДА ==========
+    function moveFocus(input, action) {
+        if (input.value.length === 1 && action === 'next') {
+            const next = input.nextElementSibling;
+            if (next && next.classList.contains('code-input')) {
+                next.focus();
+            } else {
+                // Проверяем код автоматически, когда введена последняя цифра
+                checkVerificationCode();
+            }
+        }
+    }
+
+    // ========== ПРОВЕРКА КОДА ==========
+    async function checkVerificationCode() {
+        const inputs = document.querySelectorAll('.code-input');
+        let enteredCode = '';
+        inputs.forEach(inp => enteredCode += inp.value);
+
+        if (enteredCode.length < 6) return;
+
+        const verifyMsg = document.getElementById('verifyMsg');
+        const email = document.getElementById('email').value.trim();
+
+        try {
+            const response = await fetch(`${API_URL}/verify-email`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: email, code: enteredCode })
+            });
+
+            if (response.ok) {
+                emailVerified = true;
+                verifyMsg.textContent = '✅ Почта подтверждена!';
+                verifyMsg.className = 'message success';
+                // Делаем поле email нередактируемым
+                document.getElementById('email').readOnly = true;
+            } else {
+                emailVerified = false;
+                verifyMsg.textContent = '❌ Неверный код. Попробуйте ещё раз.';
+                verifyMsg.className = 'message error';
+                inputs.forEach(inp => inp.value = '');
+                inputs[0].focus();
+            }
+        } catch (error) {
+            verifyMsg.textContent = '❌ Ошибка проверки. Попробуйте позже.';
+            verifyMsg.className = 'message error';
+        }
+    }
+
+    // Проверка кода при ручном вводе (на случай, если автопроверка не сработала)
+    document.querySelectorAll('.code-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const allFilled = document.querySelectorAll('.code-input').length === 
+                              Array.from(document.querySelectorAll('.code-input')).filter(i => i.value.length === 1).length;
+            if (allFilled) {
+                checkVerificationCode();
+            }
+        });
+    });
+
+    // ========== ОТПРАВКА ФОРМЫ ==========
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const telegram = document.getElementById('telegram').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const password = document.getElementById('password').value;
+        const passwordError = document.getElementById('passwordError');
+
+        // Проверка пароля
+        if (password.length < 6) {
+            passwordError.style.display = 'block';
+            return;
+        } else {
+            passwordError.style.display = 'none';
+        }
+
+        // Проверка подтверждения почты
+        if (!emailVerified) {
+            alert('❌ Пожалуйста, подтвердите вашу почту кодом из письма.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: name,
+                    email: email,
+                    telegram: telegram,
+                    city: city,
+                    password: password,
+                    email_verified: true
+                })
+            });
+
+            if (response.ok) {
+                alert('✅ Регистрация прошла успешно! Сейчас вы будете перенаправлены на страницу входа.');
+                window.location.href = '/login.html';
+            } else {
+                const data = await response.json();
+                alert('❌ Ошибка: ' + (data.message || 'Не удалось зарегистрироваться'));
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером. Попробуйте позже.');
+        }
+    });
+</script>
+
+</body>
+</html>
