@@ -111,9 +111,9 @@
         <nav class="nav">
             <a href="/">Главная</a>
             <a href="#catalog">Каталог</a>
-            <a href="/offer.html">Оферта</a>
-            <a href="/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
-            <a href="/profile.html" class="btn-primary">👤 Личный кабинет</a>
+            <a href="offer.html">Оферта</a>
+            <a href="cart.html">🛒 Корзина <span id="cart-count">0</span></a>
+            <a href="profile.html" class="btn-primary">👤 Личный кабинет</a>
         </nav>
     </div>
 </header>
@@ -158,7 +158,7 @@
 <!-- ========== ФУТЕР ========== -->
 <footer class="footer">
     <div class="footer-links">
-        <a href="/offer.html">Публичная оферта</a>
+        <a href="offer.html">Публичная оферта</a>
         <a href="/admin">Админ-панель</a>
         <a href="https://t.me/PCGGPROBot" target="_blank">Telegram-бот</a>
     </div>
@@ -196,7 +196,7 @@
                             ${p.ram ? `🧠 ${p.ram}` : ''}
                         </div>
                         <div class="product-price">${p.price.toLocaleString()} <span>₽</span></div>
-                        <a href="/product.html?id=${p.id}" class="btn-buy">🔍 Подробнее</a>
+                        <a href="product.html?id=${p.id}" class="btn-buy">🔍 Подробнее</a>
                     </div>
                 </div>
             `).join('');
