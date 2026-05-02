@@ -146,7 +146,6 @@
             cursor: not-allowed;
         }
 
-        /* Блок подтверждения почты */
         .verify-box {
             background: var(--bg-dark);
             border: 1px solid var(--border);
@@ -232,7 +231,6 @@
                 <div class="message" id="sendCodeMsg"></div>
             </div>
 
-            <!-- Блок подтверждения (изначально скрыт) -->
             <div class="verify-box" id="verifyBox">
                 <p>📩 Мы отправили 6-значный код на вашу почту. Введите его ниже:</p>
                 <div class="code-input-group" id="codeInputs">
@@ -266,7 +264,7 @@
         </form>
 
         <div class="auth-links">
-            Уже есть аккаунт? <a href="/login.html">Войти</a>
+            Уже есть аккаунт? <a href="https://timis01.github.io/miniappss/login.html">Войти</a>
         </div>
     </div>
 </div>
@@ -276,7 +274,6 @@
     let emailVerified = false;
     let verificationCode = null;
 
-    // ========== ОТПРАВКА КОДА НА ПОЧТУ ==========
     async function sendVerificationCode() {
         const email = document.getElementById('email').value.trim();
         const sendBtn = document.getElementById('sendCodeBtn');
@@ -301,7 +298,7 @@
 
             if (response.ok) {
                 const data = await response.json();
-                verificationCode = data.code; // В реальном проекте код НЕ должен возвращаться с сервера!
+                verificationCode = data.code;
                 document.getElementById('verifyBox').style.display = 'block';
                 sendMsg.textContent = '✅ Код отправлен на вашу почту';
                 sendMsg.className = 'message success';
@@ -322,20 +319,17 @@
         }
     }
 
-    // ========== ПЕРЕКЛЮЧЕНИЕ ФОКУСА МЕЖДУ ЦИФРАМИ КОДА ==========
     function moveFocus(input, action) {
         if (input.value.length === 1 && action === 'next') {
             const next = input.nextElementSibling;
             if (next && next.classList.contains('code-input')) {
                 next.focus();
             } else {
-                // Проверяем код автоматически, когда введена последняя цифра
                 checkVerificationCode();
             }
         }
     }
 
-    // ========== ПРОВЕРКА КОДА ==========
     async function checkVerificationCode() {
         const inputs = document.querySelectorAll('.code-input');
         let enteredCode = '';
@@ -357,7 +351,6 @@
                 emailVerified = true;
                 verifyMsg.textContent = '✅ Почта подтверждена!';
                 verifyMsg.className = 'message success';
-                // Делаем поле email нередактируемым
                 document.getElementById('email').readOnly = true;
             } else {
                 emailVerified = false;
@@ -372,7 +365,6 @@
         }
     }
 
-    // Проверка кода при ручном вводе (на случай, если автопроверка не сработала)
     document.querySelectorAll('.code-input').forEach(input => {
         input.addEventListener('input', function() {
             const allFilled = document.querySelectorAll('.code-input').length === 
@@ -383,7 +375,6 @@
         });
     });
 
-    // ========== ОТПРАВКА ФОРМЫ ==========
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -394,7 +385,6 @@
         const password = document.getElementById('password').value;
         const passwordError = document.getElementById('passwordError');
 
-        // Проверка пароля
         if (password.length < 6) {
             passwordError.style.display = 'block';
             return;
@@ -402,7 +392,6 @@
             passwordError.style.display = 'none';
         }
 
-        // Проверка подтверждения почты
         if (!emailVerified) {
             alert('❌ Пожалуйста, подтвердите вашу почту кодом из письма.');
             return;
@@ -424,7 +413,7 @@
 
             if (response.ok) {
                 alert('✅ Регистрация прошла успешно! Сейчас вы будете перенаправлены на страницу входа.');
-                window.location.href = '/login.html';
+                window.location.href = 'https://timis01.github.io/miniappss/login.html';
             } else {
                 const data = await response.json();
                 alert('❌ Ошибка: ' + (data.message || 'Не удалось зарегистрироваться'));
