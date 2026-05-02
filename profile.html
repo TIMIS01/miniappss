@@ -61,11 +61,11 @@
 
 <header class="header">
     <div class="header-inner">
-        <a href="/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <a href="https://timis01.github.io/miniappss/" class="logo">🖥️ PCGG<span>PRO</span></a>
         <nav class="nav">
-            <a href="/">Главная</a>
-            <a href="/#catalog">Каталог</a>
-            <a href="/offer.html">Оферта</a>
+            <a href="https://timis01.github.io/miniappss/">Главная</a>
+            <a href="https://timis01.github.io/miniappss/#catalog">Каталог</a>
+            <a href="https://timis01.github.io/miniappss/offer.html">Оферта</a>
             <a href="#" onclick="logout()" class="btn-logout">🚪 Выйти</a>
         </nav>
     </div>
@@ -94,13 +94,11 @@
     const API_URL = 'https://tg-shop-server.onrender.com/api';
     const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    // Проверка авторизации
     if (!user) {
         alert('Вы не авторизованы. Сейчас вы будете перенаправлены на страницу входа.');
-        window.location.href = '/login.html';
+        window.location.href = 'https://timis01.github.io/miniappss/login.html';
     }
 
-    // Заполняем данные пользователя
     if (user) {
         document.getElementById('profileName').textContent = user.full_name || '—';
         document.getElementById('profileEmail').textContent = user.email || '—';
@@ -108,7 +106,6 @@
         document.getElementById('profileTelegram').textContent = user.telegram || '—';
     }
 
-    // Загружаем заказы
     async function loadOrders() {
         try {
             const response = await fetch(`${API_URL}/orders`);
@@ -151,7 +148,7 @@
     function logout() {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
-        window.location.href = '/login.html';
+        window.location.href = 'https://timis01.github.io/miniappss/login.html';
     }
 
     loadOrders();
