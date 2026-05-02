@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PCGGPRO — Готовые сборки ПК</title>
-    <link rel="stylesheet" href="css/style.css">
     <style>
-        /* ========== ТЁМНО-СИНЯЯ ТЕМА ========== */
         :root {
             --primary: #4a9eff;
             --primary-dark: #3a7fd4;
@@ -28,7 +26,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; }
 
-        /* ========== ШАПКА ========== */
         .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .header-inner { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
@@ -39,7 +36,6 @@
         .nav .btn-primary { padding: 10px 20px; background: var(--primary); color: white; border-radius: 25px; text-decoration: none; font-weight: 600; transition: all 0.3s; box-shadow: 0 0 15px var(--primary-glow); }
         .nav .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 0 25px var(--primary-glow); }
 
-        /* ========== ГЕРОЙ-БЛОК ========== */
         .hero { background: var(--gradient-hero); color: white; padding: 100px 20px; text-align: center; position: relative; overflow: hidden; }
         .hero::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at 30% 50%, rgba(74, 158, 255, 0.1) 0%, transparent 50%), radial-gradient(circle at 70% 50%, rgba(0, 212, 170, 0.05) 0%, transparent 50%); animation: heroGlow 8s ease-in-out infinite; }
         @keyframes heroGlow { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(180deg); } }
@@ -48,7 +44,6 @@
         .hero .btn-hero { padding: 16px 40px; background: var(--primary); color: white; border-radius: 30px; text-decoration: none; font-weight: 700; font-size: 17px; transition: all 0.3s; display: inline-block; position: relative; z-index: 1; box-shadow: 0 0 30px var(--primary-glow); }
         .hero .btn-hero:hover { transform: scale(1.05); box-shadow: 0 0 50px var(--primary-glow); }
 
-        /* ========== ПРЕИМУЩЕСТВА ========== */
         .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; max-width: 1200px; margin: 80px auto 0; padding: 0 20px; }
         .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; text-align: center; transition: all 0.3s; }
         .feature-card:hover { border-color: var(--primary); box-shadow: var(--shadow-hover); }
@@ -56,7 +51,6 @@
         .feature-card h3 { margin-bottom: 10px; color: var(--text); }
         .feature-card p { color: var(--text-muted); font-size: 14px; }
 
-        /* ========== КАТАЛОГ ========== */
         .section { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
         .section h2 { font-size: 32px; margin-bottom: 40px; color: var(--text); text-align: center; position: relative; }
         .section h2::after { content: ''; display: block; width: 60px; height: 3px; background: var(--primary); margin: 15px auto 0; border-radius: 2px; }
@@ -73,17 +67,14 @@
         .btn-buy { display: block; width: 100%; padding: 13px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s; text-align: center; text-decoration: none; }
         .btn-buy:hover { background: var(--primary-dark); box-shadow: 0 0 20px var(--primary-glow); }
 
-        /* ========== ФУТЕР ========== */
         .footer { background: var(--bg-header); border-top: 1px solid var(--border); padding: 50px 20px; text-align: center; margin-top: 80px; }
         .footer-links { display: flex; justify-content: center; gap: 30px; margin-bottom: 20px; flex-wrap: wrap; }
         .footer a { color: var(--text-muted); text-decoration: none; transition: color 0.3s; }
         .footer a:hover { color: var(--primary); }
         .footer p { color: var(--text-muted); font-size: 14px; }
 
-        /* ========== КОРЗИНА В ШАПКЕ ========== */
         #cart-count { background: var(--secondary); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
 
-        /* ========== АДАПТИВ ========== */
         @media (max-width: 768px) {
             .hero h1 { font-size: 30px; }
             .hero p { font-size: 15px; }
@@ -104,28 +95,25 @@
 </head>
 <body>
 
-<!-- ========== ШАПКА ========== -->
 <header class="header">
     <div class="header-inner">
-        <a href="/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <a href="https://timis01.github.io/miniappss/" class="logo">🖥️ PCGG<span>PRO</span></a>
         <nav class="nav">
-            <a href="/">Главная</a>
-            <a href="#catalog">Каталог</a>
-            <a href="offer.html">Оферта</a>
-            <a href="cart.html">🛒 Корзина <span id="cart-count">0</span></a>
-            <a href="profile.html" class="btn-primary">👤 Личный кабинет</a>
+            <a href="https://timis01.github.io/miniappss/">Главная</a>
+            <a href="https://timis01.github.io/miniappss/#catalog">Каталог</a>
+            <a href="https://timis01.github.io/miniappss/offer.html">Оферта</a>
+            <a href="https://timis01.github.io/miniappss/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
+            <a href="https://timis01.github.io/miniappss/profile.html" class="btn-primary">👤 Профиль</a>
         </nav>
     </div>
 </header>
 
-<!-- ========== ГЕРОЙ ========== -->
 <section class="hero">
     <h1>🔧 Готовые сборки ПК</h1>
     <p>Мощные компьютеры для игр, работы и творчества. Собраны вручную, протестированы.</p>
-    <a href="#catalog" class="btn-hero">Смотреть каталог</a>
+    <a href="https://timis01.github.io/miniappss/#catalog" class="btn-hero">Смотреть каталог</a>
 </section>
 
-<!-- ========== ПРЕИМУЩЕСТВА ========== -->
 <div class="features">
     <div class="feature-card">
         <div class="feature-icon">🔧</div>
@@ -144,7 +132,6 @@
     </div>
 </div>
 
-<!-- ========== КАТАЛОГ ========== -->
 <section class="section" id="catalog">
     <h2>📦 Популярные сборки</h2>
     <div class="products-grid" id="productsGrid">
@@ -155,11 +142,10 @@
     </div>
 </section>
 
-<!-- ========== ФУТЕР ========== -->
 <footer class="footer">
     <div class="footer-links">
-        <a href="offer.html">Публичная оферта</a>
-        <a href="/admin">Админ-панель</a>
+        <a href="https://timis01.github.io/miniappss/offer.html">Публичная оферта</a>
+        <a href="https://tg-shop-server.onrender.com/admin">Админ-панель</a>
         <a href="https://t.me/PCGGPROBot" target="_blank">Telegram-бот</a>
     </div>
     <p>© 2026 PCGGPRO. Сергеев Тимофей Александрович. Все права защищены.</p>
@@ -169,7 +155,6 @@
 <script>
     const API_URL = 'https://tg-shop-server.onrender.com/api';
 
-    // Загрузка товаров
     async function loadProducts() {
         try {
             const response = await fetch(`${API_URL}/products`);
@@ -196,7 +181,7 @@
                             ${p.ram ? `🧠 ${p.ram}` : ''}
                         </div>
                         <div class="product-price">${p.price.toLocaleString()} <span>₽</span></div>
-                        <a href="product.html?id=${p.id}" class="btn-buy">🔍 Подробнее</a>
+                        <a href="https://timis01.github.io/miniappss/product.html?id=${p.id}" class="btn-buy">🔍 Подробнее</a>
                     </div>
                 </div>
             `).join('');
@@ -206,7 +191,6 @@
         }
     }
 
-    // Обновление счетчика корзины
     function updateCartCount() {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
