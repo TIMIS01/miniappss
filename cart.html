@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Корзина | PCGGPRO</title>
     <style>
-        /* ========== ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ (ТЁМНАЯ ТЕМА) ========== */
         :root {
             --primary: #4a9eff;
             --primary-dark: #3a7fd4;
@@ -27,7 +26,6 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
 
-        /* ========== ШАПКА ========== */
         .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .header-inner { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
@@ -37,7 +35,6 @@
         .nav a:hover { color: var(--primary); }
         #cart-count { background: var(--secondary); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
 
-        /* ========== КОНТЕНТ ========== */
         .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
         .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 30px; transition: color 0.3s; }
         .back-link:hover { color: var(--primary); }
@@ -46,7 +43,6 @@
         .empty-cart { text-align: center; padding: 60px 20px; color: var(--text-muted); }
         .empty-cart div { font-size: 64px; margin-bottom: 20px; }
 
-        /* ========== ТОВАРЫ В КОРЗИНЕ ========== */
         .cart-items { display: flex; flex-direction: column; gap: 15px; margin-bottom: 30px; }
         .cart-item { display: flex; align-items: center; gap: 20px; background: var(--bg-card); border-radius: var(--radius); padding: 20px; border: 1px solid var(--border); }
         .cart-item-info { flex: 1; }
@@ -59,7 +55,6 @@
         .remove-btn { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; padding: 5px 10px; border-radius: 8px; transition: background 0.2s; }
         .remove-btn:hover { background: rgba(231, 76, 60, 0.1); }
 
-        /* ========== ИТОГО ========== */
         .summary { background: var(--bg-card); border-radius: var(--radius); padding: 25px; border: 1px solid var(--border); }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border); color: var(--text-muted); }
         .summary-total { display: flex; justify-content: space-between; font-size: 22px; font-weight: 700; color: var(--secondary); margin-bottom: 25px; }
@@ -76,19 +71,19 @@
 
 <header class="header">
     <div class="header-inner">
-        <a href="/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <a href="https://timis01.github.io/miniappss/" class="logo">🖥️ PCGG<span>PRO</span></a>
         <nav class="nav">
-            <a href="/">Главная</a>
-            <a href="/#catalog">Каталог</a>
-            <a href="/offer.html">Оферта</a>
-            <a href="/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
-            <a href="/profile.html">👤 Профиль</a>
+            <a href="https://timis01.github.io/miniappss/">Главная</a>
+            <a href="https://timis01.github.io/miniappss/#catalog">Каталог</a>
+            <a href="https://timis01.github.io/miniappss/offer.html">Оферта</a>
+            <a href="https://timis01.github.io/miniappss/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
+            <a href="https://timis01.github.io/miniappss/profile.html">👤 Профиль</a>
         </nav>
     </div>
 </header>
 
 <div class="container">
-    <a href="/" class="back-link">← Продолжить покупки</a>
+    <a href="https://timis01.github.io/miniappss/" class="back-link">← Продолжить покупки</a>
     <h1>🛒 Корзина</h1>
     
     <div class="cart-items" id="cartItems"></div>
@@ -106,13 +101,13 @@
             <span>Итого:</span>
             <span id="summaryTotal">0 ₽</span>
         </div>
-        <a href="/checkout.html" class="btn-checkout">🚀 Оформить заказ</a>
+        <a href="https://timis01.github.io/miniappss/checkout.html" class="btn-checkout">🚀 Оформить заказ</a>
     </div>
     
     <div class="empty-cart" id="emptyCart">
         <div>🛒</div>
         <h2>Корзина пуста</h2>
-        <p>Добавьте товары из <a href="/#catalog" style="color: var(--primary);">каталога</a></p>
+        <p>Добавьте товары из <a href="https://timis01.github.io/miniappss/#catalog" style="color: var(--primary);">каталога</a></p>
     </div>
 </div>
 
