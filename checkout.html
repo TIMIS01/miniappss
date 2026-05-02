@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформление заказа | PCGGPRO</title>
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #0d1321;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --danger: #e74c3c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
+
+        .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1000px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
+        .logo span { color: var(--text); }
+        .nav { display: flex; gap: 25px; align-items: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 15px; }
+        .nav a:hover { color: var(--primary); }
+
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 25px; transition: color 0.3s; }
+        .back-link:hover { color: var(--primary); }
+
+        h1 { font-size: 28px; margin-bottom: 25px; text-align: center; }
+
+        .checkout-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; }
+        .card h2 { font-size: 20px; margin-bottom: 20px; color: var(--primary); }
+
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .order-item:last-child { border-bottom: none; }
+        .order-item-name { font-weight: 600; }
+        .order-item-qty { color: var(--text-muted); font-size: 13px; margin-left: 8px; }
+        .order-item-price { color: var(--secondary); font-weight: 600; }
+
+        .total-row { display: flex; justify-content: space-between; padding: 15px 0; font-size: 20px; font-weight: 700; color: var(--secondary); border-top: 2px solid var(--border); margin-top: 10px; }
+
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; transition: border-color 0.3s, box-shadow 0.3s; }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+        .btn-place-order { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; margin-top: 15px; }
+        .btn-place-order:hover { background: var(--primary-dark); box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
+
+        .success-box { display: none; text-align: center; padding: 30px; background: var(--bg-card); border: 1px solid var(--secondary); border-radius: var(--radius); margin-top: 20px; }
+        .success-box h2 { color: var(--secondary); margin-bottom: 15px; }
+        .success-box p { color: var(--text-muted); margin-bottom: 10px; }
+
+        .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+        .empty a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; gap: 10px; }
+            .nav { gap: 15px; flex-wrap: wrap; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="https://timis01.github.io/miniappss/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <nav class="nav">
+            <a href="https://timis01.github.io/miniappss/">Главная</a>
+            <a href="https://timis01.github.io/miniappss/#catalog">Каталог</a>
+            <a href="https://timis01.github.io/miniappss/offer.html">Оферта</a>
+            <a href="https://timis01.github.io/miniappss/cart.html">🛒 Корзина</a>
+            <a href="https://timis01.github.io/miniappss/profile.html">👤 Профиль</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <a href="https://timis01.github.io/miniappss/cart.html" class="back-link">← Назад в корзину</a>
+    <h1>📋 Оформление заказа</h1>
+
+    <div class="checkout-grid">
+        <div class="card">
+            <h2>🛒 Ваш заказ</h2>
+            <div id="orderItems"></div>
+            <div class="total-row">
+                <span>Итого к оплате:</span>
+                <span id="totalPrice">0 ₽</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📍 Данные доставки</h2>
+            <div class="form-group">
+                <label>Город</label>
+                <input type="text" id="city" placeholder="Москва" required>
+            </div>
+            <div class="form-group">
+                <label>Почтовое отделение (индекс и адрес)</label>
+                <input type="text" id="postal" placeholder="101000, г. Москва, ул. Мясницкая, 26" required>
+            </div>
+            <div class="form-group">
+                <label>Комментарий к заказу (необязательно)</label>
+                <input type="text" id="comment" placeholder="Позвонить перед доставкой">
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">
+                Доставка осуществляется Почтой России за счёт покупателя. Точная стоимость доставки будет рассчитана после оформления заказа.
+            </p>
+        </div>
+
+        <div class="card">
+            <h2>💳 Способ оплаты</h2>
+            <p style="color: var(--text-muted); margin-bottom: 15px;">
+                После оформления заказа с вами свяжется менеджер для уточнения деталей и выставления счёта.
+            </p>
+            <p style="font-size: 13px; color: var(--text-muted);">
+                Нажимая «Оформить заказ», вы соглашаетесь с 
+                <a href="https://timis01.github.io/miniappss/offer.html" style="color: var(--primary);">условиями публичной оферты</a>.
+            </p>
+
+            <button class="btn-place-order" id="placeOrderBtn">📦 Оформить заказ</button>
+        </div>
+    </div>
+
+    <div class="success-box" id="successBox">
+        <h2>✅ Заказ успешно оформлен!</h2>
+        <p>Номер вашего заказа: <strong id="orderNumber">—</strong></p>
+        <p>В ближайшее время с вами свяжется менеджер для уточнения деталей и выставления счёта.</p>
+        <p><a href="https://timis01.github.io/miniappss/" style="color: var(--primary);">← Вернуться в каталог</a></p>
+    </div>
+</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+    let cart = [];
+
+    function loadCart() {
+        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        if (cart.length === 0) {
+            document.getElementById('orderItems').innerHTML = '<div class="empty">Ваша корзина пуста. <a href="https://timis01.github.io/miniappss/#catalog">Перейти в каталог</a></div>';
+            document.getElementById('placeOrderBtn').disabled = true;
+            return;
+        }
+        renderOrderItems();
+    }
+
+    function renderOrderItems() {
+        const container = document.getElementById('orderItems');
+        let total = 0;
+
+        container.innerHTML = cart.map((item, index) => {
+            const itemTotal = item.price * (item.quantity || 1);
+            total += itemTotal;
+            return `
+                <div class="order-item">
+                    <div>
+                        <span class="order-item-name">${item.name}</span>
+                        <span class="order-item-qty">x${item.quantity || 1}</span>
+                    </div>
+                    <span class="order-item-price">${itemTotal.toLocaleString()} ₽</span>
+                </div>
+            `;
+        }).join('');
+
+        document.getElementById('totalPrice').textContent = `${total.toLocaleString()} ₽`;
+    }
+
+    document.getElementById('placeOrderBtn').addEventListener('click', async function() {
+        const city = document.getElementById('city').value.trim();
+        const postal = document.getElementById('postal').value.trim();
+
+        if (!city || !postal) {
+            alert('Пожалуйста, заполните город и почтовое отделение.');
+            return;
+        }
+
+        const btn = document.getElementById('placeOrderBtn');
+        btn.textContent = '⏳ Оформление...';
+        btn.disabled = true;
+
+        try {
+            const productNames = cart.map(item => `${item.name} x${item.quantity || 1}`).join(', ');
+            const totalPrice = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+            const response = await fetch(`${API_URL}/webhook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'order',
+                    productName: productNames,
+                    price: totalPrice,
+                    city: city,
+                    postal: postal,
+                    comment: document.getElementById('comment').value.trim(),
+                    userId: 'website_user',
+                    username: 'website_order',
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (response.ok) {
+                localStorage.removeItem('cart');
+                document.querySelector('.checkout-grid').style.display = 'none';
+                btn.style.display = 'none';
+                document.getElementById('successBox').style.display = 'block';
+                document.getElementById('orderNumber').textContent = '#' + Date.now().toString().slice(-6);
+            } else {
+                alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
+                btn.textContent = '📦 Оформить заказ';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером. Попробуйте позже.');
+            btn.textContent = '📦 Оформить заказ';
+            btn.disabled = false;
+        }
+    });
+
+    loadCart();
+</script>
+
+</body>
+</html>
