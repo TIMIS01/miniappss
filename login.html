@@ -160,7 +160,7 @@
         </form>
 
         <div class="auth-links">
-            <a href="/register.html">📝 Зарегистрироваться</a>
+            <a href="https://timis01.github.io/miniappss/register.html">📝 Зарегистрироваться</a>
             <a href="#">❓ Забыли пароль?</a>
         </div>
     </div>
@@ -187,12 +187,11 @@
 
             if (response.ok) {
                 const data = await response.json();
-                // Сохраняем токен в localStorage для будущих запросов
                 localStorage.setItem('auth_token', data.token);
                 localStorage.setItem('user', JSON.stringify(data.user));
                 
                 alert('✅ Вход выполнен успешно!');
-                window.location.href = '/profile.html';
+                window.location.href = 'https://timis01.github.io/miniappss/profile.html';
             } else {
                 document.getElementById('loginError').style.display = 'block';
             }
