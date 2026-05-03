@@ -90,6 +90,31 @@
             box-shadow: 0 0 0 3px var(--primary-glow);
         }
 
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
         .email-row {
             display: flex;
             gap: 10px;
@@ -144,6 +169,27 @@
             border-color: #555;
             color: #555;
             cursor: not-allowed;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 13px;
+            text-decoration: underline;
+            margin-top: 8px;
+            padding: 5px;
+        }
+
+        .btn-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .btn-link:disabled {
+            color: var(--text-muted);
+            cursor: not-allowed;
+            text-decoration: none;
         }
 
         .verify-box {
@@ -228,6 +274,7 @@
                     <input type="email" id="email" placeholder="example@mail.ru" required>
                     <button type="button" class="btn-outline" id="sendCodeBtn" onclick="sendVerificationCode()">📧 Отправить код</button>
                 </div>
+                <button type="button" class="btn-link" id="resendCodeBtn" onclick="resendVerificationCode()" disabled>📨 Выслать повторно</button>
                 <div class="message" id="sendCodeMsg"></div>
             </div>
 
@@ -256,7 +303,10 @@
 
             <div class="form-group">
                 <label>Пароль</label>
-                <input type="password" id="password" placeholder="Минимум 6 символов" required>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Минимум 6 символов" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword()" tabindex="-1">👁️</button>
+                </div>
                 <div class="message error" id="passwordError">Пароль должен быть не менее 6 символов</div>
             </div>
 
@@ -272,11 +322,27 @@
 <script>
     const API_URL = 'https://tg-shop-server.onrender.com/api';
     let emailVerified = false;
-    let verificationCode = null;
+    let resendTimer = null;
+    let resendSeconds = 0;
 
+    // ========== ПОКАЗАТЬ/СКРЫТЬ ПАРОЛЬ ==========
+    function togglePassword() {
+        const input = document.getElementById('password');
+        const btn = event.target;
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            input.type = 'password';
+            btn.textContent = '👁️';
+        }
+    }
+
+    // ========== ОТПРАВКА КОДА ==========
     async function sendVerificationCode() {
         const email = document.getElementById('email').value.trim();
         const sendBtn = document.getElementById('sendCodeBtn');
+        const resendBtn = document.getElementById('resendCodeBtn');
         const sendMsg = document.getElementById('sendCodeMsg');
 
         if (!email || !email.includes('@') || !email.includes('.')) {
@@ -287,6 +353,7 @@
 
         sendBtn.disabled = true;
         sendBtn.textContent = '⏳ Отправка...';
+        resendBtn.disabled = true;
         sendMsg.textContent = '';
 
         try {
@@ -297,28 +364,69 @@
             });
 
             if (response.ok) {
-                const data = await response.json();
-                verificationCode = data.code;
                 document.getElementById('verifyBox').style.display = 'block';
                 sendMsg.textContent = '✅ Код отправлен на вашу почту';
                 sendMsg.className = 'message success';
                 sendBtn.textContent = '📧 Отправлено';
                 document.getElementById('codeInputs').children[0].focus();
+
+                // Запускаем таймер для кнопки "Выслать повторно"
+                startResendTimer();
             } else {
                 const data = await response.json();
                 sendMsg.textContent = '❌ ' + (data.message || 'Ошибка отправки');
                 sendMsg.className = 'message error';
                 sendBtn.disabled = false;
                 sendBtn.textContent = '📧 Отправить код';
+                resendBtn.disabled = false;
             }
         } catch (error) {
             sendMsg.textContent = '❌ Ошибка соединения с сервером';
             sendMsg.className = 'message error';
             sendBtn.disabled = false;
             sendBtn.textContent = '📧 Отправить код';
+            resendBtn.disabled = false;
         }
     }
 
+    // ========== ПОВТОРНАЯ ОТПРАВКА ==========
+    async function resendVerificationCode() {
+        const resendBtn = document.getElementById('resendCodeBtn');
+        resendBtn.disabled = true;
+        resendBtn.textContent = '⏳ Отправка...';
+
+        // Сбрасываем предыдущий таймер
+        if (resendTimer) clearInterval(resendTimer);
+
+        // Вызываем ту же функцию отправки
+        await sendVerificationCode();
+    }
+
+    function startResendTimer() {
+        const resendBtn = document.getElementById('resendCodeBtn');
+        resendSeconds = 60;
+        resendBtn.disabled = true;
+        updateResendButton();
+
+        if (resendTimer) clearInterval(resendTimer);
+        resendTimer = setInterval(() => {
+            resendSeconds--;
+            if (resendSeconds <= 0) {
+                clearInterval(resendTimer);
+                resendBtn.disabled = false;
+                resendBtn.textContent = '📨 Выслать повторно';
+            } else {
+                updateResendButton();
+            }
+        }, 1000);
+    }
+
+    function updateResendButton() {
+        const resendBtn = document.getElementById('resendCodeBtn');
+        resendBtn.textContent = `📨 Выслать повторно (${resendSeconds}с)`;
+    }
+
+    // ========== ПЕРЕКЛЮЧЕНИЕ ФОКУСА МЕЖДУ ЦИФРАМИ КОДА ==========
     function moveFocus(input, action) {
         if (input.value.length === 1 && action === 'next') {
             const next = input.nextElementSibling;
@@ -330,6 +438,7 @@
         }
     }
 
+    // ========== ПРОВЕРКА КОДА ==========
     async function checkVerificationCode() {
         const inputs = document.querySelectorAll('.code-input');
         let enteredCode = '';
@@ -352,6 +461,8 @@
                 verifyMsg.textContent = '✅ Почта подтверждена!';
                 verifyMsg.className = 'message success';
                 document.getElementById('email').readOnly = true;
+                document.getElementById('sendCodeBtn').disabled = true;
+                document.getElementById('resendCodeBtn').disabled = true;
             } else {
                 emailVerified = false;
                 verifyMsg.textContent = '❌ Неверный код. Попробуйте ещё раз.';
@@ -365,6 +476,7 @@
         }
     }
 
+    // Проверка кода при ручном вводе
     document.querySelectorAll('.code-input').forEach(input => {
         input.addEventListener('input', function() {
             const allFilled = document.querySelectorAll('.code-input').length === 
@@ -375,6 +487,7 @@
         });
     });
 
+    // ========== ОТПРАВКА ФОРМЫ ==========
     document.getElementById('registerForm').addEventListener('submit', async function(e) {
         e.preventDefault();
 
