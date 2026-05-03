@@ -256,6 +256,14 @@
 
     loadCart();
 </script>
-
+<script>
+    // Проверяем, авторизован ли пользователь
+    const user = JSON.parse(localStorage.getItem('user') || 'null');
+    if (!user) {
+        // Если не авторизован — перенаправляем на регистрацию
+        alert('Для оформления заказа необходимо зарегистрироваться.');
+        window.location.href = 'https://timis01.github.io/miniappss/register.html';
+    }
+</script>
 </body>
 </html>
