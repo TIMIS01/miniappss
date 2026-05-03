@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Личный кабинет | PCGGPRO</title>
+    <title>Отслеживание заказа | PCGGPRO</title>
     <style>
         :root {
             --primary: #4a9eff;
@@ -30,14 +30,14 @@
         .nav { display: flex; gap: 25px; align-items: center; }
         .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; font-size: 15px; }
         .nav a:hover { color: var(--primary); }
-        .btn-logout { background: rgba(231, 76, 60, 0.1); color: var(--danger); padding: 10px 20px; border-radius: 25px; text-decoration: none; font-weight: 600; }
 
         .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        .profile-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; margin-bottom: 25px; }
-        .profile-card h1 { font-size: 24px; margin-bottom: 20px; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .info-item label { display: block; color: var(--text-muted); font-size: 12px; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 1px; }
-        .info-item span { font-size: 16px; font-weight: 500; }
+
+        .search-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; margin-bottom: 25px; text-align: center; }
+        .search-box h2 { font-size: 20px; margin-bottom: 15px; }
+        .search-box input { padding: 14px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; width: 300px; max-width: 100%; }
+        .search-box button { padding: 14px 24px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-left: 10px; }
+        .search-box button:hover { background: var(--primary-dark); }
 
         .orders-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; }
         .orders-card h2 { font-size: 20px; margin-bottom: 20px; }
@@ -46,14 +46,18 @@
         td { padding: 15px 10px; border-bottom: 1px solid var(--border); font-size: 14px; }
         .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; }
         .badge-new { background: rgba(74, 158, 255, 0.2); color: var(--primary); }
-        .badge-done { background: rgba(0, 212, 170, 0.2); color: var(--secondary); }
+        .badge-process { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+        .badge-building { background: rgba(155, 89, 182, 0.2); color: #9b59b6; }
+        .badge-sent { background: rgba(0, 212, 170, 0.2); color: var(--secondary); }
 
         .empty { text-align: center; padding: 40px; color: var(--text-muted); }
+        .error { text-align: center; padding: 20px; color: var(--danger); }
 
         @media (max-width: 600px) {
-            .info-grid { grid-template-columns: 1fr; }
             .header-inner { flex-direction: column; gap: 10px; }
             .nav { gap: 15px; flex-wrap: wrap; justify-content: center; }
+            .search-box input { width: 100%; margin-bottom: 10px; }
+            .search-box button { margin-left: 0; width: 100%; }
         }
     </style>
 </head>
@@ -66,63 +70,83 @@
             <a href="https://timis01.github.io/miniappss/">Главная</a>
             <a href="https://timis01.github.io/miniappss/#catalog">Каталог</a>
             <a href="https://timis01.github.io/miniappss/offer.html">Оферта</a>
-            <a href="#" onclick="logout()" class="btn-logout">🚪 Выйти</a>
+            <a href="https://timis01.github.io/miniappss/cart.html">🛒 Корзина</a>
         </nav>
     </div>
 </header>
 
 <div class="container">
-    <div class="profile-card">
-        <h1>👤 Личный кабинет</h1>
-        <div class="info-grid" id="userInfo">
-            <div class="info-item"><label>Имя</label><span id="profileName">—</span></div>
-            <div class="info-item"><label>Email</label><span id="profileEmail">—</span></div>
-            <div class="info-item"><label>Город</label><span id="profileCity">—</span></div>
-            <div class="info-item"><label>Telegram</label><span id="profileTelegram">—</span></div>
-        </div>
+    <div class="search-box">
+        <h2>📦 Отследить заказ</h2>
+        <p style="color: var(--text-muted); margin-bottom: 15px;">Введите ваш email, чтобы увидеть ваши заказы</p>
+        <input type="email" id="searchEmail" placeholder="example@mail.ru">
+        <button onclick="searchOrders()">🔍 Найти заказы</button>
+        <div class="error" id="searchError" style="display: none;"></div>
     </div>
 
     <div class="orders-card">
-        <h2>📦 Мои заказы</h2>
+        <h2>📋 Мои заказы</h2>
         <div id="ordersList">
-            <div class="empty">Загрузка заказов...</div>
+            <div class="empty">Введите email и нажмите «Найти заказы»</div>
         </div>
     </div>
 </div>
 
 <script>
     const API_URL = 'https://tg-shop-server.onrender.com/api';
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
 
-    if (!user) {
-        alert('Вы не авторизованы. Сейчас вы будете перенаправлены на страницу входа.');
-        window.location.href = 'https://timis01.github.io/miniappss/login.html';
+    // Автоматически подставляем последний искавшийся email (для удобства)
+    const lastSearchedEmail = localStorage.getItem('lastSearchedEmail');
+    if (lastSearchedEmail) {
+        document.getElementById('searchEmail').value = lastSearchedEmail;
+        searchOrders(); // Сразу показываем заказы при загрузке страницы
     }
 
-    if (user) {
-        document.getElementById('profileName').textContent = user.full_name || '—';
-        document.getElementById('profileEmail').textContent = user.email || '—';
-        document.getElementById('profileCity').textContent = user.city || '—';
-        document.getElementById('profileTelegram').textContent = user.telegram || '—';
-    }
+    async function searchOrders() {
+        const email = document.getElementById('searchEmail').value.trim();
+        const errorDiv = document.getElementById('searchError');
+        const container = document.getElementById('ordersList');
 
-    async function loadOrders() {
+        if (!email || !email.includes('@') || !email.includes('.')) {
+            errorDiv.textContent = 'Пожалуйста, введите корректный email.';
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        // Сохраняем email для следующего раза
+        localStorage.setItem('lastSearchedEmail', email);
+
+        errorDiv.style.display = 'none';
+        container.innerHTML = '<div class="empty">Поиск заказов...</div>';
+
         try {
-            const response = await fetch(`${API_URL}/orders`);
+            const response = await fetch(`${API_URL}/orders/by-email?email=${encodeURIComponent(email)}`);
             const data = await response.json();
-            const orders = (data.orders || []).filter(o => o.user_id == user.id);
+            const orders = data.orders || [];
 
-            const container = document.getElementById('ordersList');
-            
             if (orders.length === 0) {
-                container.innerHTML = '<div class="empty">У вас пока нет заказов.</div>';
+                container.innerHTML = '<div class="empty">Заказы с таким email не найдены.</div>';
                 return;
             }
+
+            const statusBadges = {
+                'оформлен': 'badge-new',
+                'принят': 'badge-process',
+                'в сборке': 'badge-building',
+                'отправлен': 'badge-sent'
+            };
+
+            const statusNames = {
+                'оформлен': 'Оформлен',
+                'принят': 'Принят',
+                'в сборке': 'В сборке',
+                'отправлен': 'Отправлен'
+            };
 
             container.innerHTML = `
                 <table>
                     <thead>
-                        <tr><th>ID</th><th>Товар</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr>
+                        <tr><th>ID</th><th>Товар</th><th>Сумма</th><th>Город</th><th>Статус</th><th>Трек-номер</th><th>Дата</th></tr>
                     </thead>
                     <tbody>
                         ${orders.map(o => {
@@ -132,7 +156,9 @@
                                     <td>#${o.id}</td>
                                     <td>${o.product_name || '—'}</td>
                                     <td>${(o.total_price || 0).toLocaleString()} ₽</td>
-                                    <td><span class="badge ${o.status === 'доставлен' ? 'badge-done' : 'badge-new'}">${o.status || 'новый'}</span></td>
+                                    <td>${o.city || '—'}</td>
+                                    <td><span class="badge ${statusBadges[o.status] || 'badge-new'}">${statusNames[o.status] || o.status || 'Оформлен'}</span></td>
+                                    <td>${o.tracking_number || '—'}</td>
                                     <td>${date.toLocaleDateString('ru-RU')}</td>
                                 </tr>
                             `;
@@ -141,17 +167,9 @@
                 </table>
             `;
         } catch (error) {
-            document.getElementById('ordersList').innerHTML = '<div class="empty">Ошибка загрузки заказов.</div>';
+            container.innerHTML = '<div class="empty">Ошибка загрузки заказов.</div>';
         }
     }
-
-    function logout() {
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
-        window.location.href = 'https://timis01.github.io/miniappss/login.html';
-    }
-
-    loadOrders();
 </script>
 
 </body>
