@@ -128,26 +128,222 @@
 <!-- Виджет чата поддержки -->
 <div id="supportWidget" style="position:fixed;bottom:20px;right:20px;z-index:9999;font-family:'Segoe UI',Arial,sans-serif;">
     <button id="supportToggle" style="width:60px;height:60px;border-radius:50%;background:var(--primary,#4a9eff);color:white;border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:transform 0.2s;" onclick="toggleSupport()">💬</button>
+    
     <div id="supportPanel" style="display:none;position:absolute;bottom:70px;right:0;width:380px;max-width:90vw;background:#111827;border:1px solid #1e2a3a;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);overflow:hidden;">
-        <div style="background:#0d1321;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2a3a;"><h3 style="margin:0;font-size:16px;color:#e0e6f0;">💬 Поддержка</h3><button onclick="toggleSupport()" style="background:none;border:none;color:#8899aa;font-size:20px;cursor:pointer;">✕</button></div>
-        <div id="chatMessages" style="height:300px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;"><div style="text-align:center;color:#8899aa;font-size:12px;padding:10px;">Здравствуйте! Опишите ваш вопрос.</div></div>
-        <div id="chatInputArea" style="padding:15px;border-top:1px solid #1e2a3a;display:none;gap:10px;"><input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex:1;padding:12px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:10px;color:#e0e6f0;font-size:14px;"><button id="chatSendBtn" onclick="sendChatMessage()" style="padding:12px 18px;background:#4a9eff;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📩</button></div>
-        <div id="chatContact" style="padding:15px;border-top:1px solid #1e2a3a;"><input type="text" id="chatName" placeholder="Ваше имя" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><input type="email" id="chatEmail" placeholder="Ваш email" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><button onclick="startChat()" style="width:100%;padding:12px;background:#4a9eff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Начать чат</button></div>
+        <div style="background:#0d1321;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2a3a;">
+            <h3 style="margin:0;font-size:16px;color:#e0e6f0;">💬 Поддержка</h3>
+            <button onclick="toggleSupport()" style="background:none;border:none;color:#8899aa;font-size:20px;cursor:pointer;">✕</button>
+        </div>
+        
+        <div id="chatMessages" style="height:300px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;">
+            <div style="text-align:center;color:#8899aa;font-size:12px;padding:10px;">
+                ⚠️ История чата хранится 7 дней, после чего автоматически удаляется.
+            </div>
+        </div>
+        
+        <div id="chatInputArea" style="padding:15px;border-top:1px solid #1e2a3a;display:none;gap:8px;">
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex:1;padding:12px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:10px;color:#e0e6f0;font-size:14px;">
+            <button id="chatFileBtn" onclick="document.getElementById('chatFileInput').click()" style="padding:12px;background:transparent;border:1px solid #1e2a3a;color:#8899aa;border-radius:10px;cursor:pointer;font-size:18px;">📎</button>
+            <input type="file" id="chatFileInput" style="display:none;" onchange="sendChatFile()" accept="image/*,video/*,.pdf,.doc,.docx,.txt">
+            <button id="chatSendBtn" onclick="sendChatMessage()" style="padding:12px 18px;background:#4a9eff;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📩</button>
+        </div>
+        
+        <div id="chatContact" style="padding:15px;border-top:1px solid #1e2a3a;">
+            <input type="text" id="chatName" placeholder="Ваше имя" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;">
+            <input type="email" id="chatEmail" placeholder="Ваш email" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;">
+            <button onclick="startChat()" style="width:100%;padding:12px;background:#4a9eff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Начать чат</button>
+        </div>
     </div>
 </div>
+
 <script>
     const SUPPORT_API = 'https://tg-shop-server.onrender.com/api';
     let chatSessionId = localStorage.getItem('chat_session_id') || null;
     let chatPollingInterval = null;
+
     const chatUser = JSON.parse(localStorage.getItem('user') || 'null');
-    if (chatUser) { document.getElementById('chatName').value = chatUser.full_name || ''; document.getElementById('chatEmail').value = chatUser.email || ''; }
-    function toggleSupport() { const p = document.getElementById('supportPanel'); p.style.display = p.style.display==='none'?'block':'none'; if (p.style.display==='block') { if (chatSessionId) { document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; startPolling(); } else if (chatUser) { startChat(); } else { document.getElementById('chatContact').style.display='block'; document.getElementById('chatInputArea').style.display='none'; } } else { stopPolling(); } }
-    async function startChat() { const n = document.getElementById('chatName').value.trim(); const e = document.getElementById('chatEmail').value.trim(); if (!n||!e) { alert('Заполните имя и email.'); return; } try { const r = await fetch(`${SUPPORT_API}/chat/start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e})}); if(r.ok){ const d=await r.json(); chatSessionId=d.session_id; localStorage.setItem('chat_session_id',chatSessionId); document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; addMessage('system','Чат начат.'); startPolling(); } } catch(err) { alert('❌ Ошибка соединения.'); } }
-    async function sendChatMessage() { const i=document.getElementById('chatInput'); const m=i.value.trim(); if(!m||!chatSessionId) return; i.value=''; i.disabled=true; document.getElementById('chatSendBtn').disabled=true; addMessage('user',m); try{await fetch(`${SUPPORT_API}/chat/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:chatSessionId,message:m,sender:'user'})});}catch(e){} i.disabled=false; document.getElementById('chatSendBtn').disabled=false; i.focus(); }
-    function addMessage(t,text) { const c=document.getElementById('chatMessages'); const d=document.createElement('div'); d.style.cssText=`padding:10px 14px;border-radius:12px;max-width:80%;font-size:13px;word-wrap:break-word;${t==='user'?'background:#4a9eff;color:white;align-self:flex-end;margin-left:auto;':t==='admin'?'background:#00d4aa;color:#000;align-self:flex-start;':'background:#1e2a3a;color:#8899aa;align-self:center;font-size:12px;'}`; d.textContent=text; c.appendChild(d); c.scrollTop=c.scrollHeight; }
-    function startPolling() { stopPolling(); chatPollingInterval=setInterval(async()=>{if(!chatSessionId)return;try{const r=await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);const d=await r.json();if(d.messages){const c=document.getElementById('chatMessages');const ids=Array.from(c.querySelectorAll('div[data-msg-id]')).map(el=>el.dataset.msgId);d.messages.forEach(msg=>{if(!ids.includes(String(msg.id))&&msg.sender!=='user'){addMessage(msg.sender,msg.message);const last=c.lastElementChild;if(last)last.dataset.msgId=msg.id;}});}}catch(e){}},3000); }
-    function stopPolling() { if(chatPollingInterval){clearInterval(chatPollingInterval);chatPollingInterval=null;} }
-    document.getElementById('chatInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendChatMessage();});
+    if (chatUser) {
+        document.getElementById('chatName').value = chatUser.full_name || '';
+        document.getElementById('chatEmail').value = chatUser.email || '';
+    }
+
+    function toggleSupport() {
+        const panel = document.getElementById('supportPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        if (panel.style.display === 'block') {
+            if (chatSessionId) {
+                document.getElementById('chatContact').style.display = 'none';
+                document.getElementById('chatInputArea').style.display = 'flex';
+                startPolling();
+            } else if (chatUser) {
+                startChat();
+            } else {
+                document.getElementById('chatContact').style.display = 'block';
+                document.getElementById('chatInputArea').style.display = 'none';
+            }
+        } else {
+            stopPolling();
+        }
+    }
+
+    async function startChat() {
+        const name = document.getElementById('chatName').value.trim();
+        const email = document.getElementById('chatEmail').value.trim();
+        if (!name || !email) { alert('Пожалуйста, заполните имя и email.'); return; }
+        
+        try {
+            const response = await fetch(`${SUPPORT_API}/chat/start`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email })
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                chatSessionId = data.session_id;
+                localStorage.setItem('chat_session_id', chatSessionId);
+                document.getElementById('chatContact').style.display = 'none';
+                document.getElementById('chatInputArea').style.display = 'flex';
+                addMessage('system', '⚠️ История чата хранится 7 дней, после чего автоматически удаляется.');
+                addMessage('system', 'Вы можете отправлять фото, видео и документы (до 10 МБ).');
+                startPolling();
+            } else {
+                alert('❌ Ошибка при создании чата. Попробуйте позже.');
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером.');
+        }
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message || !chatSessionId) return;
+        
+        input.value = '';
+        input.disabled = true;
+        document.getElementById('chatSendBtn').disabled = true;
+        
+        addMessage('user', message);
+        
+        try {
+            await fetch(`${SUPPORT_API}/chat/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: chatSessionId,
+                    message: message,
+                    sender: 'user'
+                })
+            });
+        } catch (error) {
+            console.error('Ошибка отправки:', error);
+        }
+        
+        input.disabled = false;
+        document.getElementById('chatSendBtn').disabled = false;
+        input.focus();
+    }
+
+    async function sendChatFile() {
+        const fileInput = document.getElementById('chatFileInput');
+        const file = fileInput.files[0];
+        if (!file || !chatSessionId) return;
+        
+        if (file.size > 10 * 1024 * 1024) {
+            alert('Файл слишком большой. Максимальный размер — 10 МБ.');
+            fileInput.value = '';
+            return;
+        }
+        
+        addMessage('user', `📎 Отправка файла: ${file.name}...`);
+        
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+            try {
+                const response = await fetch(`${SUPPORT_API}/chat/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: chatSessionId,
+                        message: `📎 ${file.name}`,
+                        sender: 'user',
+                        file_data: e.target.result,
+                        file_name: file.name,
+                        file_type: file.type
+                    })
+                });
+                
+                if (response.ok) {
+                    addMessage('user', `✅ Файл отправлен: ${file.name}`);
+                } else {
+                    addMessage('system', '❌ Ошибка при отправке файла.');
+                }
+            } catch (error) {
+                addMessage('system', '❌ Ошибка при отправке файла.');
+            }
+        };
+        reader.readAsDataURL(file);
+        
+        fileInput.value = '';
+    }
+
+    function addMessage(type, text, isFile = false) {
+        const container = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        const isUser = type === 'user';
+        
+        msgDiv.style.cssText = `
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 13px;
+            word-wrap: break-word;
+            ${isUser ? 'background: #4a9eff; color: white; align-self: flex-end; margin-left: auto;' : 
+              type === 'admin' ? 'background: #00d4aa; color: #000; align-self: flex-start;' : 
+              'background: #1e2a3a; color: #8899aa; align-self: center; font-size: 12px;'}
+        `;
+        msgDiv.textContent = text;
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function startPolling() {
+        stopPolling();
+        chatPollingInterval = setInterval(async () => {
+            if (!chatSessionId) return;
+            try {
+                const response = await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);
+                const data = await response.json();
+                
+                if (data.messages) {
+                    const container = document.getElementById('chatMessages');
+                    const existingIds = Array.from(container.querySelectorAll('div[data-msg-id]')).map(el => el.dataset.msgId);
+                    
+                    data.messages.forEach(msg => {
+                        if (!existingIds.includes(String(msg.id)) && msg.sender !== 'user') {
+                            addMessage(msg.sender, msg.message);
+                            const lastMsg = container.lastElementChild;
+                            if (lastMsg) lastMsg.dataset.msgId = msg.id;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка опроса:', error);
+            }
+        }, 3000);
+    }
+
+    function stopPolling() {
+        if (chatPollingInterval) {
+            clearInterval(chatPollingInterval);
+            chatPollingInterval = null;
+        }
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendChatMessage();
+    });
 </script>
 
 </body>
