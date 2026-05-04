@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Товар | PCGGPRO</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <style>
         :root {
             --primary: #4a9eff;
@@ -25,11 +26,11 @@
         body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
 
         .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-        .header-inner { max-width: 1200px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
-        .logo span { color: var(--text); }
-        .nav { display: flex; gap: 25px; align-items: center; }
-        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 15px; }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo img { height: 40px; vertical-align: middle; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; white-space: nowrap; }
+        .nav { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 14px; white-space: nowrap; }
         .nav a:hover { color: var(--primary); }
         #cart-count { background: var(--secondary); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
 
@@ -53,9 +54,10 @@
         .specs-table td:first-child { color: var(--text-muted); width: 40%; }
         .specs-table td:last-child { color: var(--text); font-weight: 500; }
 
-        .btn-buy { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; margin-top: 20px; }
+        .btn-buy { display: block; width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; margin-top: 20px; text-decoration: none; }
         .btn-buy:hover { background: var(--primary-dark); box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
         .btn-buy.added { background: var(--secondary); }
+        .btn-buy.in-cart { background: var(--secondary); }
 
         .quantity-selector { display: flex; align-items: center; gap: 10px; margin-top: 20px; }
         .qty-btn { width: 40px; height: 40px; background: var(--bg-dark); border: 1px solid var(--border); color: var(--text); border-radius: 10px; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
@@ -66,6 +68,10 @@
         .toast.show { opacity: 1; }
 
         @media (max-width: 768px) {
+            .header-inner { flex-direction: column; align-items: center; gap: 8px; }
+            .logo img { height: 30px; }
+            .nav { gap: 10px; width: 100%; justify-content: center; }
+            .nav a { font-size: 13px; padding: 4px 8px; }
             .product-grid { grid-template-columns: 1fr; gap: 25px; padding: 20px; }
             .main-image { height: 250px; }
             .product-info h1 { font-size: 22px; }
@@ -77,7 +83,7 @@
 
 <header class="header">
     <div class="header-inner">
-        <a href="https://pcggpro.ru/" class="logo">🖥️ PCGG<span>PRO</span></a>
+        <a href="https://pcggpro.ru/" class="logo"><img src="logo.png" alt="PCGGPRO"></a>
         <nav class="nav">
             <a href="https://pcggpro.ru/">Главная</a>
             <a href="https://pcggpro.ru/#catalog">Каталог</a>
@@ -92,7 +98,7 @@
     <a href="https://pcggpro.ru/" class="back-link">← Назад в каталог</a>
     <div class="product-grid">
         <div class="product-gallery">
-            <img id="mainImage" class="main-image" src="https://via.placeholder.com/500x400/111827/4a9eff?text=PCGGPRO" alt="Товар">
+            <img id="mainImage" class="main-image" src="" alt="Товар">
             <div class="thumbnails" id="thumbnails"></div>
         </div>
         <div class="product-info">
@@ -104,6 +110,7 @@
                 <span id="qtyDisplay">1</span>
                 <button class="qty-btn" onclick="changeQty(1)">+</button>
             </div>
+            <a href="https://pcggpro.ru/cart.html" class="btn-buy" id="goToCartBtn" style="display:none;">🛒 Перейти в корзину</a>
             <button class="btn-buy" id="buyBtn" onclick="addToCart()">🛒 В корзину</button>
         </div>
     </div>
@@ -123,19 +130,25 @@
         document.getElementById('qtyDisplay').textContent = currentQuantity;
     }
 
-    async function loadProduct() {
-        if (!productId) {
-            document.getElementById('productName').textContent = 'Товар не найден';
-            return;
+    function updateButtonState() {
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const inCart = cart.some(item => item.id == productId);
+        if (inCart) {
+            document.getElementById('buyBtn').style.display = 'none';
+            document.getElementById('goToCartBtn').style.display = 'block';
+        } else {
+            document.getElementById('buyBtn').style.display = 'block';
+            document.getElementById('goToCartBtn').style.display = 'none';
         }
+    }
+
+    async function loadProduct() {
+        if (!productId) { document.getElementById('productName').textContent = 'Товар не найден'; return; }
         try {
             const response = await fetch(`${API_URL}/products`);
             const data = await response.json();
             const product = (data.products || []).find(p => p.id == productId);
-            if (!product) {
-                document.getElementById('productName').textContent = 'Товар не найден';
-                return;
-            }
+            if (!product) { document.getElementById('productName').textContent = 'Товар не найден'; return; }
             currentProduct = product;
             document.getElementById('productName').textContent = product.name;
             document.getElementById('productPrice').textContent = `${product.price.toLocaleString()} ₽`;
@@ -143,40 +156,29 @@
             if (images.length > 0) {
                 document.getElementById('mainImage').src = images[0];
                 const thumbnails = document.getElementById('thumbnails');
-                thumbnails.innerHTML = images.map((img, i) => `
-                    <img src="${img}" class="thumb ${i === 0 ? 'active' : ''}" 
-                         onclick="document.getElementById('mainImage').src='${img}'; document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active')); event.target.classList.add('active')"
-                         onerror="this.style.display='none'">
-                `).join('');
+                thumbnails.innerHTML = images.map((img, i) => `<img src="${img}" class="thumb ${i===0?'active':''}" onclick="document.getElementById('mainImage').src='${img}';document.querySelectorAll('.thumb').forEach(t=>t.classList.remove('active'));event.target.classList.add('active')" onerror="this.style.display='none'">`).join('');
             }
             const specs = [];
-            if (product.cpu) specs.push({ label: '🖥️ Процессор', value: product.cpu });
-            if (product.gpu) specs.push({ label: '🎮 Видеокарта', value: product.gpu });
-            if (product.ram) specs.push({ label: '🧠 ОЗУ', value: product.ram });
-            if (product.storage) specs.push({ label: '💾 Накопитель', value: product.storage });
-            if (product.psu) specs.push({ label: '⚡ Блок питания', value: product.psu });
-            if (product.description) specs.push({ label: '📝 Описание', value: product.description });
+            if (product.cpu) specs.push({label:'🖥️ Процессор', value:product.cpu});
+            if (product.gpu) specs.push({label:'🎮 Видеокарта', value:product.gpu});
+            if (product.ram) specs.push({label:'🧠 ОЗУ', value:product.ram});
+            if (product.storage) specs.push({label:'💾 Накопитель', value:product.storage});
+            if (product.psu) specs.push({label:'⚡ Блок питания', value:product.psu});
+            if (product.description) specs.push({label:'📝 Описание', value:product.description});
             document.getElementById('specsTable').innerHTML = specs.map(s => `<tr><td>${s.label}</td><td>${s.value}</td></tr>`).join('');
-        } catch (error) {
-            document.getElementById('productName').textContent = 'Ошибка загрузки';
-        }
+            updateButtonState();
+        } catch (error) { document.getElementById('productName').textContent = 'Ошибка загрузки'; }
     }
 
     function addToCart() {
         if (!currentProduct) return;
         let cart = JSON.parse(localStorage.getItem('cart') || '[]');
         const existing = cart.find(item => item.id === currentProduct.id);
-        if (existing) {
-            existing.quantity = (existing.quantity || 1) + currentQuantity;
-        } else {
-            cart.push({ id: currentProduct.id, name: currentProduct.name, price: currentProduct.price, quantity: currentQuantity });
-        }
+        if (existing) { existing.quantity += currentQuantity; }
+        else { cart.push({id:currentProduct.id, name:currentProduct.name, price:currentProduct.price, quantity:currentQuantity}); }
         localStorage.setItem('cart', JSON.stringify(cart));
         updateCartCount();
-        const btn = document.getElementById('buyBtn');
-        btn.textContent = '✅ В корзине';
-        btn.classList.add('added');
-        setTimeout(() => { btn.textContent = '🛒 В корзину'; btn.classList.remove('added'); }, 1500);
+        updateButtonState();
         const toast = document.getElementById('toast');
         toast.classList.add('show');
         setTimeout(() => toast.classList.remove('show'), 2000);
@@ -184,194 +186,35 @@
 
     function updateCartCount() {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-        document.getElementById('cart-count').textContent = count;
+        document.getElementById('cart-count').textContent = cart.reduce((s,i) => s + (i.quantity||1), 0);
     }
 
-    loadProduct();
-    updateCartCount();
+    loadProduct(); updateCartCount();
 </script>
 
-<!-- Виджет чата поддержки -->
-<div id="supportWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: 'Segoe UI', Arial, sans-serif;">
-    <button id="supportToggle" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary, #4a9eff); color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;" onclick="toggleSupport()">💬</button>
-    
-    <div id="supportPanel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 380px; max-width: 90vw; background: #111827; border: 1px solid #1e2a3a; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); overflow: hidden;">
-        <!-- Шапка -->
-        <div style="background: #0d1321; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e2a3a;">
-            <h3 style="margin: 0; font-size: 16px; color: #e0e6f0;">💬 Поддержка</h3>
-            <button onclick="toggleSupport()" style="background: none; border: none; color: #8899aa; font-size: 20px; cursor: pointer;">✕</button>
-        </div>
-        
-        <!-- Сообщения -->
-        <div id="chatMessages" style="height: 300px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
-            <div style="text-align: center; color: #8899aa; font-size: 12px; padding: 10px;">
-                Здравствуйте! Опишите ваш вопрос, и мы ответим в ближайшее время.
-            </div>
-        </div>
-        
-        <!-- Поле ввода -->
-        <div id="chatInputArea" style="padding: 15px; border-top: 1px solid #1e2a3a; display: none; gap: 10px;">
-            <input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex: 1; padding: 12px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 10px; color: #e0e6f0; font-size: 14px;">
-            <button id="chatSendBtn" onclick="sendChatMessage()" style="padding: 12px 18px; background: #4a9eff; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">📩</button>
-        </div>
-        
-        <!-- Контактные данные (если не авторизован) -->
-        <div id="chatContact" style="padding: 15px; border-top: 1px solid #1e2a3a;">
-            <input type="text" id="chatName" placeholder="Ваше имя" style="width: 100%; padding: 10px; margin-bottom: 8px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 8px; color: #e0e6f0;">
-            <input type="email" id="chatEmail" placeholder="Ваш email" style="width: 100%; padding: 10px; margin-bottom: 8px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 8px; color: #e0e6f0;">
-            <button onclick="startChat()" style="width: 100%; padding: 12px; background: #4a9eff; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Начать чат</button>
-        </div>
+<!-- Виджет чата поддержки — такой же, как в index.html -->
+<div id="supportWidget" style="position:fixed;bottom:20px;right:20px;z-index:9999;font-family:'Segoe UI',Arial,sans-serif;">
+    <button id="supportToggle" style="width:60px;height:60px;border-radius:50%;background:var(--primary,#4a9eff);color:white;border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:transform 0.2s;" onclick="toggleSupport()">💬</button>
+    <div id="supportPanel" style="display:none;position:absolute;bottom:70px;right:0;width:380px;max-width:90vw;background:#111827;border:1px solid #1e2a3a;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);overflow:hidden;">
+        <div style="background:#0d1321;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2a3a;"><h3 style="margin:0;font-size:16px;color:#e0e6f0;">💬 Поддержка</h3><button onclick="toggleSupport()" style="background:none;border:none;color:#8899aa;font-size:20px;cursor:pointer;">✕</button></div>
+        <div id="chatMessages" style="height:300px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;"><div style="text-align:center;color:#8899aa;font-size:12px;padding:10px;">Здравствуйте! Опишите ваш вопрос.</div></div>
+        <div id="chatInputArea" style="padding:15px;border-top:1px solid #1e2a3a;display:none;gap:10px;"><input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex:1;padding:12px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:10px;color:#e0e6f0;font-size:14px;"><button id="chatSendBtn" onclick="sendChatMessage()" style="padding:12px 18px;background:#4a9eff;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📩</button></div>
+        <div id="chatContact" style="padding:15px;border-top:1px solid #1e2a3a;"><input type="text" id="chatName" placeholder="Ваше имя" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><input type="email" id="chatEmail" placeholder="Ваш email" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><button onclick="startChat()" style="width:100%;padding:12px;background:#4a9eff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Начать чат</button></div>
     </div>
 </div>
-
 <script>
     const SUPPORT_API = 'https://tg-shop-server.onrender.com/api';
     let chatSessionId = localStorage.getItem('chat_session_id') || null;
     let chatPollingInterval = null;
-
-    // Подтягиваем данные профиля, если есть
-    const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
-    if (savedUser) {
-        document.getElementById('chatName').value = savedUser.full_name || '';
-        document.getElementById('chatEmail').value = savedUser.email || '';
-    }
-
-    function toggleSupport() {
-        const panel = document.getElementById('supportPanel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-        if (panel.style.display === 'block') {
-            if (chatSessionId) {
-                document.getElementById('chatContact').style.display = 'none';
-                document.getElementById('chatInputArea').style.display = 'flex';
-                startPolling();
-            } else if (savedUser) {
-                // Если пользователь авторизован, начинаем чат сразу
-                startChat();
-            } else {
-                document.getElementById('chatContact').style.display = 'block';
-                document.getElementById('chatInputArea').style.display = 'none';
-            }
-        } else {
-            stopPolling();
-        }
-    }
-
-    async function startChat() {
-        const name = document.getElementById('chatName').value.trim();
-        const email = document.getElementById('chatEmail').value.trim();
-        
-        if (!name || !email) {
-            alert('Пожалуйста, заполните имя и email.');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${SUPPORT_API}/chat/start`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email })
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                chatSessionId = data.session_id;
-                localStorage.setItem('chat_session_id', chatSessionId);
-                document.getElementById('chatContact').style.display = 'none';
-                document.getElementById('chatInputArea').style.display = 'flex';
-                addMessage('system', 'Чат начат. Опишите ваш вопрос, и мы ответим в ближайшее время.');
-                startPolling();
-            }
-        } catch (error) {
-            alert('❌ Ошибка соединения с сервером.');
-        }
-    }
-
-    async function sendChatMessage() {
-        const input = document.getElementById('chatInput');
-        const message = input.value.trim();
-        
-        if (!message || !chatSessionId) return;
-        
-        input.value = '';
-        input.disabled = true;
-        document.getElementById('chatSendBtn').disabled = true;
-        
-        addMessage('user', message);
-        
-        try {
-            await fetch(`${SUPPORT_API}/chat/message`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ session_id: chatSessionId, message, sender: 'user' })
-            });
-        } catch (error) {
-            console.error('Ошибка отправки:', error);
-        }
-        
-        input.disabled = false;
-        document.getElementById('chatSendBtn').disabled = false;
-        input.focus();
-    }
-
-    function addMessage(type, text) {
-        const container = document.getElementById('chatMessages');
-        const msgDiv = document.createElement('div');
-        const isUser = type === 'user';
-        msgDiv.style.cssText = `
-            padding: 10px 14px;
-            border-radius: 12px;
-            max-width: 80%;
-            font-size: 13px;
-            word-wrap: break-word;
-            ${isUser 
-                ? 'background: #4a9eff; color: white; align-self: flex-end; margin-left: auto;' 
-                : type === 'admin'
-                ? 'background: #00d4aa; color: #000; align-self: flex-start;'
-                : 'background: #1e2a3a; color: #8899aa; align-self: center; font-size: 12px;'}
-        `;
-        msgDiv.textContent = text;
-        container.appendChild(msgDiv);
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function startPolling() {
-        stopPolling();
-        chatPollingInterval = setInterval(async () => {
-            if (!chatSessionId) return;
-            try {
-                const response = await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);
-                const data = await response.json();
-                
-                if (data.messages) {
-                    const container = document.getElementById('chatMessages');
-                    const existingMessages = container.querySelectorAll('div[data-msg-id]');
-                    const existingIds = Array.from(existingMessages).map(el => el.dataset.msgId);
-                    
-                    data.messages.forEach(msg => {
-                        if (!existingIds.includes(String(msg.id)) && msg.sender !== 'user') {
-                            addMessage(msg.sender, msg.message);
-                            const lastMsg = container.lastElementChild;
-                            if (lastMsg) lastMsg.dataset.msgId = msg.id;
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Ошибка опроса:', error);
-            }
-        }, 3000);
-    }
-
-    function stopPolling() {
-        if (chatPollingInterval) {
-            clearInterval(chatPollingInterval);
-            chatPollingInterval = null;
-        }
-    }
-
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') sendChatMessage();
-    });
+    const chatUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (chatUser) { document.getElementById('chatName').value = chatUser.full_name || ''; document.getElementById('chatEmail').value = chatUser.email || ''; }
+    function toggleSupport() { const p = document.getElementById('supportPanel'); p.style.display = p.style.display==='none'?'block':'none'; if (p.style.display==='block') { if (chatSessionId) { document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; startPolling(); } else if (chatUser) { startChat(); } else { document.getElementById('chatContact').style.display='block'; document.getElementById('chatInputArea').style.display='none'; } } else { stopPolling(); } }
+    async function startChat() { const n = document.getElementById('chatName').value.trim(); const e = document.getElementById('chatEmail').value.trim(); if (!n||!e) { alert('Заполните имя и email.'); return; } try { const r = await fetch(`${SUPPORT_API}/chat/start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e})}); if(r.ok){ const d=await r.json(); chatSessionId=d.session_id; localStorage.setItem('chat_session_id',chatSessionId); document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; addMessage('system','Чат начат.'); startPolling(); } } catch(err) { alert('❌ Ошибка соединения.'); } }
+    async function sendChatMessage() { const i=document.getElementById('chatInput'); const m=i.value.trim(); if(!m||!chatSessionId) return; i.value=''; i.disabled=true; document.getElementById('chatSendBtn').disabled=true; addMessage('user',m); try{await fetch(`${SUPPORT_API}/chat/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:chatSessionId,message:m,sender:'user'})});}catch(e){} i.disabled=false; document.getElementById('chatSendBtn').disabled=false; i.focus(); }
+    function addMessage(t,text) { const c=document.getElementById('chatMessages'); const d=document.createElement('div'); d.style.cssText=`padding:10px 14px;border-radius:12px;max-width:80%;font-size:13px;word-wrap:break-word;${t==='user'?'background:#4a9eff;color:white;align-self:flex-end;margin-left:auto;':t==='admin'?'background:#00d4aa;color:#000;align-self:flex-start;':'background:#1e2a3a;color:#8899aa;align-self:center;font-size:12px;'}`; d.textContent=text; c.appendChild(d); c.scrollTop=c.scrollHeight; }
+    function startPolling() { stopPolling(); chatPollingInterval=setInterval(async()=>{if(!chatSessionId)return;try{const r=await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);const d=await r.json();if(d.messages){const c=document.getElementById('chatMessages');const ids=Array.from(c.querySelectorAll('div[data-msg-id]')).map(el=>el.dataset.msgId);d.messages.forEach(msg=>{if(!ids.includes(String(msg.id))&&msg.sender!=='user'){addMessage(msg.sender,msg.message);const last=c.lastElementChild;if(last)last.dataset.msgId=msg.id;}});}}catch(e){}},3000); }
+    function stopPolling() { if(chatPollingInterval){clearInterval(chatPollingInterval);chatPollingInterval=null;} }
+    document.getElementById('chatInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendChatMessage();});
 </script>
 
 </body>
