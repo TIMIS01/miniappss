@@ -349,6 +349,48 @@
     document.getElementById('chatInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') sendChatMessage();
     });
+
+
+
+
+
+
+
+    // Автоматически восстанавливаем чат при загрузке страницы
+(function() {
+    const savedSessionId = localStorage.getItem('chat_session_id');
+    if (!savedSessionId) return;
+    
+    fetch(`${SUPPORT_API}/chat/messages?session_id=${savedSessionId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.messages && data.messages.length > 0) {
+                // Чат активен — подтягиваем сообщения в фон
+                chatSessionId = savedSessionId;
+                document.getElementById('chatContact').style.display = 'none';
+                document.getElementById('chatInputArea').style.display = 'flex';
+                
+                // Загружаем все сообщения
+                const container = document.getElementById('chatMessages');
+                container.innerHTML = '';
+                data.messages.forEach(msg => {
+                    addMessage(msg.sender, msg.message);
+                });
+                container.scrollTop = container.scrollHeight;
+                
+                // Запускаем опрос новых сообщений
+                startPolling();
+                
+                console.log('✅ Чат восстановлен:', savedSessionId);
+            } else {
+                // Чат устарел — удаляем
+                localStorage.removeItem('chat_session_id');
+            }
+        })
+        .catch(() => {
+            localStorage.removeItem('chat_session_id');
+        });
+})();
 </script>
 
 </body>
