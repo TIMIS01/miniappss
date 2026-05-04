@@ -193,56 +193,185 @@
     loadCart();
 </script>
 
-<!-- Виджет поддержки -->
-<div id="supportWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    <button id="supportToggle" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;" onclick="toggleSupport()">💬</button>
-    <div id="supportPanel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 350px; max-width: 90vw; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; font-size: 16px;">💬 Поддержка</h3>
-            <button onclick="toggleSupport()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
+<!-- Виджет чата поддержки -->
+<div id="supportWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; font-family: 'Segoe UI', Arial, sans-serif;">
+    <button id="supportToggle" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary, #4a9eff); color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;" onclick="toggleSupport()">💬</button>
+    
+    <div id="supportPanel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 380px; max-width: 90vw; background: #111827; border: 1px solid #1e2a3a; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); overflow: hidden;">
+        <!-- Шапка -->
+        <div style="background: #0d1321; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e2a3a;">
+            <h3 style="margin: 0; font-size: 16px; color: #e0e6f0;">💬 Поддержка</h3>
+            <button onclick="toggleSupport()" style="background: none; border: none; color: #8899aa; font-size: 20px; cursor: pointer;">✕</button>
         </div>
-        <form id="supportForm">
-            <input type="text" id="supportName" placeholder="Ваше имя" required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
-            <input type="email" id="supportEmail" placeholder="Ваш email" required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
-            <textarea id="supportMessage" placeholder="Опишите ваш вопрос..." required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text); min-height: 80px; resize: vertical;"></textarea>
-            <button type="submit" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📩 Отправить</button>
-        </form>
+        
+        <!-- Сообщения -->
+        <div id="chatMessages" style="height: 300px; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="text-align: center; color: #8899aa; font-size: 12px; padding: 10px;">
+                Здравствуйте! Опишите ваш вопрос, и мы ответим в ближайшее время.
+            </div>
+        </div>
+        
+        <!-- Поле ввода -->
+        <div id="chatInputArea" style="padding: 15px; border-top: 1px solid #1e2a3a; display: none; gap: 10px;">
+            <input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex: 1; padding: 12px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 10px; color: #e0e6f0; font-size: 14px;">
+            <button id="chatSendBtn" onclick="sendChatMessage()" style="padding: 12px 18px; background: #4a9eff; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">📩</button>
+        </div>
+        
+        <!-- Контактные данные (если не авторизован) -->
+        <div id="chatContact" style="padding: 15px; border-top: 1px solid #1e2a3a;">
+            <input type="text" id="chatName" placeholder="Ваше имя" style="width: 100%; padding: 10px; margin-bottom: 8px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 8px; color: #e0e6f0;">
+            <input type="email" id="chatEmail" placeholder="Ваш email" style="width: 100%; padding: 10px; margin-bottom: 8px; background: #0a0e1a; border: 1px solid #1e2a3a; border-radius: 8px; color: #e0e6f0;">
+            <button onclick="startChat()" style="width: 100%; padding: 12px; background: #4a9eff; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">Начать чат</button>
+        </div>
     </div>
 </div>
 
 <script>
+    const SUPPORT_API = 'https://tg-shop-server.onrender.com/api';
+    let chatSessionId = localStorage.getItem('chat_session_id') || null;
+    let chatPollingInterval = null;
+
+    // Подтягиваем данные профиля, если есть
+    const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (savedUser) {
+        document.getElementById('chatName').value = savedUser.full_name || '';
+        document.getElementById('chatEmail').value = savedUser.email || '';
+    }
+
     function toggleSupport() {
         const panel = document.getElementById('supportPanel');
         panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        if (panel.style.display === 'block') {
+            if (chatSessionId) {
+                document.getElementById('chatContact').style.display = 'none';
+                document.getElementById('chatInputArea').style.display = 'flex';
+                startPolling();
+            } else if (savedUser) {
+                // Если пользователь авторизован, начинаем чат сразу
+                startChat();
+            } else {
+                document.getElementById('chatContact').style.display = 'block';
+                document.getElementById('chatInputArea').style.display = 'none';
+            }
+        } else {
+            stopPolling();
+        }
     }
-    document.getElementById('supportForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const name = document.getElementById('supportName').value.trim();
-        const email = document.getElementById('supportEmail').value.trim();
-        const message = document.getElementById('supportMessage').value.trim();
-        if (!name || !email || !message) return;
-        const btn = this.querySelector('button');
-        btn.textContent = '⏳ Отправка...';
-        btn.disabled = true;
+
+    async function startChat() {
+        const name = document.getElementById('chatName').value.trim();
+        const email = document.getElementById('chatEmail').value.trim();
+        
+        if (!name || !email) {
+            alert('Пожалуйста, заполните имя и email.');
+            return;
+        }
+
         try {
-            const response = await fetch('https://tg-shop-server.onrender.com/api/support', {
+            const response = await fetch(`${SUPPORT_API}/chat/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, message, timestamp: new Date().toISOString() })
+                body: JSON.stringify({ name, email })
             });
+            
             if (response.ok) {
-                this.reset();
-                alert('✅ Сообщение отправлено!');
-                toggleSupport();
-            } else {
-                alert('❌ Ошибка отправки.');
+                const data = await response.json();
+                chatSessionId = data.session_id;
+                localStorage.setItem('chat_session_id', chatSessionId);
+                document.getElementById('chatContact').style.display = 'none';
+                document.getElementById('chatInputArea').style.display = 'flex';
+                addMessage('system', 'Чат начат. Опишите ваш вопрос, и мы ответим в ближайшее время.');
+                startPolling();
             }
         } catch (error) {
-            alert('❌ Ошибка соединения.');
-        } finally {
-            btn.textContent = '📩 Отправить';
-            btn.disabled = false;
+            alert('❌ Ошибка соединения с сервером.');
         }
+    }
+
+    async function sendChatMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        
+        if (!message || !chatSessionId) return;
+        
+        input.value = '';
+        input.disabled = true;
+        document.getElementById('chatSendBtn').disabled = true;
+        
+        addMessage('user', message);
+        
+        try {
+            await fetch(`${SUPPORT_API}/chat/message`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ session_id: chatSessionId, message, sender: 'user' })
+            });
+        } catch (error) {
+            console.error('Ошибка отправки:', error);
+        }
+        
+        input.disabled = false;
+        document.getElementById('chatSendBtn').disabled = false;
+        input.focus();
+    }
+
+    function addMessage(type, text) {
+        const container = document.getElementById('chatMessages');
+        const msgDiv = document.createElement('div');
+        const isUser = type === 'user';
+        msgDiv.style.cssText = `
+            padding: 10px 14px;
+            border-radius: 12px;
+            max-width: 80%;
+            font-size: 13px;
+            word-wrap: break-word;
+            ${isUser 
+                ? 'background: #4a9eff; color: white; align-self: flex-end; margin-left: auto;' 
+                : type === 'admin'
+                ? 'background: #00d4aa; color: #000; align-self: flex-start;'
+                : 'background: #1e2a3a; color: #8899aa; align-self: center; font-size: 12px;'}
+        `;
+        msgDiv.textContent = text;
+        container.appendChild(msgDiv);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function startPolling() {
+        stopPolling();
+        chatPollingInterval = setInterval(async () => {
+            if (!chatSessionId) return;
+            try {
+                const response = await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);
+                const data = await response.json();
+                
+                if (data.messages) {
+                    const container = document.getElementById('chatMessages');
+                    const existingMessages = container.querySelectorAll('div[data-msg-id]');
+                    const existingIds = Array.from(existingMessages).map(el => el.dataset.msgId);
+                    
+                    data.messages.forEach(msg => {
+                        if (!existingIds.includes(String(msg.id)) && msg.sender !== 'user') {
+                            addMessage(msg.sender, msg.message);
+                            const lastMsg = container.lastElementChild;
+                            if (lastMsg) lastMsg.dataset.msgId = msg.id;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка опроса:', error);
+            }
+        }, 3000);
+    }
+
+    function stopPolling() {
+        if (chatPollingInterval) {
+            clearInterval(chatPollingInterval);
+            chatPollingInterval = null;
+        }
+    }
+
+    document.getElementById('chatInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') sendChatMessage();
     });
 </script>
 
