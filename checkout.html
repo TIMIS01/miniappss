@@ -4,37 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оформление заказа | PCGGPRO</title>
+    <link rel="icon" type="image/png" href="logo.png">
     <style>
         :root {
-            --primary: #4a9eff;
-            --primary-dark: #3a7fd4;
-            --primary-glow: rgba(74, 158, 255, 0.3);
-            --secondary: #00d4aa;
-            --bg-dark: #0a0e1a;
-            --bg-card: #111827;
-            --bg-header: #00276a;
-            --text: #e0e6f0;
-            --text-muted: #8899aa;
-            --border: #1e2a3a;
-            --shadow: 0 4px 20px rgba(0,0,0,0.4);
-            --radius: 16px;
+            --primary: #4a9eff; --primary-dark: #3a7fd4; --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa; --bg-dark: #0a0e1a; --bg-card: #111827;
+            --bg-header: #00276a; --text: #e0e6f0; --text-muted: #8899aa;
+            --border: #1e2a3a; --shadow: 0 4px 20px rgba(0,0,0,0.4); --radius: 16px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', 'Inter', Arial, sans-serif; background: var(--bg-dark); color: var(--text); line-height: 1.6; min-height: 100vh; }
 
         .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-        .header-inner { max-width: 1000px; margin: 0 auto; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
-        .logo { font-size: 26px; font-weight: 800; color: var(--primary); text-decoration: none; text-shadow: 0 0 20px var(--primary-glow); }
-        .logo span { color: var(--text); }
-        .nav { display: flex; gap: 25px; align-items: center; }
-        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 15px; }
+        .header-inner { max-width: 1000px; margin: 0 auto; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo img { height: 40px; vertical-align: middle; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; white-space: nowrap; }
+        .nav { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 14px; white-space: nowrap; }
         .nav a:hover { color: var(--primary); }
 
         .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
         .back-link { color: var(--text-muted); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 25px; transition: color 0.3s; }
         .back-link:hover { color: var(--primary); }
-
         h1 { font-size: 28px; margin-bottom: 25px; text-align: center; }
         .checkout-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 25px; }
@@ -45,14 +37,13 @@
         .order-item-name { font-weight: 600; }
         .order-item-qty { color: var(--text-muted); font-size: 13px; margin-left: 8px; }
         .order-item-price { color: var(--secondary); font-weight: 600; }
-
         .total-row { display: flex; justify-content: space-between; padding: 15px 0; font-size: 20px; font-weight: 700; color: var(--secondary); border-top: 2px solid var(--border); margin-top: 10px; }
 
         .form-group { margin-bottom: 18px; }
         .form-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
-        .form-group input, .form-group select { width: 100%; padding: 14px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; transition: border-color 0.3s, box-shadow 0.3s; }
-        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
-        .form-group input[readonly] { opacity: 0.7; cursor: not-allowed; background: rgba(30, 42, 58, 0.5); }
+        .form-group input { width: 100%; padding: 14px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; }
+        .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+        .form-group input[readonly] { opacity: 0.7; cursor: not-allowed; background: rgba(30,42,58,0.5); }
 
         .btn-place-order { display: block; width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 17px; font-weight: 700; cursor: pointer; transition: all 0.3s; text-align: center; margin-top: 15px; }
         .btn-place-order:hover { background: var(--primary-dark); box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
@@ -60,13 +51,13 @@
         .success-box { display: none; text-align: center; padding: 30px; background: var(--bg-card); border: 1px solid var(--secondary); border-radius: var(--radius); margin-top: 20px; }
         .success-box h2 { color: var(--secondary); margin-bottom: 15px; }
         .success-box p { color: var(--text-muted); margin-bottom: 10px; }
-
         .empty { text-align: center; padding: 40px; color: var(--text-muted); }
-        .empty a { color: var(--primary); text-decoration: none; }
 
-        @media (max-width: 600px) {
-            .header-inner { flex-direction: column; gap: 10px; }
-            .nav { gap: 15px; flex-wrap: wrap; justify-content: center; }
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: column; align-items: center; gap: 8px; }
+            .logo img { height: 30px; }
+            .nav { gap: 10px; width: 100%; justify-content: center; }
+            .nav a { font-size: 13px; padding: 4px 8px; }
         }
     </style>
 </head>
@@ -74,9 +65,7 @@
 
 <header class="header">
     <div class="header-inner">
-        <a href="https://pcggpro.ru/" class="logo">
-    <img src="logo.png" alt="PCGGPRO" style="height: 40px; vertical-align: middle;">
-</a>
+        <a href="https://pcggpro.ru/" class="logo"><img src="logo.png" alt="PCGGPRO"></a>
         <nav class="nav">
             <a href="https://pcggpro.ru/">Главная</a>
             <a href="https://pcggpro.ru/#catalog">Каталог</a>
@@ -90,229 +79,75 @@
 <div class="container">
     <a href="https://pcggpro.ru/cart.html" class="back-link">← Назад в корзину</a>
     <h1>📋 Оформление заказа</h1>
-
     <div class="checkout-grid">
-        <div class="card">
-            <h2>🛒 Ваш заказ</h2>
-            <div id="orderItems"></div>
-            <div class="total-row">
-                <span>Итого к оплате:</span>
-                <span id="totalPrice">0 ₽</span>
-            </div>
+        <div class="card"><h2>🛒 Ваш заказ</h2><div id="orderItems"></div><div class="total-row"><span>Итого к оплате:</span><span id="totalPrice">0 ₽</span></div></div>
+        <div class="card"><h2>👤 Данные покупателя</h2>
+            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="example@mail.ru" required readonly></div>
+            <div class="form-group"><label>Имя</label><input type="text" id="name" placeholder="Ваше имя" required readonly></div>
+            <div class="form-group"><label>Telegram</label><input type="text" id="telegram" placeholder="@username" readonly></div>
         </div>
-
-        <div class="card">
-            <h2>👤 Данные покупателя</h2>
-            <div class="form-group">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="example@mail.ru" required readonly>
-            </div>
-            <div class="form-group">
-                <label>Имя</label>
-                <input type="text" id="name" placeholder="Ваше имя" required readonly>
-            </div>
-            <div class="form-group">
-                <label>Telegram</label>
-                <input type="text" id="telegram" placeholder="@username" readonly>
-            </div>
+        <div class="card"><h2>📍 Данные доставки</h2>
+            <div class="form-group"><label>Город</label><input type="text" id="city" placeholder="Москва" required></div>
+            <div class="form-group"><label>Почтовое отделение</label><input type="text" id="postal" placeholder="101000, г. Москва, ул. Мясницкая, 26" required></div>
+            <div class="form-group"><label>Комментарий</label><input type="text" id="comment" placeholder="Позвонить перед доставкой"></div>
+            <p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Доставка осуществляется Почтой России за счёт покупателя.</p>
         </div>
-
-        <div class="card">
-            <h2>📍 Данные доставки</h2>
-            <div class="form-group">
-                <label>Город</label>
-                <input type="text" id="city" placeholder="Москва" required>
-            </div>
-            <div class="form-group">
-                <label>Почтовое отделение (индекс и адрес)</label>
-                <input type="text" id="postal" placeholder="101000, г. Москва, ул. Мясницкая, 26" required>
-            </div>
-            <div class="form-group">
-                <label>Комментарий к заказу (необязательно)</label>
-                <input type="text" id="comment" placeholder="Позвонить перед доставкой">
-            </div>
-            <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;">
-                Доставка осуществляется Почтой России за счёт покупателя.
-            </p>
-        </div>
-
-        <div class="card">
-            <h2>💳 Способ оплаты</h2>
-            <p style="color: var(--text-muted); margin-bottom: 15px;">
-                После оформления заказа с вами свяжется менеджер для уточнения деталей и выставления счёта.
-            </p>
-            <p style="font-size: 13px; color: var(--text-muted);">
-                Нажимая «Оформить заказ», вы соглашаетесь с 
-                <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">условиями публичной оферты</a>.
-            </p>
+        <div class="card"><h2>💳 Способ оплаты</h2>
+            <p style="color:var(--text-muted);margin-bottom:15px;">После оформления заказа с вами свяжется менеджер.</p>
+            <p style="font-size:13px;color:var(--text-muted);">Нажимая «Оформить заказ», вы соглашаетесь с <a href="https://pcggpro.ru/offer.html" style="color:var(--primary);">условиями оферты</a>.</p>
             <button class="btn-place-order" id="placeOrderBtn">📦 Оформить и оплатить</button>
         </div>
     </div>
-
-    <div class="success-box" id="successBox">
-        <h2>✅ Заказ успешно оформлен!</h2>
-        <p>Номер вашего заказа: <strong id="orderNumber">—</strong></p>
-        <p>Вы можете отслеживать статус заказа в <a href="https://pcggpro.ru/profile.html" style="color: var(--primary);">личном кабинете</a>, указав ваш email.</p>
-        <p>В ближайшее время с вами свяжется менеджер для уточнения деталей и выставления счёта.</p>
-        <p><a href="https://pcggpro.ru/" style="color: var(--primary);">← Вернуться в каталог</a></p>
-    </div>
+    <div class="success-box" id="successBox"><h2>✅ Заказ успешно оформлен!</h2><p>Номер заказа: <strong id="orderNumber">—</strong></p><p>В ближайшее время с вами свяжется менеджер.</p><p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p></div>
 </div>
 
 <script>
-    const API_URL = 'https://tg-shop-server.onrender.com/api';
-    let cart = [];
-
-    const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
-    if (savedUser) {
-        document.getElementById('email').value = savedUser.email || '';
-        document.getElementById('name').value = savedUser.full_name || '';
-        document.getElementById('telegram').value = savedUser.telegram || '';
-    }
-
-    function loadCart() {
-        cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        if (cart.length === 0) {
-            document.getElementById('orderItems').innerHTML = '<div class="empty">Ваша корзина пуста. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>';
-            document.getElementById('placeOrderBtn').disabled = true;
-            return;
-        }
-        renderOrderItems();
-    }
-
-    function renderOrderItems() {
-        const container = document.getElementById('orderItems');
-        let total = 0;
-        container.innerHTML = cart.map((item) => {
-            const itemTotal = item.price * (item.quantity || 1);
-            total += itemTotal;
-            return `<div class="order-item"><div><span class="order-item-name">${item.name}</span><span class="order-item-qty">x${item.quantity || 1}</span></div><span class="order-item-price">${itemTotal.toLocaleString()} ₽</span></div>`;
-        }).join('');
-        document.getElementById('totalPrice').textContent = `${total.toLocaleString()} ₽`;
-    }
-
+    const API_URL = 'https://tg-shop-server.onrender.com/api'; let cart = [];
+    const savedUser = JSON.parse(localStorage.getItem('user')||'null');
+    if (savedUser) { document.getElementById('email').value = savedUser.email||''; document.getElementById('name').value = savedUser.full_name||''; document.getElementById('telegram').value = savedUser.telegram||''; }
+    function loadCart() { cart = JSON.parse(localStorage.getItem('cart')||'[]'); if (cart.length===0) { document.getElementById('orderItems').innerHTML='<div class="empty">Корзина пуста. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>'; document.getElementById('placeOrderBtn').disabled=true; return; } renderOrderItems(); }
+    function renderOrderItems() { const c=document.getElementById('orderItems'); let t=0; c.innerHTML=cart.map(i=>{const it=i.price*(i.quantity||1);t+=it;return`<div class="order-item"><div><span class="order-item-name">${i.name}</span><span class="order-item-qty">x${i.quantity||1}</span></div><span class="order-item-price">${it.toLocaleString()} ₽</span></div>`}).join(''); document.getElementById('totalPrice').textContent=`${t.toLocaleString()} ₽`; }
     document.getElementById('placeOrderBtn').addEventListener('click', async function() {
-        const email = document.getElementById('email').value.trim();
-        const name = document.getElementById('name').value.trim();
-        const city = document.getElementById('city').value.trim();
-        const postal = document.getElementById('postal').value.trim();
-
-        if (!email || !name || !city || !postal) {
-            alert('Пожалуйста, заполните все обязательные поля.');
-            return;
-        }
-
-        const btn = document.getElementById('placeOrderBtn');
-        btn.textContent = '⏳ Оформление...';
-        btn.disabled = true;
-
+        const email=document.getElementById('email').value.trim(), name=document.getElementById('name').value.trim(), city=document.getElementById('city').value.trim(), postal=document.getElementById('postal').value.trim();
+        if (!email||!name||!city||!postal) { alert('Заполните все обязательные поля.'); return; }
+        const btn=document.getElementById('placeOrderBtn'); btn.textContent='⏳ Оформление...'; btn.disabled=true;
         try {
-            const productNames = cart.map(item => `${item.name} x${item.quantity || 1}`).join(', ');
-            const totalPrice = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-
-            const response = await fetch(`${API_URL}/webhook`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: 'order',
-                    productName: productNames,
-                    price: totalPrice,
-                    city: city,
-                    postal: postal,
-                    comment: document.getElementById('comment').value.trim(),
-                    userId: 'website_user',
-                    full_name: name,
-                    user_email: email,
-                    telegram: document.getElementById('telegram').value.trim(),
-                    timestamp: new Date().toISOString()
-                })
-            });
-
-            if (response.ok) {
-                const hasYookassaToken = false;
-                if (hasYookassaToken) {
-                    alert('✅ Заказ оформлен! Сейчас вы будете перенаправлены на оплату.');
-                } else {
-                    alert('✅ Заказ оформлен! Токен Юкассы не добавлен. Мы свяжемся с вами для уточнения оплаты.');
-                }
-                localStorage.removeItem('cart');
-                document.querySelector('.checkout-grid').style.display = 'none';
-                btn.style.display = 'none';
-                document.getElementById('successBox').style.display = 'block';
-                document.getElementById('orderNumber').textContent = '#' + Date.now().toString().slice(-6);
-            } else {
-                alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
-                btn.textContent = '📦 Оформить заказ';
-                btn.disabled = false;
-            }
-        } catch (error) {
-            alert('❌ Ошибка соединения с сервером. Попробуйте позже.');
-            btn.textContent = '📦 Оформить заказ';
-            btn.disabled = false;
-        }
+            const pn=cart.map(i=>`${i.name} x${i.quantity||1}`).join(', '), tp=cart.reduce((s,i)=>s+(i.price*(i.quantity||1)),0);
+            const r=await fetch(`${API_URL}/webhook`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'order',productName:pn,price:tp,city,postal,comment:document.getElementById('comment').value.trim(),userId:'website_user',full_name:name,user_email:email,telegram:document.getElementById('telegram').value.trim(),timestamp:new Date().toISOString()})});
+            if(r.ok){ const hasYT=false; alert(hasYT?'✅ Заказ оформлен! Сейчас вы будете перенаправлены на оплату.':'✅ Заказ оформлен! Токен Юкассы не добавлен. Мы свяжемся с вами.'); localStorage.removeItem('cart'); document.querySelector('.checkout-grid').style.display='none'; btn.style.display='none'; document.getElementById('successBox').style.display='block'; document.getElementById('orderNumber').textContent='#'+Date.now().toString().slice(-6); }
+            else { alert('❌ Ошибка при оформлении заказа.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
+        } catch(e) { alert('❌ Ошибка соединения.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
     });
-
     loadCart();
 </script>
-
 <script>
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    if (!user) {
-        alert('Для оформления заказа необходимо зарегистрироваться.');
-        window.location.href = 'https://pcggpro.ru/register.html';
-    }
+    const user = JSON.parse(localStorage.getItem('user')||'null');
+    if (!user) { alert('Для оформления заказа необходимо зарегистрироваться.'); window.location.href='https://pcggpro.ru/register.html'; }
 </script>
 
-<!-- Виджет поддержки -->
-<div id="supportWidget" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    <button id="supportToggle" style="width: 60px; height: 60px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 28px; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: transform 0.2s;" onclick="toggleSupport()">💬</button>
-    <div id="supportPanel" style="display: none; position: absolute; bottom: 70px; right: 0; width: 350px; max-width: 90vw; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; font-size: 16px;">💬 Поддержка</h3>
-            <button onclick="toggleSupport()" style="background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer;">✕</button>
-        </div>
-        <form id="supportForm">
-            <input type="text" id="supportName" placeholder="Ваше имя" required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
-            <input type="email" id="supportEmail" placeholder="Ваш email" required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text);">
-            <textarea id="supportMessage" placeholder="Опишите ваш вопрос..." required style="width: 100%; padding: 10px; margin-bottom: 10px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; color: var(--text); min-height: 80px; resize: vertical;"></textarea>
-            <button type="submit" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer;">📩 Отправить</button>
-        </form>
+<!-- Виджет чата поддержки -->
+<div id="supportWidget" style="position:fixed;bottom:20px;right:20px;z-index:9999;font-family:'Segoe UI',Arial,sans-serif;">
+    <button id="supportToggle" style="width:60px;height:60px;border-radius:50%;background:var(--primary,#4a9eff);color:white;border:none;font-size:28px;cursor:pointer;box-shadow:0 4px 15px rgba(0,0,0,0.3);transition:transform 0.2s;" onclick="toggleSupport()">💬</button>
+    <div id="supportPanel" style="display:none;position:absolute;bottom:70px;right:0;width:380px;max-width:90vw;background:#111827;border:1px solid #1e2a3a;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.4);overflow:hidden;">
+        <div style="background:#0d1321;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2a3a;"><h3 style="margin:0;font-size:16px;color:#e0e6f0;">💬 Поддержка</h3><button onclick="toggleSupport()" style="background:none;border:none;color:#8899aa;font-size:20px;cursor:pointer;">✕</button></div>
+        <div id="chatMessages" style="height:300px;overflow-y:auto;padding:15px;display:flex;flex-direction:column;gap:10px;"><div style="text-align:center;color:#8899aa;font-size:12px;padding:10px;">Здравствуйте! Опишите ваш вопрос.</div></div>
+        <div id="chatInputArea" style="padding:15px;border-top:1px solid #1e2a3a;display:none;gap:10px;"><input type="text" id="chatInput" placeholder="Введите сообщение..." style="flex:1;padding:12px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:10px;color:#e0e6f0;font-size:14px;"><button id="chatSendBtn" onclick="sendChatMessage()" style="padding:12px 18px;background:#4a9eff;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">📩</button></div>
+        <div id="chatContact" style="padding:15px;border-top:1px solid #1e2a3a;"><input type="text" id="chatName" placeholder="Ваше имя" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><input type="email" id="chatEmail" placeholder="Ваш email" style="width:100%;padding:10px;margin-bottom:8px;background:#0a0e1a;border:1px solid #1e2a3a;border-radius:8px;color:#e0e6f0;"><button onclick="startChat()" style="width:100%;padding:12px;background:#4a9eff;color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Начать чат</button></div>
     </div>
 </div>
-
 <script>
-    function toggleSupport() {
-        const panel = document.getElementById('supportPanel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-    }
-    document.getElementById('supportForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const name = document.getElementById('supportName').value.trim();
-        const email = document.getElementById('supportEmail').value.trim();
-        const message = document.getElementById('supportMessage').value.trim();
-        if (!name || !email || !message) return;
-        const btn = this.querySelector('button');
-        btn.textContent = '⏳ Отправка...';
-        btn.disabled = true;
-        try {
-            const response = await fetch('https://tg-shop-server.onrender.com/api/support', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, email, message, timestamp: new Date().toISOString() })
-            });
-            if (response.ok) {
-                this.reset();
-                alert('✅ Сообщение отправлено!');
-                toggleSupport();
-            } else {
-                alert('❌ Ошибка отправки.');
-            }
-        } catch (error) {
-            alert('❌ Ошибка соединения.');
-        } finally {
-            btn.textContent = '📩 Отправить';
-            btn.disabled = false;
-        }
-    });
+    const SUPPORT_API = 'https://tg-shop-server.onrender.com/api';
+    let chatSessionId = localStorage.getItem('chat_session_id') || null;
+    let chatPollingInterval = null;
+    const chatUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (chatUser) { document.getElementById('chatName').value = chatUser.full_name || ''; document.getElementById('chatEmail').value = chatUser.email || ''; }
+    function toggleSupport() { const p = document.getElementById('supportPanel'); p.style.display = p.style.display==='none'?'block':'none'; if (p.style.display==='block') { if (chatSessionId) { document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; startPolling(); } else if (chatUser) { startChat(); } else { document.getElementById('chatContact').style.display='block'; document.getElementById('chatInputArea').style.display='none'; } } else { stopPolling(); } }
+    async function startChat() { const n = document.getElementById('chatName').value.trim(); const e = document.getElementById('chatEmail').value.trim(); if (!n||!e) { alert('Заполните имя и email.'); return; } try { const r = await fetch(`${SUPPORT_API}/chat/start`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e})}); if(r.ok){ const d=await r.json(); chatSessionId=d.session_id; localStorage.setItem('chat_session_id',chatSessionId); document.getElementById('chatContact').style.display='none'; document.getElementById('chatInputArea').style.display='flex'; addMessage('system','Чат начат.'); startPolling(); } } catch(err) { alert('❌ Ошибка соединения.'); } }
+    async function sendChatMessage() { const i=document.getElementById('chatInput'); const m=i.value.trim(); if(!m||!chatSessionId) return; i.value=''; i.disabled=true; document.getElementById('chatSendBtn').disabled=true; addMessage('user',m); try{await fetch(`${SUPPORT_API}/chat/message`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:chatSessionId,message:m,sender:'user'})});}catch(e){} i.disabled=false; document.getElementById('chatSendBtn').disabled=false; i.focus(); }
+    function addMessage(t,text) { const c=document.getElementById('chatMessages'); const d=document.createElement('div'); d.style.cssText=`padding:10px 14px;border-radius:12px;max-width:80%;font-size:13px;word-wrap:break-word;${t==='user'?'background:#4a9eff;color:white;align-self:flex-end;margin-left:auto;':t==='admin'?'background:#00d4aa;color:#000;align-self:flex-start;':'background:#1e2a3a;color:#8899aa;align-self:center;font-size:12px;'}`; d.textContent=text; c.appendChild(d); c.scrollTop=c.scrollHeight; }
+    function startPolling() { stopPolling(); chatPollingInterval=setInterval(async()=>{if(!chatSessionId)return;try{const r=await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);const d=await r.json();if(d.messages){const c=document.getElementById('chatMessages');const ids=Array.from(c.querySelectorAll('div[data-msg-id]')).map(el=>el.dataset.msgId);d.messages.forEach(msg=>{if(!ids.includes(String(msg.id))&&msg.sender!=='user'){addMessage(msg.sender,msg.message);const last=c.lastElementChild;if(last)last.dataset.msgId=msg.id;}});}}catch(e){}},3000); }
+    function stopPolling() { if(chatPollingInterval){clearInterval(chatPollingInterval);chatPollingInterval=null;} }
+    document.getElementById('chatInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendChatMessage();});
 </script>
 
 </body>
