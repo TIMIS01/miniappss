@@ -84,11 +84,72 @@
     <div class="cart-items" id="cartItems"></div>
     
     <div class="summary" id="summary" style="display: none;">
-        <div class="summary-row"><span>Количество товаров:</span><span id="summaryCount">0 шт.</span></div>
-        <div class="summary-row"><span>Стоимость товаров:</span><span id="summaryPrice">0 ₽</span></div>
-        <div class="summary-total"><span>Итого:</span><span id="summaryTotal">0 ₽</span></div>
-        <a href="https://pcggpro.ru/checkout.html" class="btn-checkout">🚀 Оформить заказ</a>
+    <div class="summary-row">
+        <span>Количество товаров:</span>
+        <span id="summaryCount">0 шт.</span>
     </div>
+    <div class="summary-row">
+        <span>Стоимость товаров:</span>
+        <span id="summaryPrice">0 ₽</span>
+    </div>
+    <div class="summary-total">
+        <span>Итого:</span>
+        <span id="summaryTotal">0 ₽</span>
+    </div>
+
+    <!-- Спойлеры -->
+    <div style="margin-bottom: 20px; text-align: left;">
+        <details style="margin-bottom: 8px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                🔒 Почему безопасно покупать у нас?
+            </summary>
+            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                1. <strong>Официальный статус:</strong> Мы — зарегистрированный самозанятый, работаем по закону.<br>
+                2. <strong>Платёжный партнёр:</strong> Оплата через сертифицированный сервис <strong>Robokassa</strong> (PCI DSS). Данные карты не передаются нам.<br>
+                3. <strong>Юридическая защита:</strong> Отношения регулируются <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">публичной офертой</a>.<br>
+                4. <strong>Гарантия возврата:</strong> Полный возврат в течение 24 часов, если заказ ещё не передан в сборку.
+            </p>
+        </details>
+
+        <details style="margin-bottom: 8px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                📋 Как происходит оформление заказа?
+            </summary>
+            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                1. <strong>Выбор:</strong> Выбираете сборку в каталоге или согласовываете конфигурацию.<br>
+                2. <strong>Оформление:</strong> Заполняете данные доставки и нажимаете «Оформить и оплатить».<br>
+                3. <strong>Оплата:</strong> Перенаправляетесь на защищённую страницу Robokassa.<br>
+                4. <strong>Сборка:</strong> Мы закупаем комплектующие и собираем ваш ПК.<br>
+                5. <strong>Отслеживание:</strong> В личном кабинете виден статус заказа.
+            </p>
+        </details>
+
+        <details style="margin-bottom: 8px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                🚚 Каковы сроки доставки?
+            </summary>
+            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                <strong>Закупка:</strong> 1-7 рабочих дней | <strong>Сборка:</strong> 1-3 дня | <strong>Отправка:</strong> сразу после сборки.<br>
+                <strong>Итого:</strong> 5-10 рабочих дней с момента оплаты (зависит от региона).
+            </p>
+        </details>
+
+        <details style="margin-bottom: 8px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                💰 Почему такие низкие цены?
+            </summary>
+            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                Мы — новый магазин (2026 год). Наша цель — <strong>завоевать доверие</strong>, а не максимальная прибыль.<br>
+                • <strong>Минимальная наценка:</strong> 5-10% от стоимости комплектующих.<br>
+                • <strong>Прямые поставки:</strong> Без лишних посредников.<br>
+                • <strong>Б/У компоненты:</strong> В некоторых сборках используются проверенные детали с вторичного рынка.<br>
+                <i>Цены могут быть скорректированы в будущем.</i>
+            </p>
+        </details>
+    </div>
+
+    <a href="https://pcggpro.ru/checkout.html" class="btn-checkout">🚀 Оформить заказ</a>
+</div>
     
     <div class="empty-cart" id="emptyCart">
         <div>🛒</div><h2>Корзина пуста</h2>
