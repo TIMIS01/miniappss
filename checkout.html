@@ -92,11 +92,71 @@
             <div class="form-group"><label>Комментарий</label><input type="text" id="comment" placeholder="Позвонить перед доставкой"></div>
             <p style="font-size:12px;color:var(--text-muted);margin-top:5px;">Доставка осуществляется Почтой России за счёт покупателя.</p>
         </div>
-        <div class="card"><h2>💳 Способ оплаты</h2>
-            <p style="color:var(--text-muted);margin-bottom:15px;">После оформления заказа с вами свяжется менеджер.</p>
-            <p style="font-size:13px;color:var(--text-muted);">Нажимая «Оформить заказ», вы соглашаетесь с <a href="https://pcggpro.ru/offer.html" style="color:var(--primary);">условиями оферты</a>.</p>
-            <button class="btn-place-order" id="placeOrderBtn">📦 Оформить и оплатить</button>
-        </div>
+        <div class="card">
+    <h2>💳 Способ оплаты</h2>
+    <p style="color: var(--text-muted); margin-bottom: 15px;">
+        После оформления заказа с вами свяжется менеджер для уточнения деталей и выставления счёта. Оплата происходит через защищённый платёжный сервис <strong>Robokassa</strong>.
+    </p>
+
+    <!-- Спойлеры -->
+    <div style="margin-bottom: 20px;">
+        <details style="margin-bottom: 10px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border); outline: none;">
+                🔒 Почему безопасно покупать у нас?
+            </summary>
+            <p style="margin: 12px 0; padding: 12px; background: var(--bg-dark); border-radius: 8px; font-size: 14px; color: var(--text-muted);">
+                1. <strong>Официальный статус:</strong> Мы — официально зарегистрированный самозанятый, работаем по закону.<br>
+                2. <strong>Платёжный партнёр:</strong> Все платежи проходят через сертифицированный сервис <strong>Robokassa</strong> (соответствие стандарту PCI DSS). Данные вашей карты не передаются нам, а обрабатываются напрямую банком-эквайером.<br>
+                3. <strong>Юридическая защита:</strong> Все отношения регулируются <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">публичной офертой</a>, имеющей полную юридическую силу.<br>
+                4. <strong>Гарантия возврата:</strong> Если в течение 24 часов с момента оплаты заказ ещё не передан в сборку, вы можете запросить полный возврат средств.
+            </p>
+        </details>
+
+        <details style="margin-bottom: 10px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border); outline: none;">
+                📋 Как происходит оформление заказа?
+            </summary>
+            <p style="margin: 12px 0; padding: 12px; background: var(--bg-dark); border-radius: 8px; font-size: 14px; color: var(--text-muted);">
+                1. <strong>Выбор конфигурации:</strong> Вы выбираете интересующую сборку в каталоге или согласовываете конфигурацию с нами через чат-поддержку.<br>
+                2. <strong>Оформление:</strong> Заполняете данные для доставки на этой странице и нажимаете «Оформить и оплатить».<br>
+                3. <strong>Оплата:</strong> Перенаправляетесь на защищённую страницу <strong>Robokassa</strong> для безопасной оплаты картой или через СБП.<br>
+                4. <strong>Подтверждение:</strong> Мы получаем уведомление об оплате и сразу приступаем к закупке и сборке вашего ПК.<br>
+                5. <strong>Отслеживание:</strong> В личном кабинете (по вашему email) вы сможете видеть актуальный статус заказа.
+            </p>
+        </details>
+
+        <details style="margin-bottom: 10px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border); outline: none;">
+                🚚 Каковы сроки доставки?
+            </summary>
+            <p style="margin: 12px 0; padding: 12px; background: var(--bg-dark); border-radius: 8px; font-size: 14px; color: var(--text-muted);">
+                1. <strong>Закупка комплектующих:</strong> 1-7 рабочих дней (зависит от наличия на складах поставщиков).<br>
+                2. <strong>Сборка и тестирование:</strong> 1-3 рабочих дня.<br>
+                3. <strong>Отправка:</strong> Сразу после сборки передаём заказ в выбранную вами транспортную компанию. <br>
+                <strong>Итого:</strong> В большинстве случаев вы получаете заказ через <strong>5-10 рабочих дней</strong> с момента оплаты. Точные сроки доставки зависят от региона и работы транспортной компании.
+            </p>
+        </details>
+
+        <details style="margin-bottom: 10px; cursor: pointer;">
+            <summary style="color: var(--primary); font-weight: 600; padding: 10px 0; border-bottom: 1px solid var(--border); outline: none;">
+                💰 Почему такие низкие цены?
+            </summary>
+            <p style="margin: 12px 0; padding: 12px; background: var(--bg-dark); border-radius: 8px; font-size: 14px; color: var(--text-muted);">
+                <strong>Честный ответ:</strong> Мы — новый магазин, открывшийся в 2026 году. Сейчас наша главная цель — не максимальная прибыль, а <strong>завоевание доверия и создание репутации</strong>. Поэтому:<br>
+                1. <strong>Минимальная наценка:</strong> Мы делаем наценку всего 5-10% от стоимости комплектующих, чтобы привлечь первых покупателей.<br>
+                2. <strong>Прямые поставки:</strong> Работаем напрямую с дистрибьюторами, избегая лишних посредников.<br>
+                3. <strong>Б/У комплектующие:</strong> В некоторых сборках используются проверенные компоненты с вторичного рынка, что позволяет снизить итоговую стоимость без ущерба для качества.<br><br>
+                <i>Со временем, когда мы заслужим ваше доверие и наработаем базу постоянных клиентов, цены могут быть скорректированы. Но для первых покупателей мы готовы работать с минимальной выгодой.</i>
+            </p>
+        </details>
+    </div>
+
+    <p style="font-size: 13px; color: var(--text-muted);">
+        Нажимая «Оформить заказ», вы соглашаетесь с 
+        <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">условиями публичной оферты</a>.
+    </p>
+    <button class="btn-place-order" id="placeOrderBtn">📦 Оформить и оплатить</button>
+</div>
     </div>
     <div class="success-box" id="successBox"><h2>✅ Заказ успешно оформлен!</h2><p>Номер заказа: <strong id="orderNumber">—</strong></p><p>В ближайшее время с вами свяжется менеджер.</p><p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p></div>
 </div>
