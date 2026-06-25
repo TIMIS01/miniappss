@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конфигуратор ПК | PCGGPRO</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        :root {
+            --primary: #4a9eff;
+            --primary-dark: #3a7fd4;
+            --primary-glow: rgba(74, 158, 255, 0.3);
+            --secondary: #00d4aa;
+            --bg-dark: #0a0e1a;
+            --bg-card: #111827;
+            --bg-header: #00276a;
+            --text: #e0e6f0;
+            --text-muted: #8899aa;
+            --border: #1e2a3a;
+            --shadow: 0 4px 20px rgba(0,0,0,0.4);
+            --radius: 16px;
+            --danger: #e74c3c;
+            --success: #2ecc71;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', 'Inter', Arial, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header { background: var(--bg-header); box-shadow: 0 2px 15px rgba(0,0,0,0.3); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .header-inner { max-width: 1200px; margin: 0 auto; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .logo img { height: 40px; vertical-align: middle; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary); text-decoration: none; white-space: nowrap; }
+        .nav { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .nav a { text-decoration: none; color: var(--text-muted); font-weight: 500; transition: color 0.3s; font-size: 14px; white-space: nowrap; }
+        .nav a:hover { color: var(--primary); }
+        .nav .active { color: var(--primary); }
+        #cart-count { background: var(--secondary); color: #000; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 700; }
+
+        .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .page-subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .configurator-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+        }
+
+        .components-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .component-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        .component-section:hover {
+            border-color: var(--primary);
+        }
+
+        .component-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            cursor: pointer;
+        }
+        .component-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .component-header .badge-selected {
+            background: var(--success);
+            color: #000;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .component-header .badge-empty {
+            background: var(--danger);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .component-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        .component-options::-webkit-scrollbar {
+            width: 4px;
+        }
+        .component-options::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+            border-radius: 4px;
+        }
+        .component-options::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+
+        .option-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-item:hover {
+            border-color: rgba(74, 158, 255, 0.3);
+        }
+        .option-item.selected {
+            border-color: var(--primary);
+            background: rgba(74, 158, 255, 0.1);
+        }
+        .option-item .name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .option-item .price {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 14px;
+        }
+        .option-item .compat-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            background: rgba(46, 204, 113, 0.15);
+            color: var(--success);
+            margin-left: 8px;
+        }
+        .option-item.incompatible {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .summary-area {
+            position: sticky;
+            top: 100px;
+            align-self: start;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 25px;
+        }
+        .summary-card h3 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+        .summary-item .label { color: var(--text-muted); }
+        .summary-item .value { font-weight: 500; }
+        .summary-item .empty-value { color: var(--text-muted); font-style: italic; }
+
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px 0;
+            margin-top: 10px;
+            border-top: 2px solid var(--primary);
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--secondary);
+        }
+
+        .btn-add-cart {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        .btn-add-cart:hover {
+            background: var(--primary-dark);
+            box-shadow: 0 0 25px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+        .btn-add-cart:disabled {
+            background: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--secondary);
+            color: #000;
+            padding: 14px 28px;
+            border-radius: 25px;
+            font-weight: 600;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .toast.show { opacity: 1; }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 992px) {
+            .configurator-grid {
+                grid-template-columns: 1fr;
+            }
+            .summary-area {
+                position: static;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-inner { flex-direction: column; align-items: center; gap: 8px; }
+            .logo img { height: 30px; }
+            .nav { gap: 10px; width: 100%; justify-content: center; }
+            .nav a { font-size: 13px; padding: 4px 8px; }
+            .page-title { font-size: 24px; }
+            .component-section { padding: 15px; }
+            .option-item { flex-wrap: wrap; gap: 5px; }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-inner">
+        <a href="https://pcggpro.ru/" class="logo">
+            <img src="logo.png" alt="PCGGPRO" style="height:40px;vertical-align:middle;">
+            <span style="vertical-align:middle;position:relative;top:2px;font-size:22px;font-weight:800;">
+                <span style="color:#4a9eff;">PC</span><span style="color:#ffffff;">GG</span><span style="color:#4a9eff;">PRO</span>
+            </span>
+        </a>
+        <nav class="nav">
+            <a href="https://pcggpro.ru/">Главная</a>
+            <a href="https://pcggpro.ru/#catalog">Каталог</a>
+            <a href="https://pcggpro.ru/configurator.html" class="active">⚙️ Конфигуратор</a>
+            <a href="https://pcggpro.ru/offer.html">Оферта</a>
+            <a href="https://pcggpro.ru/cart.html">🛒 Заказ <span id="cart-count">0</span></a>
+            <a href="https://pcggpro.ru/profile.html">👤 Профиль</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <h1 class="page-title">⚙️ Конфигуратор ПК</h1>
+    <p class="page-subtitle">Соберите свою идеальную конфигурацию — выбирайте комплектующие с проверкой совместимости</p>
+
+    <div class="configurator-grid">
+        <div class="components-area" id="componentsArea">
+            <!-- Видеокарта -->
+            <div class="component-section" data-component="gpu">
+                <div class="component-header" onclick="toggleSection(this)">
+                    <h3>🎮 Видеокарта <span class="badge-empty" id="gpuBadge">не выбрана</span></h3>
+                    <span>▼</span>
+                </div>
+                <div class="component-options" id="gpuOptions"><div class="loading-spinner">Загрузка...</div></div>
+            </div>
+
+            <!-- Процессор -->
+            <div class="component-section" data-component="cpu">
+                <div class="component-header" onclick="toggleSection(this)">
+                    <h3>🖥️ Процессор <span class="badge-empty" id="cpuBadge">не выбран</span></h3>
+                    <span>▼</span>
+                </div>
+                <div class="component-options" id="cpuOptions"><div class="loading-spinner">Загрузка...</div></div>
+            </div>
+
+            <!-- Материнская плата -->
+            <div class="component-section" data-component="motherboard">
+                <div class="component-header" onclick="toggleSection(this)">
+                    <h3>🔌 Материнская плата <span class="badge-empty" id="motherboardBadge">не выбрана</span></h3>
+                    <span>▼</span>
+                </div>
+                <div class="component-options" id="motherboardOptions"><div class="loading-spinner">Загрузка...</div></div>
+            </div>
+
+            <!-- Оперативная память -->
+            <div class="component-section" data-component="ram">
+                <div class="component-header" onclick="toggleSection(this)">
+                    <h3>🧠 Оперативная память <span class="badge-empty" id="ramBadge">не выбрана</span></h3>
+                    <span>▼</span>
+                </div>
+                <div class="component-options" id="ramOptions"><div class="loading-spinner">Загрузка...</div></div>
+            </div>
+        </div>
+
+        <div class="summary-area">
+            <div class="summary-card">
+                <h3>📊 Итоговая сборка</h3>
+                <div id="summaryItems">
+                    <div class="summary-item"><span class="label">Видеокарта</span><span class="empty-value">не выбрана</span></div>
+                    <div class="summary-item"><span class="label">Процессор</span><span class="empty-value">не выбран</span></div>
+                    <div class="summary-item"><span class="label">Материнская плата</span><span class="empty-value">не выбрана</span></div>
+                    <div class="summary-item"><span class="label">Оперативная память</span><span class="empty-value">не выбрана</span></div>
+                </div>
+                <div class="summary-total">
+                    <span>Итого:</span>
+                    <span id="totalPrice">0 ₽</span>
+                </div>
+                <button class="btn-add-cart" id="addToCartBtn" disabled onclick="addToCart()">🛒 Добавить в заказ</button>
+                <div id="compatWarnings" style="margin-top:10px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">✅ Конфигурация добавлена в заказ!</div>
+
+<script>
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+
+    // ============================================================
+    // 1. СОСТОЯНИЕ КОНФИГУРАТОРА
+    // ============================================================
+    const config = {
+        gpu: null,
+        cpu: null,
+        motherboard: null,
+        ram: null
+    };
+
+    let allComponents = {};
+    let compatibilityLinks = {};
+
+    // ============================================================
+    // 2. ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ
+    // ============================================================
+    async function loadComponents() {
+        const types = ['cpu', 'gpu', 'motherboard', 'ram'];
+        for (const type of types) {
+            try {
+                const response = await fetch(`${API_URL}/components?type=${type}`);
+                const data = await response.json();
+                allComponents[type] = data.components || [];
+            } catch (error) {
+                console.error(`Ошибка загрузки ${type}:`, error);
+                allComponents[type] = [];
+            }
+        }
+    }
+
+    async function loadCompatibility() {
+        try {
+            const response = await fetch(`${API_URL}/compatibility`);
+            const data = await response.json();
+            // Группируем связи по типу компонента
+            const links = data.links || [];
+            links.forEach(link => {
+                const key = `${link.component_type}_${link.component_id}`;
+                if (!compatibilityLinks[key]) {
+                    compatibilityLinks[key] = [];
+                }
+                compatibilityLinks[key].push(link);
+            });
+        } catch (error) {
+            console.error('Ошибка загрузки связей:', error);
+        }
+    }
+
+    // ============================================================
+    // 3. ПОЛУЧЕНИЕ СОВМЕСТИМЫХ КОМПОНЕНТОВ
+    // ============================================================
+    function getCompatibleComponents(type, selectedComponent) {
+        if (!selectedComponent) return allComponents[type] || [];
+
+        const compatKey = `${type}_${selectedComponent.id}`;
+        const links = compatibilityLinks[compatKey] || [];
+
+        // Находим ID компонентов, с которыми совместим выбранный компонент
+        const compatibleIds = links.map(l => l.compatible_id);
+
+        return (allComponents[type] || []).filter(comp => {
+            return compatibleIds.includes(comp.id);
+        });
+    }
+
+    // ============================================================
+    // 4. ОТОБРАЖЕНИЕ ОПЦИЙ С УЧЁТОМ СОВМЕСТИМОСТИ
+    // ============================================================
+    function renderOptions(componentType) {
+        const container = document.getElementById(`${componentType}Options`);
+        const selected = config[componentType];
+
+        // Определяем, какой компонент влияет на совместимость
+        let compatSource = null;
+        if (componentType === 'motherboard') {
+            compatSource = config.cpu; // Материнская плата зависит от процессора
+        } else if (componentType === 'ram') {
+            compatSource = config.cpu || config.motherboard; // ОЗУ зависит от CPU или материнки
+        } else if (componentType === 'gpu') {
+            // Видеокарта не имеет жёсткой совместимости, но можно добавить позже
+            compatSource = null;
+        } else if (componentType === 'cpu') {
+            // Процессор ни от кого не зависит при выборе
+            compatSource = null;
+        }
+
+        // Получаем список компонентов с учётом совместимости
+        let options = allComponents[componentType] || [];
+
+        // Если есть источник совместимости — фильтруем
+        if (compatSource) {
+            const compatKey = `${compatSource.type}_${compatSource.id}`;
+            const links = compatibilityLinks[compatKey] || [];
+            const compatibleIds = links.map(l => l.compatible_id);
+            options = options.filter(comp => compatibleIds.includes(comp.id));
+        }
+
+        if (options.length === 0) {
+            container.innerHTML = `<div class="loading-spinner">Нет доступных компонентов</div>`;
+            return;
+        }
+
+        container.innerHTML = options.map(opt => {
+            const isSelected = selected && selected.id === opt.id;
+            return `
+                <div class="option-item ${isSelected ? 'selected' : ''}" onclick="selectOption('${componentType}', '${opt.id}')">
+                    <span class="name">${opt.name}</span>
+                    <span>
+                        <span class="price">${opt.price.toLocaleString()} ₽</span>
+                        ${opt.compat ? `<span class="compat-badge">${opt.compat}</span>` : ''}
+                    </span>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function renderAllOptions() {
+        renderOptions('gpu');
+        renderOptions('cpu');
+        renderOptions('motherboard');
+        renderOptions('ram');
+    }
+
+    // ============================================================
+    // 5. ОБНОВЛЕНИЕ БЭЙДЖЕЙ И ИТОГА
+    // ============================================================
+    function updateBadges() {
+        const types = ['gpu', 'cpu', 'motherboard', 'ram'];
+        types.forEach(type => {
+            const badge = document.getElementById(`${type}Badge`);
+            const selected = config[type];
+            if (selected) {
+                badge.textContent = selected.name;
+                badge.className = 'badge-selected';
+            } else {
+                const labels = { gpu: 'не выбрана', cpu: 'не выбран', motherboard: 'не выбрана', ram: 'не выбрана' };
+                badge.textContent = labels[type] || 'не выбрано';
+                badge.className = 'badge-empty';
+            }
+        });
+    }
+
+    function updateSummary() {
+        const container = document.getElementById('summaryItems');
+        const types = ['gpu', 'cpu', 'motherboard', 'ram'];
+        const labels = {
+            gpu: 'Видеокарта',
+            cpu: 'Процессор',
+            motherboard: 'Материнская плата',
+            ram: 'Оперативная память'
+        };
+
+        container.innerHTML = types.map(type => {
+            const selected = config[type];
+            if (selected) {
+                return `<div class="summary-item"><span class="label">${labels[type]}</span><span class="value">${selected.name} (${selected.price.toLocaleString()} ₽)</span></div>`;
+            } else {
+                return `<div class="summary-item"><span class="label">${labels[type]}</span><span class="empty-value">не выбрано</span></div>`;
+            }
+        }).join('');
+
+        let total = 0;
+        types.forEach(type => {
+            if (config[type]) total += config[type].price;
+        });
+        document.getElementById('totalPrice').textContent = total > 0 ? `${total.toLocaleString()} ₽` : '0 ₽';
+
+        // Проверка совместимости
+        const allSelected = types.every(type => config[type] !== null);
+        const btn = document.getElementById('addToCartBtn');
+        const warnings = document.getElementById('compatWarnings');
+
+        if (allSelected) {
+            btn.disabled = false;
+            btn.textContent = '🛒 Добавить в заказ';
+            warnings.innerHTML = '';
+        } else {
+            btn.disabled = true;
+            btn.textContent = '⚠️ Выберите все комплектующие';
+            warnings.innerHTML = '';
+        }
+    }
+
+    // ============================================================
+    // 6. ВЫБОР КОМПОНЕНТА
+    // ============================================================
+    function selectOption(type, id) {
+        const options = allComponents[type] || [];
+        const option = options.find(o => o.id === id);
+        if (!option) return;
+
+        if (config[type] && config[type].id === id) {
+            config[type] = null;
+        } else {
+            config[type] = option;
+        }
+
+        renderAllOptions();
+        updateBadges();
+        updateSummary();
+    }
+
+    // ============================================================
+    // 7. ДОБАВЛЕНИЕ В КОРЗИНУ
+    // ============================================================
+    function addToCart() {
+        const types = ['gpu', 'cpu', 'motherboard', 'ram'];
+        const allSelected = types.every(type => config[type] !== null);
+
+        if (!allSelected) {
+            alert('⚠️ Выберите все комплектующие!');
+            return;
+        }
+
+        const cpuName = config.cpu.name.replace(/^[^\s]+\s/, '');
+        const gpuName = config.gpu.name.replace(/^[^\s]+\s/, '');
+        const total = types.reduce((sum, t) => sum + config[t].price, 0);
+        const buildName = `Сборка: ${cpuName} + ${gpuName}`;
+
+        let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        cart.push({
+            id: `build_${Date.now()}`,
+            name: buildName,
+            price: total,
+            quantity: 1,
+            isCustom: true,
+            components: {
+                cpu: config.cpu.name,
+                gpu: config.gpu.name,
+                motherboard: config.motherboard.name,
+                ram: config.ram.name
+            }
+        });
+        localStorage.setItem('cart', JSON.stringify(cart));
+
+        document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + (i.quantity || 1), 0);
+
+        const toast = document.getElementById('toast');
+        toast.textContent = `✅ Конфигурация добавлена в заказ!`;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+
+        // Сбрасываем выбор
+        types.forEach(t => config[t] = null);
+        renderAllOptions();
+        updateBadges();
+        updateSummary();
+    }
+
+    // ============================================================
+    // 8. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // ============================================================
+    function toggleSection(header) {
+        const options = header.nextElementSibling;
+        if (options) {
+            options.style.display = options.style.display === 'none' ? 'flex' : 'none';
+        }
+    }
+
+    // ============================================================
+    // 9. ИНИЦИАЛИЗАЦИЯ
+    // ============================================================
+    async function init() {
+        await loadComponents();
+        await loadCompatibility();
+
+        // Заполняем опции
+        renderAllOptions();
+        updateBadges();
+        updateSummary();
+
+        // Обновляем счётчик корзины
+        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + (i.quantity || 1), 0);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</body>
+</html>
