@@ -21,6 +21,7 @@
             --radius: 16px;
             --danger: #e74c3c;
             --success: #2ecc71;
+            --warning: #f39c12;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -79,6 +80,10 @@
         .component-section:hover {
             border-color: var(--primary);
         }
+        .component-section.has-warning {
+            border-color: var(--warning);
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.2);
+        }
 
         .component-header {
             display: flex;
@@ -105,6 +110,14 @@
         .component-header .badge-empty {
             background: var(--danger);
             color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .component-header .badge-warning {
+            background: var(--warning);
+            color: #000;
             padding: 2px 10px;
             border-radius: 12px;
             font-size: 11px;
@@ -167,9 +180,10 @@
             margin-left: 8px;
         }
         .option-item.incompatible {
-            opacity: 0.4;
+            opacity: 0.3;
             cursor: not-allowed;
             pointer-events: none;
+            filter: grayscale(1);
         }
 
         .summary-area {
@@ -201,6 +215,17 @@
         .summary-item .label { color: var(--text-muted); }
         .summary-item .value { font-weight: 500; }
         .summary-item .empty-value { color: var(--text-muted); font-style: italic; }
+
+        .summary-service {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+        .summary-service .label { color: var(--text-muted); font-weight: 400; }
 
         .summary-total {
             display: flex;
@@ -253,10 +278,31 @@
             transition: opacity 0.3s;
         }
         .toast.show { opacity: 1; }
+        .toast.warning { background: var(--warning); }
 
         .loading-spinner {
             text-align: center;
             padding: 20px;
+            color: var(--text-muted);
+        }
+
+        .compat-warning {
+            background: rgba(243, 156, 18, 0.15);
+            border-left: 3px solid var(--warning);
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 10px 0;
+            font-size: 13px;
+            color: var(--warning);
+        }
+
+        .service-info {
+            background: rgba(0, 212, 170, 0.08);
+            border-left: 3px solid var(--secondary);
+            padding: 10px 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 10px 0;
+            font-size: 13px;
             color: var(--text-muted);
         }
 
@@ -342,6 +388,9 @@
                 </div>
                 <div class="component-options" id="ramOptions"><div class="loading-spinner">Загрузка...</div></div>
             </div>
+
+            <!-- Блок предупреждений -->
+            <div id="warningsContainer"></div>
         </div>
 
         <div class="summary-area">
@@ -353,6 +402,16 @@
                     <div class="summary-item"><span class="label">Материнская плата</span><span class="empty-value">не выбрана</span></div>
                     <div class="summary-item"><span class="label">Оперативная память</span><span class="empty-value">не выбрана</span></div>
                 </div>
+
+                <!-- Услуга сборки -->
+                <div class="summary-service" id="serviceRow">
+                    <span class="label">🔧 Услуга подбора и сборки</span>
+                    <span class="value" id="servicePrice">7 500 ₽</span>
+                </div>
+                <div class="service-info">
+                    💡 Стоимость услуги включает: подбор совместимых комплектующих, профессиональную сборку, установку и настройку ПО, тестирование и стресс-тест
+                </div>
+
                 <div class="summary-total">
                     <span>Итого:</span>
                     <span id="totalPrice">0 ₽</span>
@@ -370,7 +429,12 @@
     const API_URL = 'https://tg-shop-server.onrender.com/api';
 
     // ============================================================
-    // 1. СОСТОЯНИЕ КОНФИГУРАТОРА
+    // 1. НАСТРОЙКИ
+    // ============================================================
+    const SERVICE_PRICE = 7500; // Стоимость услуги подбора и сборки
+
+    // ============================================================
+    // 2. СОСТОЯНИЕ КОНФИГУРАТОРА
     // ============================================================
     const config = {
         gpu: null,
@@ -382,8 +446,14 @@
     let allComponents = {};
     let compatibilityLinks = {};
 
+    // Зависимости между компонентами (что от чего зависит)
+    const dependencies = {
+        motherboard: ['cpu'],      // Материнская плата зависит от процессора
+        ram: ['cpu', 'motherboard'] // ОЗУ зависит от CPU и материнки
+    };
+
     // ============================================================
-    // 2. ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ
+    // 3. ЗАГРУЗКА ДАННЫХ ИЗ БАЗЫ
     // ============================================================
     async function loadComponents() {
         const types = ['cpu', 'gpu', 'motherboard', 'ram'];
@@ -403,7 +473,6 @@
         try {
             const response = await fetch(`${API_URL}/compatibility`);
             const data = await response.json();
-            // Группируем связи по типу компонента
             const links = data.links || [];
             links.forEach(link => {
                 const key = `${link.component_type}_${link.component_id}`;
@@ -418,7 +487,7 @@
     }
 
     // ============================================================
-    // 3. ПОЛУЧЕНИЕ СОВМЕСТИМЫХ КОМПОНЕНТОВ
+    // 4. ПОЛУЧЕНИЕ СОВМЕСТИМЫХ КОМПОНЕНТОВ
     // ============================================================
     function getCompatibleComponents(type, selectedComponent) {
         if (!selectedComponent) return allComponents[type] || [];
@@ -426,7 +495,6 @@
         const compatKey = `${type}_${selectedComponent.id}`;
         const links = compatibilityLinks[compatKey] || [];
 
-        // Находим ID компонентов, с которыми совместим выбранный компонент
         const compatibleIds = links.map(l => l.compatible_id);
 
         return (allComponents[type] || []).filter(comp => {
@@ -435,35 +503,103 @@
     }
 
     // ============================================================
-    // 4. ОТОБРАЖЕНИЕ ОПЦИЙ С УЧЁТОМ СОВМЕСТИМОСТИ
+    // 5. ПРОВЕРКА СОВМЕСТИМОСТИ И СБРОС НЕСОВМЕСТИМЫХ
+    // ============================================================
+    function checkAndResetIncompatible() {
+        const types = ['gpu', 'cpu', 'motherboard', 'ram'];
+        let resetMessages = [];
+
+        for (const [dependent, dependOns] of Object.entries(dependencies)) {
+            const dependentValue = config[dependent];
+            if (!dependentValue) continue;
+
+            for (const dependOn of dependOns) {
+                const sourceValue = config[dependOn];
+                if (!sourceValue) continue;
+
+                const compatKey = `${dependOn}_${sourceValue.id}`;
+                const links = compatibilityLinks[compatKey] || [];
+                const compatibleIds = links.map(l => l.compatible_id);
+
+                if (!compatibleIds.includes(dependentValue.id)) {
+                    const typeLabels = {
+                        cpu: 'Процессор',
+                        gpu: 'Видеокарта',
+                        motherboard: 'Материнская плата',
+                        ram: 'Оперативная память'
+                    };
+                    resetMessages.push(
+                        `⚠️ ${typeLabels[dependent] || dependent} был сброшен, так как не совместим с выбранным ${typeLabels[dependOn] || dependOn}`
+                    );
+                    config[dependent] = null;
+                }
+            }
+        }
+
+        for (const [dependent, dependOns] of Object.entries(dependencies)) {
+            const dependentValue = config[dependent];
+            if (!dependentValue) continue;
+
+            for (const dependOn of dependOns) {
+                const sourceValue = config[dependOn];
+                if (!sourceValue) continue;
+
+                const compatKey = `${dependOn}_${sourceValue.id}`;
+                const links = compatibilityLinks[compatKey] || [];
+                const compatibleIds = links.map(l => l.compatible_id);
+
+                if (!compatibleIds.includes(dependentValue.id)) {
+                    const typeLabels = {
+                        cpu: 'Процессор',
+                        gpu: 'Видеокарта',
+                        motherboard: 'Материнская плата',
+                        ram: 'Оперативная память'
+                    };
+                    config[dependent] = null;
+                }
+            }
+        }
+
+        return resetMessages;
+    }
+
+    // ============================================================
+    // 6. ОТОБРАЖЕНИЕ ОПЦИЙ С УЧЁТОМ СОВМЕСТИМОСТИ
     // ============================================================
     function renderOptions(componentType) {
         const container = document.getElementById(`${componentType}Options`);
         const selected = config[componentType];
 
-        // Определяем, какой компонент влияет на совместимость
-        let compatSource = null;
+        let compatSources = [];
         if (componentType === 'motherboard') {
-            compatSource = config.cpu; // Материнская плата зависит от процессора
+            compatSources = config.cpu ? [config.cpu] : [];
         } else if (componentType === 'ram') {
-            compatSource = config.cpu || config.motherboard; // ОЗУ зависит от CPU или материнки
+            compatSources = [];
+            if (config.cpu) compatSources.push(config.cpu);
+            if (config.motherboard) compatSources.push(config.motherboard);
         } else if (componentType === 'gpu') {
-            // Видеокарта не имеет жёсткой совместимости, но можно добавить позже
-            compatSource = null;
+            compatSources = [];
         } else if (componentType === 'cpu') {
-            // Процессор ни от кого не зависит при выборе
-            compatSource = null;
+            compatSources = [];
         }
 
-        // Получаем список компонентов с учётом совместимости
         let options = allComponents[componentType] || [];
 
-        // Если есть источник совместимости — фильтруем
-        if (compatSource) {
-            const compatKey = `${compatSource.type}_${compatSource.id}`;
-            const links = compatibilityLinks[compatKey] || [];
-            const compatibleIds = links.map(l => l.compatible_id);
-            options = options.filter(comp => compatibleIds.includes(comp.id));
+        if (compatSources.length > 0) {
+            let compatibleIds = null;
+            for (const source of compatSources) {
+                const compatKey = `${source.type}_${source.id}`;
+                const links = compatibilityLinks[compatKey] || [];
+                const ids = links.map(l => l.compatible_id);
+                if (compatibleIds === null) {
+                    compatibleIds = new Set(ids);
+                } else {
+                    compatibleIds = new Set([...compatibleIds].filter(id => ids.includes(id)));
+                }
+            }
+            if (compatibleIds && compatibleIds.size > 0) {
+                options = options.filter(comp => compatibleIds.has(comp.id));
+            }
         }
 
         if (options.length === 0) {
@@ -473,8 +609,26 @@
 
         container.innerHTML = options.map(opt => {
             const isSelected = selected && selected.id === opt.id;
+            
+            let isCompatible = true;
+            if (compatSources.length > 0) {
+                for (const source of compatSources) {
+                    const compatKey = `${source.type}_${source.id}`;
+                    const links = compatibilityLinks[compatKey] || [];
+                    const compatibleIds = links.map(l => l.compatible_id);
+                    if (!compatibleIds.includes(opt.id)) {
+                        isCompatible = false;
+                        break;
+                    }
+                }
+            }
+
+            const compatClass = !isCompatible ? 'incompatible' : '';
+
             return `
-                <div class="option-item ${isSelected ? 'selected' : ''}" onclick="selectOption('${componentType}', '${opt.id}')">
+                <div class="option-item ${isSelected ? 'selected' : ''} ${compatClass}" 
+                     onclick="${isCompatible ? `selectOption('${componentType}', '${opt.id}')` : ''}"
+                     title="${!isCompatible ? 'Этот компонент не совместим с выбранными' : ''}">
                     <span class="name">${opt.name}</span>
                     <span>
                         <span class="price">${opt.price.toLocaleString()} ₽</span>
@@ -493,7 +647,7 @@
     }
 
     // ============================================================
-    // 5. ОБНОВЛЕНИЕ БЭЙДЖЕЙ И ИТОГА
+    // 7. ОБНОВЛЕНИЕ БЭЙДЖЕЙ И ИТОГА
     // ============================================================
     function updateBadges() {
         const types = ['gpu', 'cpu', 'motherboard', 'ram'];
@@ -530,13 +684,21 @@
             }
         }).join('');
 
-        let total = 0;
+        // Рассчитываем итог
+        let totalComponents = 0;
         types.forEach(type => {
-            if (config[type]) total += config[type].price;
+            if (config[type]) totalComponents += config[type].price;
         });
-        document.getElementById('totalPrice').textContent = total > 0 ? `${total.toLocaleString()} ₽` : '0 ₽';
 
-        // Проверка совместимости
+        // Стоимость услуги сборки
+        const servicePrice = SERVICE_PRICE;
+        document.getElementById('servicePrice').textContent = `${servicePrice.toLocaleString()} ₽`;
+
+        // Итоговая сумма = комплектующие + услуга
+        const totalWithService = totalComponents + servicePrice;
+        document.getElementById('totalPrice').textContent = totalWithService > 0 ? `${totalWithService.toLocaleString()} ₽` : '0 ₽';
+
+        // Проверяем, всё ли выбрано
         const allSelected = types.every(type => config[type] !== null);
         const btn = document.getElementById('addToCartBtn');
         const warnings = document.getElementById('compatWarnings');
@@ -547,18 +709,63 @@
             warnings.innerHTML = '';
         } else {
             btn.disabled = true;
-            btn.textContent = '⚠️ Выберите все комплектующие';
+            const missing = types.filter(type => !config[type]);
+            const labels = {
+                gpu: 'Видеокарту',
+                cpu: 'Процессор',
+                motherboard: 'Материнскую плату',
+                ram: 'Оперативную память'
+            };
+            btn.textContent = `⚠️ Выберите: ${missing.map(t => labels[t]).join(', ')}`;
             warnings.innerHTML = '';
         }
     }
 
     // ============================================================
-    // 6. ВЫБОР КОМПОНЕНТА
+    // 8. ВЫБОР КОМПОНЕНТА (С ПРОВЕРКОЙ И СБРОСОМ)
     // ============================================================
     function selectOption(type, id) {
         const options = allComponents[type] || [];
         const option = options.find(o => o.id === id);
         if (!option) return;
+
+        let isCompatible = true;
+        let incompatReason = '';
+
+        if (type === 'motherboard' && config.cpu) {
+            const compatKey = `cpu_${config.cpu.id}`;
+            const links = compatibilityLinks[compatKey] || [];
+            const compatibleIds = links.map(l => l.compatible_id);
+            if (!compatibleIds.includes(option.id)) {
+                isCompatible = false;
+                incompatReason = `не совместим с процессором ${config.cpu.name}`;
+            }
+        }
+
+        if (type === 'ram' && config.cpu) {
+            const compatKey = `cpu_${config.cpu.id}`;
+            const links = compatibilityLinks[compatKey] || [];
+            const compatibleIds = links.map(l => l.compatible_id);
+            if (!compatibleIds.includes(option.id)) {
+                isCompatible = false;
+                incompatReason = `не совместима с процессором ${config.cpu.name}`;
+            }
+        }
+
+        if (type === 'ram' && config.motherboard) {
+            const compatKey = `motherboard_${config.motherboard.id}`;
+            const links = compatibilityLinks[compatKey] || [];
+            const compatibleIds = links.map(l => l.compatible_id);
+            if (!compatibleIds.includes(option.id)) {
+                isCompatible = false;
+                incompatReason = `не совместима с материнской платой ${config.motherboard.name}`;
+            }
+        }
+
+        if (!isCompatible) {
+            showToast(`⚠️ ${option.name} ${incompatReason}`, 'warning');
+            return;
+        }
 
         if (config[type] && config[type].id === id) {
             config[type] = null;
@@ -566,33 +773,40 @@
             config[type] = option;
         }
 
+        const resetMessages = checkAndResetIncompatible();
+
+        if (resetMessages.length > 0) {
+            resetMessages.forEach(msg => showToast(msg, 'warning'));
+        }
+
         renderAllOptions();
         updateBadges();
         updateSummary();
     }
 
     // ============================================================
-    // 7. ДОБАВЛЕНИЕ В КОРЗИНУ
+    // 9. ДОБАВЛЕНИЕ В КОРЗИНУ
     // ============================================================
     function addToCart() {
         const types = ['gpu', 'cpu', 'motherboard', 'ram'];
         const allSelected = types.every(type => config[type] !== null);
 
         if (!allSelected) {
-            alert('⚠️ Выберите все комплектующие!');
+            showToast('⚠️ Выберите все комплектующие!', 'warning');
             return;
         }
 
         const cpuName = config.cpu.name.replace(/^[^\s]+\s/, '');
         const gpuName = config.gpu.name.replace(/^[^\s]+\s/, '');
-        const total = types.reduce((sum, t) => sum + config[t].price, 0);
+        const componentsTotal = types.reduce((sum, t) => sum + config[t].price, 0);
+        const totalWithService = componentsTotal + SERVICE_PRICE;
         const buildName = `Сборка: ${cpuName} + ${gpuName}`;
 
         let cart = JSON.parse(localStorage.getItem('cart') || '[]');
         cart.push({
             id: `build_${Date.now()}`,
             name: buildName,
-            price: total,
+            price: totalWithService,
             quantity: 1,
             isCustom: true,
             components: {
@@ -600,18 +814,15 @@
                 gpu: config.gpu.name,
                 motherboard: config.motherboard.name,
                 ram: config.ram.name
-            }
+            },
+            servicePrice: SERVICE_PRICE
         });
         localStorage.setItem('cart', JSON.stringify(cart));
 
         document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + (i.quantity || 1), 0);
 
-        const toast = document.getElementById('toast');
-        toast.textContent = `✅ Конфигурация добавлена в заказ!`;
-        toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+        showToast('✅ Конфигурация добавлена в заказ!', 'success');
 
-        // Сбрасываем выбор
         types.forEach(t => config[t] = null);
         renderAllOptions();
         updateBadges();
@@ -619,7 +830,7 @@
     }
 
     // ============================================================
-    // 8. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    // 10. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
     // ============================================================
     function toggleSection(header) {
         const options = header.nextElementSibling;
@@ -628,19 +839,33 @@
         }
     }
 
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast show';
+        if (type === 'warning') {
+            toast.style.background = 'var(--warning)';
+            toast.style.color = '#000';
+        } else {
+            toast.style.background = 'var(--secondary)';
+            toast.style.color = '#000';
+        }
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 4000);
+    }
+
     // ============================================================
-    // 9. ИНИЦИАЛИЗАЦИЯ
+    // 11. ИНИЦИАЛИЗАЦИЯ
     // ============================================================
     async function init() {
         await loadComponents();
         await loadCompatibility();
 
-        // Заполняем опции
         renderAllOptions();
         updateBadges();
         updateSummary();
 
-        // Обновляем счётчик корзины
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         document.getElementById('cart-count').textContent = cart.reduce((s, i) => s + (i.quantity || 1), 0);
     }
