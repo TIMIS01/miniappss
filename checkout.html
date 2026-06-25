@@ -75,22 +75,23 @@
         <nav class="nav">
             <a href="https://pcggpro.ru/">Главная</a>
             <a href="https://pcggpro.ru/#catalog">Каталог</a>
+            <a href="https://pcggpro.ru/configurator.html">⚙️ Конфигуратор</a>
             <a href="https://pcggpro.ru/offer.html">Оферта</a>
-            <a href="https://pcggpro.ru/cart.html">🛒 Корзина</a>
+            <a href="https://pcggpro.ru/cart.html">🛒 Заказ</a>
             <a href="https://pcggpro.ru/profile.html">👤 Профиль</a>
         </nav>
     </div>
 </header>
 
 <div class="container">
-    <a href="https://pcggpro.ru/cart.html" class="back-link">← Назад в корзину</a>
-    <h1>📋 Оформление заказа</h1>
+    <a href="https://pcggpro.ru/cart.html" class="back-link">← Назад в заказ</a>
+    <h1>📋 Оформление заказа на сборку</h1>
     <div class="checkout-grid">
         <div class="card">
             <h2>🛒 Ваш заказ</h2>
             <div id="orderItems"></div>
             <div class="total-row" style="border-top:none;margin-top:0;padding-bottom:5px;font-size:16px;">
-                <span>Товары:</span><span id="subtotalPrice">0 ₽</span>
+                <span>Стоимость сборки:</span><span id="subtotalPrice">0 ₽</span>
             </div>
             <div class="total-row" style="border-top:none;margin-top:0;padding-bottom:15px;font-size:16px;color:var(--text-muted);">
                 <span>Доставка (примерно):</span><span id="deliveryPrice">0 ₽</span>
@@ -132,11 +133,11 @@
             <p style="font-size:13px;color:var(--text-muted);">Нажимая «Оформить заказ», вы соглашаетесь с <a href="https://pcggpro.ru/offer.html" style="color:var(--primary);">условиями оферты</a>.</p>
             <div id="paymentButtons" style="display:flex;gap:10px;">
                 <button class="btn-place-order" id="placeOrderBtn" style="flex:1;">📦 Оформить заказ</button>
-                <button class="btn-place-order" id="payBtn" style="flex:1;background:var(--secondary);color:#000;display:none;" onclick="payWithLava()">💳 Оплатить через Lava</button>
+                <button class="btn-place-order" id="payBtn" style="flex:1;background:var(--secondary);color:#000;display:none;" onclick="payWithLava()">💳 Оплатить сборку</button>
             </div>
         </div>
     </div>
-    <div class="success-box" id="successBox"><h2>✅ Заказ успешно оформлен!</h2><p>Номер заказа: <strong id="orderNumber">—</strong></p><p>В ближайшее время с вами свяжется менеджер.</p><p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p></div>
+    <div class="success-box" id="successBox"><h2>✅ Заказ успешно оформлен!</h2><p>Номер заказа: <strong id="orderNumber">—</strong></p><p>В ближайшее время с вами свяжется менеджер для уточнения деталей сборки.</p><p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p></div>
 </div>
 
 <script>
@@ -147,11 +148,16 @@
     const savedUser = JSON.parse(localStorage.getItem('user')||'null');
     if (savedUser) { document.getElementById('email').value = savedUser.email||''; document.getElementById('name').value = savedUser.full_name||''; document.getElementById('telegram').value = savedUser.telegram||''; }
 
-    function loadCart() { cart = JSON.parse(localStorage.getItem('cart')||'[]'); if (cart.length===0) { document.getElementById('orderItems').innerHTML='<div class="empty">Корзина пуста. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>'; document.getElementById('placeOrderBtn').disabled=true; return; } renderOrderItems(); }
+    function loadCart() { cart = JSON.parse(localStorage.getItem('cart')||'[]'); if (cart.length===0) { document.getElementById('orderItems').innerHTML='<div class="empty">Заказ пуст. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>'; document.getElementById('placeOrderBtn').disabled=true; return; } renderOrderItems(); }
 
     function renderOrderItems() {
         const c=document.getElementById('orderItems'); let t=0;
-        c.innerHTML=cart.map(i=>{const it=i.price*(i.quantity||1);t+=it;return`<div class="order-item"><div><span class="order-item-name">${i.name}</span><span class="order-item-qty">x${i.quantity||1}</span></div><span class="order-item-price">${it.toLocaleString()} ₽</span></div>`}).join('');
+        c.innerHTML=cart.map(i=>{
+            const it=i.price*(i.quantity||1); t+=it;
+            const isCustom = i.isCustom || false;
+            const customLabel = isCustom ? '⚙️ ' : '';
+            return`<div class="order-item"><div><span class="order-item-name">${customLabel}${i.name}</span><span class="order-item-qty">x${i.quantity||1}</span></div><span class="order-item-price">${it.toLocaleString()} ₽</span></div>`;
+        }).join('');
         document.getElementById('subtotalPrice').textContent=`${t.toLocaleString()} ₽`;
         updateTotalPrice();
     }
@@ -180,7 +186,7 @@
                 window.currentOrder = { id: Date.now(), amount: tp, productName: pn };
                 document.getElementById('payBtn').style.display = 'block';
                 document.getElementById('placeOrderBtn').style.display = 'none';
-                alert('✅ Заказ оформлен! Нажмите «Оплатить через Lava» для перехода к оплате.');
+                alert('✅ Заказ оформлен! Нажмите «Оплатить сборку» для перехода к оплате.');
             } else { alert('❌ Ошибка при оформлении заказа.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
         } catch(e) { alert('❌ Ошибка соединения.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
     });
@@ -193,7 +199,7 @@
             const d = await r.json();
             if (d.payment_url) { window.location.href = d.payment_url; } else { alert('❌ Не удалось создать платёж. Попробуйте позже.'); }
         } catch(e) { alert('❌ Ошибка соединения с сервером.'); }
-        btn.textContent = '💳 Оплатить через Lava'; btn.disabled = false;
+        btn.textContent = '💳 Оплатить сборку'; btn.disabled = false;
     }
 
     loadCart();
