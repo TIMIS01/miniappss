@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Корзина | PCGGPRO</title>
+    <title>Заказ | PCGGPRO</title>
     <link rel="icon" type="image/png" href="logo.png">
     <style>
         :root {
@@ -67,98 +67,100 @@
 <header class="header">
     <div class="header-inner">
         <a href="https://pcggpro.ru/" class="logo">
-    <img src="logo.png" alt="PCGGPRO" style="height: 40px; vertical-align: middle;">
-    <span style="vertical-align: middle; position: relative; top: 2px; font-size: 22px; font-weight: 800;">
-        <span style="color: #4a9eff;">PC</span><span style="color: #ffffff;">GG</span><span style="color: #4a9eff;">PRO</span>
-    </span>
-</a>
+            <img src="logo.png" alt="PCGGPRO" style="height: 40px; vertical-align: middle;">
+            <span style="vertical-align: middle; position: relative; top: 2px; font-size: 22px; font-weight: 800;">
+                <span style="color: #4a9eff;">PC</span><span style="color: #ffffff;">GG</span><span style="color: #4a9eff;">PRO</span>
+            </span>
+        </a>
         <nav class="nav">
             <a href="https://pcggpro.ru/">Главная</a>
             <a href="https://pcggpro.ru/#catalog">Каталог</a>
+            <a href="https://pcggpro.ru/configurator.html">⚙️ Конфигуратор</a>
             <a href="https://pcggpro.ru/offer.html">Оферта</a>
-            <a href="https://pcggpro.ru/cart.html">🛒 Корзина <span id="cart-count">0</span></a>
+            <a href="https://pcggpro.ru/cart.html">🛒 Заказ <span id="cart-count">0</span></a>
             <a href="https://pcggpro.ru/profile.html">👤 Профиль</a>
         </nav>
     </div>
 </header>
 
 <div class="container">
-    <a href="https://pcggpro.ru/" class="back-link">← Продолжить покупки</a>
-    <h1>🛒 Корзина</h1>
+    <a href="https://pcggpro.ru/" class="back-link">← Продолжить выбор</a>
+    <h1>🛒 Ваш заказ</h1>
     
     <div class="cart-items" id="cartItems"></div>
     
     <div class="summary" id="summary" style="display: none;">
-    <div class="summary-row">
-        <span>Количество товаров:</span>
-        <span id="summaryCount">0 шт.</span>
+        <div class="summary-row">
+            <span>Количество конфигураций:</span>
+            <span id="summaryCount">0 шт.</span>
+        </div>
+        <div class="summary-row">
+            <span>Стоимость сборки:</span>
+            <span id="summaryPrice">0 ₽</span>
+        </div>
+        <div class="summary-total">
+            <span>Итого:</span>
+            <span id="summaryTotal">0 ₽</span>
+        </div>
+
+        <!-- Спойлеры -->
+        <div style="margin-bottom: 20px; text-align: left;">
+            <details style="margin-bottom: 8px; cursor: pointer;">
+                <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                    🔒 Почему безопасно заказывать у нас?
+                </summary>
+                <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                    1. <strong>Официальный статус:</strong> Мы работаем по закону! Убедитесь в качестве сборки, запросив видео в комментарии при оформлении заказа.<br>
+                    2. <strong>Платёжный партнёр:</strong> Оплата через сертифицированный сервис <strong>Lava.ru</strong> (PCI DSS). Данные карты не передаются нам.<br>
+                    3. <strong>Юридическая защита:</strong> Отношения регулируются <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">публичной офертой</a>.<br>
+                    4. <strong>Гарантия возврата:</strong> Полный возврат в течение 24 часов, если заказ ещё не передан в сборку.
+                </p>
+            </details>
+
+            <details style="margin-bottom: 8px; cursor: pointer;">
+                <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                    📋 Как происходит оформление заказа?
+                </summary>
+                <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                    1. <strong>Выбор:</strong> Выбираете конфигурацию в каталоге или собираете свою в конфигураторе.<br>
+                    2. <strong>Оформление:</strong> Заполняете данные доставки и нажимаете «Оформить заказ».<br>
+                    3. <strong>Оплата:</strong> Перенаправляетесь на защищённую страницу Lava.<br>
+                    4. <strong>Сборка:</strong> Мы закупаем комплектующие и собираем ваш ПК.<br>
+                    5. <strong>Отслеживание:</strong> В личном кабинете виден статус заказа.
+                </p>
+            </details>
+
+            <details style="margin-bottom: 8px; cursor: pointer;">
+                <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                    🚚 Каковы сроки доставки?
+                </summary>
+                <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                    <strong>Закупка:</strong> 1-7 рабочих дней | <strong>Сборка:</strong> 1-3 дня | <strong>Отправка:</strong> сразу после сборки.<br>
+                    <strong>Итого:</strong> 5-15 рабочих дней с момента оплаты (зависит от региона).
+                </p>
+            </details>
+
+            <details style="margin-bottom: 8px; cursor: pointer;">
+                <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
+                    💰 Почему такие низкие цены?
+                </summary>
+                <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
+                    Мы — новый сервис (2026 год). Наша цель — <strong>завоевать доверие</strong>, а не максимальная прибыль.<br>
+                    • <strong>Минимальная наценка:</strong> 5-10% от стоимости комплектующих.<br>
+                    • <strong>Прямые поставки:</strong> Без лишних посредников.<br>
+                    • <strong>Б/У компоненты:</strong> В некоторых сборках используются проверенные детали с вторичного рынка.<br>
+                    <i>Цены могут быть скорректированы в будущем.</i>
+                </p>
+            </details>
+        </div>
+
+        <a href="https://pcggpro.ru/checkout.html" class="btn-checkout">🚀 Оформить заказ на сборку</a>
     </div>
-    <div class="summary-row">
-        <span>Стоимость товаров:</span>
-        <span id="summaryPrice">0 ₽</span>
-    </div>
-    <div class="summary-total">
-        <span>Итого:</span>
-        <span id="summaryTotal">0 ₽</span>
-    </div>
-
-    <!-- Спойлеры -->
-    <div style="margin-bottom: 20px; text-align: left;">
-        <details style="margin-bottom: 8px; cursor: pointer;">
-            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
-                🔒 Почему безопасно покупать у нас?
-            </summary>
-            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
-                1. <strong>Официальный статус:</strong> Мы работаем по закону! Убедитесь в качестве сборки, запросив видео в комментарии при оформлении заказа<br>
-                2. <strong>Платёжный партнёр:</strong> Оплата через сертифицированный сервис <strong>Lava.ru</strong> (PCI DSS). Данные карты не передаются нам.<br>
-                3. <strong>Юридическая защита:</strong> Отношения регулируются <a href="https://pcggpro.ru/offer.html" style="color: var(--primary);">публичной офертой</a>.<br>
-                4. <strong>Гарантия возврата:</strong> Полный возврат в течение 24 часов, если заказ ещё не передан в сборку.
-            </p>
-        </details>
-
-        <details style="margin-bottom: 8px; cursor: pointer;">
-            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
-                📋 Как происходит оформление заказа?
-            </summary>
-            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
-                1. <strong>Выбор:</strong> Выбираете сборку в каталоге или согласовываете конфигурацию.<br>
-                2. <strong>Оформление:</strong> Заполняете данные доставки и нажимаете «Оформить и оплатить».<br>
-                3. <strong>Оплата:</strong> Перенаправляетесь на защищённую страницу Lava.<br>
-                4. <strong>Сборка:</strong> Мы закупаем комплектующие и собираем ваш ПК.<br>
-                5. <strong>Отслеживание:</strong> В личном кабинете виден статус заказа.
-            </p>
-        </details>
-
-        <details style="margin-bottom: 8px; cursor: pointer;">
-            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
-                🚚 Каковы сроки доставки?
-            </summary>
-            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
-                <strong>Закупка:</strong> 1-7 рабочих дней | <strong>Сборка:</strong> 1-3 дня | <strong>Отправка:</strong> сразу после сборки.<br>
-                <strong>Итого:</strong> 5-15 рабочих дней с момента оплаты (зависит от региона).
-            </p>
-        </details>
-
-        <details style="margin-bottom: 8px; cursor: pointer;">
-            <summary style="color: var(--primary); font-weight: 600; padding: 8px 0; font-size: 14px; outline: none;">
-                💰 Почему такие низкие цены?
-            </summary>
-            <p style="margin: 8px 0; padding: 10px; background: var(--bg-dark); border-radius: 8px; font-size: 13px; color: var(--text-muted);">
-                Мы — новый магазин (2026 год). Наша цель — <strong>завоевать доверие</strong>, а не максимальная прибыль.<br>
-                • <strong>Минимальная наценка:</strong> 5-10% от стоимости комплектующих.<br>
-                • <strong>Прямые поставки:</strong> Без лишних посредников.<br>
-                • <strong>Б/У компоненты:</strong> В некоторых сборках используются проверенные детали с вторичного рынка.<br>
-                <i>Цены могут быть скорректированы в будущем.</i>
-            </p>
-        </details>
-    </div>
-
-    <a href="https://pcggpro.ru/checkout.html" class="btn-checkout">🚀 Оформить заказ</a>
-</div>
     
     <div class="empty-cart" id="emptyCart">
-        <div>🛒</div><h2>Корзина пуста</h2>
-        <p>Добавьте товары из <a href="https://pcggpro.ru/#catalog" style="color:var(--primary);">каталога</a></p>
+        <div>📋</div>
+        <h2>Заказ пуст</h2>
+        <p>Добавьте конфигурации из <a href="https://pcggpro.ru/#catalog" style="color:var(--primary);">каталога</a></p>
     </div>
 </div>
 
@@ -170,16 +172,29 @@
         const ci = document.getElementById('cartItems'), ec = document.getElementById('emptyCart'), s = document.getElementById('summary');
         if (cart.length === 0) { ci.innerHTML=''; s.style.display='none'; ec.style.display='block'; return; }
         ec.style.display='none'; s.style.display='block';
-        ci.innerHTML = cart.map((item, i) => `
-            <div class="cart-item">
-                <div class="cart-item-info"><div class="cart-item-name">${item.name}</div><div class="cart-item-price">${item.price.toLocaleString()} ₽ / шт.</div></div>
-                <div class="cart-item-controls">
-                    <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
-                    <input type="number" class="qty-input" value="${item.quantity}" min="1" onchange="setQty(${i},this.value)">
-                    <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
-                    <button class="remove-btn" onclick="removeItem(${i})">🗑️</button>
+        ci.innerHTML = cart.map((item, i) => {
+            const isCustom = item.isCustom || false;
+            const componentsInfo = isCustom && item.components ? `
+                <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+                    🖥️ ${item.components.cpu} | 🎮 ${item.components.gpu}
                 </div>
-            </div>`).join('');
+            ` : '';
+            return `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${isCustom ? '⚙️ ' : ''}${item.name}</div>
+                        <div class="cart-item-price">${item.price.toLocaleString()} ₽ / шт.</div>
+                        ${componentsInfo}
+                    </div>
+                    <div class="cart-item-controls">
+                        <button class="qty-btn" onclick="changeQty(${i}, -1)">−</button>
+                        <input type="number" class="qty-input" value="${item.quantity}" min="1" onchange="setQty(${i},this.value)">
+                        <button class="qty-btn" onclick="changeQty(${i}, 1)">+</button>
+                        <button class="remove-btn" onclick="removeItem(${i})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
         updateSummary();
     }
     function changeQty(i, d) { cart[i].quantity = Math.max(1, (cart[i].quantity||1)+d); saveCart(); renderCart(); }
@@ -416,47 +431,34 @@
         if (e.key === 'Enter') sendChatMessage();
     });
 
-
-
-
-
-
-
     // Автоматически восстанавливаем чат при загрузке страницы
-(function() {
-    const savedSessionId = localStorage.getItem('chat_session_id');
-    if (!savedSessionId) return;
-    
-    fetch(`${SUPPORT_API}/chat/messages?session_id=${savedSessionId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.messages && data.messages.length > 0) {
-                // Чат активен — подтягиваем сообщения в фон
-                chatSessionId = savedSessionId;
-                document.getElementById('chatContact').style.display = 'none';
-                document.getElementById('chatInputArea').style.display = 'flex';
-                
-                // Загружаем все сообщения
-                const container = document.getElementById('chatMessages');
-                container.innerHTML = '';
-                data.messages.forEach(msg => {
-                    addMessage(msg.sender, msg.message);
-                });
-                container.scrollTop = container.scrollHeight;
-                
-                // Запускаем опрос новых сообщений
-                startPolling();
-                
-                console.log('✅ Чат восстановлен:', savedSessionId);
-            } else {
-                // Чат устарел — удаляем
+    (function() {
+        const savedSessionId = localStorage.getItem('chat_session_id');
+        if (!savedSessionId) return;
+        
+        fetch(`${SUPPORT_API}/chat/messages?session_id=${savedSessionId}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.messages && data.messages.length > 0) {
+                    chatSessionId = savedSessionId;
+                    document.getElementById('chatContact').style.display = 'none';
+                    document.getElementById('chatInputArea').style.display = 'flex';
+                    const container = document.getElementById('chatMessages');
+                    container.innerHTML = '';
+                    data.messages.forEach(msg => {
+                        addMessage(msg.sender, msg.message);
+                    });
+                    container.scrollTop = container.scrollHeight;
+                    startPolling();
+                    console.log('✅ Чат восстановлен:', savedSessionId);
+                } else {
+                    localStorage.removeItem('chat_session_id');
+                }
+            })
+            .catch(() => {
                 localStorage.removeItem('chat_session_id');
-            }
-        })
-        .catch(() => {
-            localStorage.removeItem('chat_session_id');
-        });
-})();
+            });
+    })();
 </script>
 
 </body>
