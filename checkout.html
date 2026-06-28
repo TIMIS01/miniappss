@@ -55,6 +55,8 @@
         .success-box .icon { font-size: 64px; margin-bottom: 20px; }
         .empty { text-align: center; padding: 40px; color: var(--text-muted); }
 
+        .phone-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+
         @media (max-width: 768px) {
             .header-inner { flex-direction: column; align-items: center; gap: 8px; }
             .logo img { height: 30px; }
@@ -104,9 +106,10 @@
 
         <div class="card">
             <h2>👤 Данные покупателя</h2>
-            <div class="form-group"><label>Телефон</label><input type="tel" id="phone" placeholder="+7 (900) 123-45-67" required readonly></div>
+            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="example@mail.ru" required readonly></div>
+            <div class="form-group"><label>Телефон *</label><input type="tel" id="phone" placeholder="+7 (900) 123-45-67" required></div>
+            <div class="phone-hint">📱 Для связи по вопросам заказа</div>
             <div class="form-group"><label>Имя</label><input type="text" id="name" placeholder="Ваше имя" required readonly></div>
-            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="example@mail.ru" readonly></div>
         </div>
 
         <div class="card">
@@ -130,7 +133,7 @@
 
         <div class="card">
             <h2>📋 Подтверждение заказа</h2>
-            <p style="color:var(--text-muted);margin-bottom:15px;">После оформления заказа с вами свяжется менеджер для уточнения деталей и согласования стоимости.</p>
+            <p style="color:var(--text-muted);margin-bottom:15px;">После оформления заказа с вами свяжется менеджер для уточнения деталей.</p>
             <p style="font-size:13px;color:var(--text-muted);">Нажимая «Оформить заказ», вы соглашаетесь с <a href="https://pcggpro.ru/offer.html" style="color:var(--primary);">условиями оферты</a>.</p>
             <button class="btn-place-order" id="placeOrderBtn">📦 Оформить заказ</button>
         </div>
@@ -151,9 +154,9 @@
 
     const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
     if (savedUser) {
-        document.getElementById('phone').value = savedUser.phone || '';
-        document.getElementById('name').value = savedUser.full_name || '';
         document.getElementById('email').value = savedUser.email || '';
+        document.getElementById('name').value = savedUser.full_name || '';
+        document.getElementById('phone').value = savedUser.phone || '';
     }
 
     if (!savedUser) {
@@ -205,7 +208,12 @@
         const postal = document.getElementById('postal').value.trim();
 
         if (!phone || !name || !city || !postal) {
-            alert('❌ Заполните все обязательные поля.');
+            alert('❌ Заполните все обязательные поля (Телефон, Имя, Город, Почтовое отделение).');
+            return;
+        }
+
+        if (phone.length < 10) {
+            alert('❌ Введите корректный номер телефона.');
             return;
         }
 
