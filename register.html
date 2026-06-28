@@ -11,6 +11,7 @@
             --secondary: #00d4aa; --bg-dark: #0a0e1a; --bg-card: #111827;
             --bg-header: #00276a; --text: #e0e6f0; --text-muted: #8899aa;
             --border: #1e2a3a; --shadow: 0 4px 20px rgba(0,0,0,0.4); --radius: 16px; --danger: #e74c3c;
+            --success: #2ecc71;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -19,47 +20,353 @@
         .auth-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 40px 30px; box-shadow: var(--shadow); text-align: center; }
         .auth-card h1 { font-size: 28px; margin-bottom: 8px; color: var(--text); }
         .auth-card p { color: var(--text-muted); margin-bottom: 25px; font-size: 14px; }
+
         .form-group { margin-bottom: 18px; text-align: left; }
         .form-group label { display: block; margin-bottom: 6px; color: var(--text-muted); font-size: 13px; font-weight: 600; }
         .form-group input { width: 100%; padding: 14px 16px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; }
         .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
-        .email-row { display: flex; gap: 10px; } .email-row input { flex: 1; }
+        .form-group input:disabled { opacity: 0.6; cursor: not-allowed; }
+
+        .phone-row { display: flex; gap: 10px; align-items: center; }
+        .phone-row input { flex: 1; }
+        .btn-outline { padding: 14px 16px; background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.3s; }
+        .btn-outline:hover { background: rgba(74,158,255,0.1); }
+        .btn-outline:disabled { border-color: #555; color: #555; cursor: not-allowed; }
+
+        .code-input-group { display: flex; gap: 8px; justify-content: center; margin: 15px 0; }
+        .code-input { width: 42px; height: 50px; text-align: center; font-size: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-weight: 700; }
+        .code-input:focus { outline: none; border-color: var(--primary); }
+        .code-input:disabled { opacity: 0.6; }
+
         .btn-primary { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.3s; margin-top: 10px; }
         .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 0 15px var(--primary-glow); }
         .btn-primary:disabled { background: #555; cursor: not-allowed; }
-        .btn-outline { padding: 14px 16px; background: transparent; border: 1px solid var(--primary); color: var(--primary); border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-        .btn-outline:hover { background: rgba(74,158,255,0.1); }
-        .btn-outline:disabled { border-color: #555; color: #555; cursor: not-allowed; }
-        .verify-box { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-top: 10px; margin-bottom: 10px; display: none; }
-        .code-input-group { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
-        .code-input { width: 42px; height: 50px; text-align: center; font-size: 20px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-weight: 700; }
-        .code-input:focus { outline: none; border-color: var(--primary); }
+
         .auth-links { margin-top: 20px; font-size: 14px; color: var(--text-muted); }
         .auth-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
-        .message { font-size: 13px; margin-top: 8px; } .message.success { color: var(--secondary); } .message.error { color: var(--danger); }
+
+        .message { font-size: 13px; margin-top: 8px; }
+        .message.success { color: var(--success); }
+        .message.error { color: var(--danger); }
+        .message.info { color: var(--primary); }
+
+        .phone-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+        .timer { color: var(--primary); font-weight: 600; }
+
+        .verify-box {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 15px 0;
+            display: none;
+        }
+        .verify-box.active { display: block; }
     </style>
 </head>
 <body>
 <div class="auth-container"><div class="auth-card">
-    <h1>🖥️ PCGGPRO</h1><p>Создайте аккаунт для оформления заказов</p>
+    <h1>🖥️ PCGGPRO</h1>
+    <p>Создайте аккаунт для оформления заказов</p>
+
     <form id="registerForm">
-        <div class="form-group"><label>Имя</label><input type="text" id="name" placeholder="Введите ваше имя" required></div>
-        <div class="form-group"><label>Email</label><div class="email-row"><input type="email" id="email" placeholder="example@mail.ru" required><button type="button" class="btn-outline" id="sendCodeBtn" onclick="sendVerificationCode()">📧 Отправить код</button></div><div class="message" id="sendCodeMsg"></div></div>
-        <div class="verify-box" id="verifyBox"><p>📩 Мы отправили 6-значный код на вашу почту. Введите его ниже:</p><div class="code-input-group" id="codeInputs"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'next')"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'next')"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'next')"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'next')"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'next')"><input type="text" class="code-input" maxlength="1" oninput="moveFocus(this,'done')"></div><div class="message" id="verifyMsg"></div></div>
-        <div class="form-group"><label>Telegram (необязательно)</label><input type="text" id="telegram" placeholder="@username"></div>
-        <div class="form-group"><label>Город</label><input type="text" id="city" placeholder="Москва" required></div>
-        <div class="form-group"><label>Пароль</label><input type="password" id="password" placeholder="Минимум 6 символов" required><div class="message error" id="passwordError">Пароль должен быть не менее 6 символов</div></div>
-        <button type="submit" class="btn-primary" id="registerBtn">🚀 Зарегистрироваться</button>
+        <!-- Имя -->
+        <div class="form-group">
+            <label>Имя</label>
+            <input type="text" id="name" placeholder="Введите ваше имя" required>
+        </div>
+
+        <!-- Телефон + кнопка отправки кода -->
+        <div class="form-group">
+            <label>Телефон</label>
+            <div class="phone-row">
+                <input type="tel" id="phone" placeholder="+7 (900) 123-45-67" required>
+                <button type="button" class="btn-outline" id="sendSmsBtn" onclick="sendSmsCode()">
+                    📱 Отправить код
+                </button>
+            </div>
+            <div class="phone-hint">📱 Введите номер, на который придёт СМС с кодом</div>
+            <div class="message" id="smsMsg"></div>
+        </div>
+
+        <!-- Блок подтверждения (появляется после отправки кода) -->
+        <div class="verify-box" id="verifyBox">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:10px;">
+                📩 Введите код из СМС <span class="timer" id="timer"></span>
+            </p>
+            <div class="code-input-group" id="codeInputs">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'next')">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'next')">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'next')">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'next')">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'next')">
+                <input type="text" class="code-input" maxlength="1" inputmode="numeric" pattern="[0-9]" oninput="moveFocus(this,'done')">
+            </div>
+            <div class="message" id="verifyMsg"></div>
+            <button type="button" class="btn-outline" style="width:100%;margin-top:10px;" onclick="verifyCode()">
+                ✅ Подтвердить код
+            </button>
+        </div>
+
+        <!-- Email (необязательно) -->
+        <div class="form-group">
+            <label>Email (необязательно)</label>
+            <input type="email" id="email" placeholder="example@mail.ru">
+        </div>
+
+        <!-- Город -->
+        <div class="form-group">
+            <label>Город</label>
+            <input type="text" id="city" placeholder="Москва" required>
+        </div>
+
+        <!-- Пароль -->
+        <div class="form-group">
+            <label>Пароль</label>
+            <input type="password" id="password" placeholder="Минимум 6 символов" required>
+            <div class="message error" id="passwordError">Пароль должен быть не менее 6 символов</div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="registerBtn" disabled>🚀 Зарегистрироваться</button>
     </form>
+
     <div class="auth-links">Уже есть аккаунт? <a href="https://pcggpro.ru/login.html">Войти</a></div>
 </div></div>
+
 <script>
-    const API_URL = 'https://tg-shop-server.onrender.com/api'; let emailVerified = false;
-    async function sendVerificationCode() { const e=document.getElementById('email').value.trim(),b=document.getElementById('sendCodeBtn'),m=document.getElementById('sendCodeMsg'); if(!e||!e.includes('@')){m.textContent='❌ Введите корректный email';m.className='message error';return;} b.disabled=true;b.textContent='⏳ Отправка...'; try{const r=await fetch(`${API_URL}/send-verification`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})}); if(r.ok){document.getElementById('verifyBox').style.display='block';m.textContent='✅ Код отправлен';m.className='message success';b.textContent='📧 Отправлено';document.getElementById('codeInputs').children[0].focus();}else{const d=await r.json();m.textContent='❌ '+(d.message||'Ошибка');m.className='message error';b.disabled=false;b.textContent='📧 Отправить код';}}catch(err){m.textContent='❌ Ошибка соединения';m.className='message error';b.disabled=false;b.textContent='📧 Отправить код';} }
-    function moveFocus(i,a){if(i.value.length===1&&a==='next'){const n=i.nextElementSibling;if(n&&n.classList.contains('code-input'))n.focus();else checkVerificationCode();}}
-    async function checkVerificationCode(){const is=document.querySelectorAll('.code-input');let c='';is.forEach(i=>c+=i.value);if(c.length<6)return;const m=document.getElementById('verifyMsg'),e=document.getElementById('email').value.trim(); try{const r=await fetch(`${API_URL}/verify-email`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,code:c})}); if(r.ok){emailVerified=true;m.textContent='✅ Почта подтверждена!';m.className='message success';document.getElementById('email').readOnly=true;}else{emailVerified=false;m.textContent='❌ Неверный код';m.className='message error';is.forEach(i=>i.value='');is[0].focus();}}catch(err){m.textContent='❌ Ошибка проверки';m.className='message error';}}
-    document.querySelectorAll('.code-input').forEach(i=>i.addEventListener('input',()=>{if(Array.from(document.querySelectorAll('.code-input')).filter(x=>x.value.length===1).length===6)checkVerificationCode();}));
-    document.getElementById('registerForm').addEventListener('submit',async function(e){e.preventDefault();const n=document.getElementById('name').value.trim(),em=document.getElementById('email').value.trim(),t=document.getElementById('telegram').value.trim(),c=document.getElementById('city').value.trim(),p=document.getElementById('password').value; if(p.length<6){document.getElementById('passwordError').style.display='block';return;}else{document.getElementById('passwordError').style.display='none';} if(!emailVerified){alert('❌ Подтвердите почту кодом из письма.');return;} try{const r=await fetch(`${API_URL}/register`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({full_name:n,email:em,telegram:t,city:c,password:p,email_verified:true})}); if(r.ok){alert('✅ Регистрация прошла успешно!');window.location.href='https://pcggpro.ru/login.html';}else{const d=await r.json();alert('❌ Ошибка: '+(d.message||'Не удалось зарегистрироваться'));}}catch(err){alert('❌ Ошибка соединения.');}});
+    const API_URL = 'https://tg-shop-server.onrender.com/api';
+    let smsVerified = false;
+    let timerInterval = null;
+    let countdown = 300;
+
+    // ===== ОТПРАВКА СМС =====
+    async function sendSmsCode() {
+        const phone = document.getElementById('phone').value.trim();
+        const sendBtn = document.getElementById('sendSmsBtn');
+        const msgEl = document.getElementById('smsMsg');
+
+        // Валидация телефона
+        const phoneClean = phone.replace(/\D/g, '');
+        if (phoneClean.length < 10) {
+            msgEl.textContent = '❌ Введите корректный номер телефона';
+            msgEl.className = 'message error';
+            return;
+        }
+
+        // Блокируем кнопку
+        sendBtn.disabled = true;
+        sendBtn.textContent = '⏳ Отправка...';
+        msgEl.textContent = '';
+        msgEl.className = 'message';
+
+        try {
+            const response = await fetch(`${API_URL}/send-sms`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phoneClean })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Показываем блок с кодом
+                document.getElementById('verifyBox').classList.add('active');
+                msgEl.textContent = '✅ Код отправлен! Проверьте СМС';
+                msgEl.className = 'message success';
+                sendBtn.textContent = '📱 Отправлено';
+
+                // Запускаем таймер
+                startTimer(300);
+
+                // Фокусируемся на первом поле кода
+                document.querySelector('.code-input').focus();
+
+                // Сохраняем номер для проверки
+                window.verificationPhone = phoneClean;
+
+            } else {
+                msgEl.textContent = '❌ ' + (data.message || 'Ошибка отправки');
+                msgEl.className = 'message error';
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📱 Отправить код';
+            }
+        } catch (error) {
+            msgEl.textContent = '❌ Ошибка соединения с сервером';
+            msgEl.className = 'message error';
+            sendBtn.disabled = false;
+            sendBtn.textContent = '📱 Отправить код';
+        }
+    }
+
+    // ===== ТАЙМЕР =====
+    function startTimer(seconds) {
+        countdown = seconds;
+        const timerEl = document.getElementById('timer');
+        const sendBtn = document.getElementById('sendSmsBtn');
+
+        if (timerInterval) clearInterval(timerInterval);
+
+        timerInterval = setInterval(() => {
+            countdown--;
+            const mins = Math.floor(countdown / 60);
+            const secs = countdown % 60;
+            timerEl.textContent = `(${mins}:${secs.toString().padStart(2, '0')})`;
+
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                timerEl.textContent = '(код истёк)';
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📱 Запросить новый код';
+            }
+        }, 1000);
+    }
+
+    // ===== ПЕРЕКЛЮЧЕНИЕ МЕЖДУ ПОЛЯМИ КОДА =====
+    function moveFocus(input, action) {
+        if (input.value.length === 1 && action === 'next') {
+            const next = input.nextElementSibling;
+            if (next && next.classList.contains('code-input')) {
+                next.focus();
+            }
+        }
+    }
+
+    // ===== ПРОВЕРКА КОДА =====
+    async function verifyCode() {
+        const inputs = document.querySelectorAll('.code-input');
+        let code = '';
+        inputs.forEach(inp => code += inp.value);
+
+        if (code.length < 6) {
+            document.getElementById('verifyMsg').textContent = '❌ Введите все 6 цифр';
+            document.getElementById('verifyMsg').className = 'message error';
+            return;
+        }
+
+        const phone = window.verificationPhone || document.getElementById('phone').value.trim().replace(/\D/g, '');
+        const msgEl = document.getElementById('verifyMsg');
+        msgEl.textContent = '⏳ Проверка...';
+        msgEl.className = 'message info';
+
+        try {
+            const response = await fetch(`${API_URL}/verify-sms`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone, code: code })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                smsVerified = true;
+                msgEl.textContent = '✅ Номер подтверждён!';
+                msgEl.className = 'message success';
+                document.getElementById('phone').disabled = true;
+                document.getElementById('sendSmsBtn').disabled = true;
+                document.getElementById('registerBtn').disabled = false;
+                inputs.forEach(inp => inp.disabled = true);
+
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    document.getElementById('timer').textContent = '(подтверждено)';
+                }
+
+            } else {
+                msgEl.textContent = '❌ ' + (data.message || 'Неверный код');
+                msgEl.className = 'message error';
+                inputs.forEach(inp => inp.value = '');
+                inputs[0].focus();
+            }
+        } catch (error) {
+            msgEl.textContent = '❌ Ошибка соединения с сервером';
+            msgEl.className = 'message error';
+        }
+    }
+
+    // ===== ОТПРАВКА ФОРМЫ =====
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (!smsVerified) {
+            alert('❌ Пожалуйста, подтвердите номер телефона через СМС.');
+            return;
+        }
+
+        const name = document.getElementById('name').value.trim();
+        const phone = window.verificationPhone || document.getElementById('phone').value.trim().replace(/\D/g, '');
+        const email = document.getElementById('email').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const password = document.getElementById('password').value;
+        const passwordError = document.getElementById('passwordError');
+
+        if (!name || !phone || !city) {
+            alert('❌ Пожалуйста, заполните все обязательные поля.');
+            return;
+        }
+
+        if (password.length < 6) {
+            passwordError.style.display = 'block';
+            return;
+        } else {
+            passwordError.style.display = 'none';
+        }
+
+        const btn = document.getElementById('registerBtn');
+        btn.textContent = '⏳ Регистрация...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(`${API_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    full_name: name,
+                    phone: phone,
+                    email: email || null,
+                    city: city,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                alert('✅ Регистрация прошла успешно! Войдите в аккаунт.');
+                window.location.href = 'https://pcggpro.ru/login.html';
+            } else {
+                alert('❌ Ошибка: ' + (data.message || 'Не удалось зарегистрироваться'));
+                btn.textContent = '🚀 Зарегистрироваться';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером. Попробуйте позже.');
+            btn.textContent = '🚀 Зарегистрироваться';
+            btn.disabled = false;
+        }
+    });
+
+    // ===== АВТОМАТИЧЕСКАЯ ПРОВЕРКА КОДА ПРИ ЗАПОЛНЕНИИ =====
+    document.querySelectorAll('.code-input').forEach(inp => {
+        inp.addEventListener('input', function() {
+            const allFilled = Array.from(document.querySelectorAll('.code-input'))
+                .every(i => i.value.length === 1);
+            if (allFilled) {
+                verifyCode();
+            }
+        });
+    });
+
+    // ===== КЛАВИША ENTER ДЛЯ КОДА =====
+    document.querySelectorAll('.code-input').forEach(inp => {
+        inp.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                verifyCode();
+            }
+        });
+    });
 </script>
+
 </body>
 </html>
