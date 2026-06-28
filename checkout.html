@@ -49,9 +49,10 @@
         .btn-place-order:hover { background: var(--primary-dark); box-shadow: 0 0 25px var(--primary-glow); transform: translateY(-2px); }
         .btn-place-order:disabled { background: #555; cursor: not-allowed; box-shadow: none; }
 
-        .success-box { display: none; text-align: center; padding: 30px; background: var(--bg-card); border: 1px solid var(--secondary); border-radius: var(--radius); margin-top: 20px; }
-        .success-box h2 { color: var(--secondary); margin-bottom: 15px; }
-        .success-box p { color: var(--text-muted); margin-bottom: 10px; }
+        .success-box { display: none; text-align: center; padding: 40px; background: var(--bg-card); border: 1px solid var(--secondary); border-radius: var(--radius); margin-top: 20px; }
+        .success-box h2 { color: var(--secondary); margin-bottom: 15px; font-size: 28px; }
+        .success-box p { color: var(--text-muted); margin-bottom: 15px; font-size: 16px; }
+        .success-box .icon { font-size: 64px; margin-bottom: 20px; }
         .empty { text-align: center; padding: 40px; color: var(--text-muted); }
 
         @media (max-width: 768px) {
@@ -85,7 +86,7 @@
 
 <div class="container">
     <a href="https://pcggpro.ru/cart.html" class="back-link">← Назад в заказ</a>
-    <h1>📋 Оформление заказа на сборку</h1>
+    <h1>📋 Оформление заказа</h1>
     <div class="checkout-grid">
         <div class="card">
             <h2>🛒 Ваш заказ</h2>
@@ -97,15 +98,15 @@
                 <span>Доставка (примерно):</span><span id="deliveryPrice">0 ₽</span>
             </div>
             <div class="total-row">
-                <span>Итого к оплате:</span><span id="totalPrice">0 ₽</span>
+                <span>Итого:</span><span id="totalPrice">0 ₽</span>
             </div>
         </div>
 
         <div class="card">
             <h2>👤 Данные покупателя</h2>
-            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="example@mail.ru" required readonly></div>
+            <div class="form-group"><label>Телефон</label><input type="tel" id="phone" placeholder="+7 (900) 123-45-67" required readonly></div>
             <div class="form-group"><label>Имя</label><input type="text" id="name" placeholder="Ваше имя" required readonly></div>
-            <div class="form-group"><label>Telegram</label><input type="text" id="telegram" placeholder="@username" readonly></div>
+            <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="example@mail.ru" readonly></div>
         </div>
 
         <div class="card">
@@ -128,85 +129,132 @@
         </div>
 
         <div class="card">
-            <h2>💳 Способ оплаты</h2>
-            <p style="color:var(--text-muted);margin-bottom:15px;">Оплата через защищённый сервис <strong>Lava.ru</strong>. Принимаем карты Visa, Mastercard, МИР и СБП.</p>
+            <h2>📋 Подтверждение заказа</h2>
+            <p style="color:var(--text-muted);margin-bottom:15px;">После оформления заказа с вами свяжется менеджер для уточнения деталей и согласования стоимости.</p>
             <p style="font-size:13px;color:var(--text-muted);">Нажимая «Оформить заказ», вы соглашаетесь с <a href="https://pcggpro.ru/offer.html" style="color:var(--primary);">условиями оферты</a>.</p>
-            <div id="paymentButtons" style="display:flex;gap:10px;">
-                <button class="btn-place-order" id="placeOrderBtn" style="flex:1;">📦 Оформить заказ</button>
-                <button class="btn-place-order" id="payBtn" style="flex:1;background:var(--secondary);color:#000;display:none;" onclick="payWithLava()">💳 Оплатить сборку</button>
-            </div>
+            <button class="btn-place-order" id="placeOrderBtn">📦 Оформить заказ</button>
         </div>
     </div>
-    <div class="success-box" id="successBox"><h2>✅ Заказ успешно оформлен!</h2><p>Номер заказа: <strong id="orderNumber">—</strong></p><p>В ближайшее время с вами свяжется менеджер для уточнения деталей сборки.</p><p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p></div>
+
+    <div class="success-box" id="successBox">
+        <div class="icon">📋</div>
+        <h2>✅ Заказ принят!</h2>
+        <p>Спасибо за заказ! В ближайшее время наш менеджер свяжется с вами по телефону для уточнения деталей.</p>
+        <p style="font-size:14px;color:var(--text-muted);">Номер заказа: <strong id="orderNumber">—</strong></p>
+        <p><a href="https://pcggpro.ru/" style="color:var(--primary);">← Вернуться в каталог</a></p>
+    </div>
 </div>
 
 <script>
     const API_URL = 'https://tg-shop-server.onrender.com/api';
     let cart = [];
-    window.currentOrder = null;
 
-    const savedUser = JSON.parse(localStorage.getItem('user')||'null');
-    if (savedUser) { document.getElementById('email').value = savedUser.email||''; document.getElementById('name').value = savedUser.full_name||''; document.getElementById('telegram').value = savedUser.telegram||''; }
+    const savedUser = JSON.parse(localStorage.getItem('user') || 'null');
+    if (savedUser) {
+        document.getElementById('phone').value = savedUser.phone || '';
+        document.getElementById('name').value = savedUser.full_name || '';
+        document.getElementById('email').value = savedUser.email || '';
+    }
 
-    function loadCart() { cart = JSON.parse(localStorage.getItem('cart')||'[]'); if (cart.length===0) { document.getElementById('orderItems').innerHTML='<div class="empty">Заказ пуст. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>'; document.getElementById('placeOrderBtn').disabled=true; return; } renderOrderItems(); }
+    if (!savedUser) {
+        alert('Для оформления заказа необходимо зарегистрироваться.');
+        window.location.href = 'https://pcggpro.ru/register.html';
+    }
+
+    function loadCart() {
+        cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        if (cart.length === 0) {
+            document.getElementById('orderItems').innerHTML = '<div class="empty">Заказ пуст. <a href="https://pcggpro.ru/#catalog">Перейти в каталог</a></div>';
+            document.getElementById('placeOrderBtn').disabled = true;
+            return;
+        }
+        renderOrderItems();
+    }
 
     function renderOrderItems() {
-        const c=document.getElementById('orderItems'); let t=0;
-        c.innerHTML=cart.map(i=>{
-            const it=i.price*(i.quantity||1); t+=it;
+        const c = document.getElementById('orderItems');
+        let t = 0;
+        c.innerHTML = cart.map(i => {
+            const it = i.price * (i.quantity || 1);
+            t += it;
             const isCustom = i.isCustom || false;
             const customLabel = isCustom ? '⚙️ ' : '';
-            return`<div class="order-item"><div><span class="order-item-name">${customLabel}${i.name}</span><span class="order-item-qty">x${i.quantity||1}</span></div><span class="order-item-price">${it.toLocaleString()} ₽</span></div>`;
+            return `<div class="order-item"><div><span class="order-item-name">${customLabel}${i.name}</span><span class="order-item-qty">x${i.quantity || 1}</span></div><span class="order-item-price">${it.toLocaleString()} ₽</span></div>`;
         }).join('');
-        document.getElementById('subtotalPrice').textContent=`${t.toLocaleString()} ₽`;
+        document.getElementById('subtotalPrice').textContent = `${t.toLocaleString()} ₽`;
         updateTotalPrice();
     }
 
     function updateDeliveryPrice() {
-        const s=document.getElementById('deliveryMethod');
-        const p=parseInt(s.options[s.selectedIndex].getAttribute('data-price'))||0;
-        document.getElementById('deliveryPrice').textContent=p>0?`≈ ${p.toLocaleString()} ₽`:'0 ₽';
+        const s = document.getElementById('deliveryMethod');
+        const p = parseInt(s.options[s.selectedIndex].getAttribute('data-price')) || 0;
+        document.getElementById('deliveryPrice').textContent = p > 0 ? `≈ ${p.toLocaleString()} ₽` : '0 ₽';
         updateTotalPrice();
     }
 
     function updateTotalPrice() {
-        const st=parseInt(document.getElementById('subtotalPrice').textContent.replace(/\D/g,''))||0;
-        const dp=parseInt(document.getElementById('deliveryPrice').textContent.replace(/\D/g,''))||0;
-        document.getElementById('totalPrice').textContent=`${(st+dp).toLocaleString()} ₽`;
+        const st = parseInt(document.getElementById('subtotalPrice').textContent.replace(/\D/g, '')) || 0;
+        const dp = parseInt(document.getElementById('deliveryPrice').textContent.replace(/\D/g, '')) || 0;
+        document.getElementById('totalPrice').textContent = `${(st + dp).toLocaleString()} ₽`;
     }
 
     document.getElementById('placeOrderBtn').addEventListener('click', async function() {
-        const email=document.getElementById('email').value.trim(), name=document.getElementById('name').value.trim(), city=document.getElementById('city').value.trim(), postal=document.getElementById('postal').value.trim();
-        if (!email||!name||!city||!postal) { alert('Заполните все обязательные поля.'); return; }
-        const btn=document.getElementById('placeOrderBtn'); btn.textContent='⏳ Оформление...'; btn.disabled=true;
+        const phone = document.getElementById('phone').value.trim().replace(/\D/g, '');
+        const name = document.getElementById('name').value.trim();
+        const city = document.getElementById('city').value.trim();
+        const postal = document.getElementById('postal').value.trim();
+
+        if (!phone || !name || !city || !postal) {
+            alert('❌ Заполните все обязательные поля.');
+            return;
+        }
+
+        const btn = document.getElementById('placeOrderBtn');
+        btn.textContent = '⏳ Оформление...';
+        btn.disabled = true;
+
         try {
-            const pn=cart.map(i=>`${i.name} x${i.quantity||1}`).join(', '), tp=cart.reduce((s,i)=>s+(i.price*(i.quantity||1)),0);
-            const r=await fetch(`${API_URL}/webhook`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'order',productName:pn,price:tp,city,postal,comment:document.getElementById('comment').value.trim(),userId:'website_user',full_name:name,user_email:email,telegram:document.getElementById('telegram').value.trim(),timestamp:new Date().toISOString()})});
-            if(r.ok){
-                window.currentOrder = { id: Date.now(), amount: tp, productName: pn };
-                document.getElementById('payBtn').style.display = 'block';
+            const pn = cart.map(i => `${i.name} x${i.quantity || 1}`).join(', ');
+            const tp = cart.reduce((s, i) => s + (i.price * (i.quantity || 1)), 0);
+
+            const response = await fetch(`${API_URL}/webhook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'order',
+                    productName: pn,
+                    price: tp,
+                    city: city,
+                    postal: postal,
+                    comment: document.getElementById('comment').value.trim(),
+                    userId: savedUser?.id || 'website_user',
+                    full_name: name,
+                    user_email: document.getElementById('email').value.trim(),
+                    phone: phone,
+                    timestamp: new Date().toISOString()
+                })
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                document.getElementById('orderNumber').textContent = data.order_id || '—';
                 document.getElementById('placeOrderBtn').style.display = 'none';
-                alert('✅ Заказ оформлен! Нажмите «Оплатить сборку» для перехода к оплате.');
-            } else { alert('❌ Ошибка при оформлении заказа.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
-        } catch(e) { alert('❌ Ошибка соединения.'); btn.textContent='📦 Оформить заказ'; btn.disabled=false; }
+                document.getElementById('successBox').style.display = 'block';
+                localStorage.removeItem('cart');
+                document.getElementById('cart-count').textContent = '0';
+            } else {
+                alert('❌ Ошибка при оформлении заказа. Попробуйте позже.');
+                btn.textContent = '📦 Оформить заказ';
+                btn.disabled = false;
+            }
+        } catch (error) {
+            alert('❌ Ошибка соединения с сервером.');
+            btn.textContent = '📦 Оформить заказ';
+            btn.disabled = false;
+        }
     });
 
-    async function payWithLava() {
-        if (!window.currentOrder) { alert('❌ Сначала оформите заказ.'); return; }
-        const btn = document.getElementById('payBtn'); btn.textContent = '⏳ Создание платежа...'; btn.disabled = true;
-        try {
-            const r = await fetch(`${API_URL}/create-payment`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ amount: window.currentOrder.amount, product_name: window.currentOrder.productName }) });
-            const d = await r.json();
-            if (d.payment_url) { window.location.href = d.payment_url; } else { alert('❌ Не удалось создать платёж. Попробуйте позже.'); }
-        } catch(e) { alert('❌ Ошибка соединения с сервером.'); }
-        btn.textContent = '💳 Оплатить сборку'; btn.disabled = false;
-    }
-
     loadCart();
-</script>
-<script>
-    const user = JSON.parse(localStorage.getItem('user')||'null');
-    if (!user) { alert('Для оформления заказа необходимо зарегистрироваться.'); window.location.href='https://pcggpro.ru/register.html'; }
 </script>
 
 <!-- Виджет чата поддержки -->
@@ -238,7 +286,6 @@
     function startPolling() { stopPolling(); chatPollingInterval=setInterval(async()=>{if(!chatSessionId)return;try{const r=await fetch(`${SUPPORT_API}/chat/messages?session_id=${chatSessionId}`);const d=await r.json();if(d.messages){const c=document.getElementById('chatMessages');const ids=Array.from(c.querySelectorAll('div[data-msg-id]')).map(el=>el.dataset.msgId);d.messages.forEach(msg=>{if(!ids.includes(String(msg.id))&&msg.sender!=='user'){addMessage(msg.sender,msg.message);const last=c.lastElementChild;if(last)last.dataset.msgId=msg.id;}});}}catch(e){}},3000); }
     function stopPolling() { if(chatPollingInterval){clearInterval(chatPollingInterval);chatPollingInterval=null;} }
     document.getElementById('chatInput').addEventListener('keypress',function(e){if(e.key==='Enter')sendChatMessage();});
-    // Восстановление чата при загрузке
     (function(){const sid=localStorage.getItem('chat_session_id');if(!sid)return;fetch(`${SUPPORT_API}/chat/messages?session_id=${sid}`).then(r=>r.json()).then(d=>{if(d.messages&&d.messages.length>0){chatSessionId=sid;document.getElementById('chatContact').style.display='none';document.getElementById('chatInputArea').style.display='flex';const c=document.getElementById('chatMessages');c.innerHTML='';d.messages.forEach(msg=>addMessage(msg.sender,msg.message));c.scrollTop=c.scrollHeight;startPolling();}else{localStorage.removeItem('chat_session_id');}}).catch(()=>{localStorage.removeItem('chat_session_id');});})();
 </script>
 
